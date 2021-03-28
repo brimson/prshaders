@@ -1,12 +1,11 @@
 #line 2 "TerrainUGShader.fx"
 
-
-float4x4	mViewProj: matVIEWPROJ;
-float4x4	mLightVP : LIGHTVIEWPROJ;
-float4	vScaleTransXZ : SCALETRANSXZ;
-float4	vScaleTransY : SCALETRANSY;
-float4	vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
-float4	vViewportMap : VIEWPORTMAP;
+float4x4 mViewProj: matVIEWPROJ;
+float4x4 mLightVP : LIGHTVIEWPROJ;
+float4 vScaleTransXZ : SCALETRANSXZ;
+float4 vScaleTransY : SCALETRANSY;
+float4 vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
+float4 vViewportMap : VIEWPORTMAP;
 
 texture	texture2 : TEXLAYER2;
 
@@ -40,7 +39,7 @@ float4 psDynamicShadowmap(VS2PS_DynamicShadowmap indata) : COLOR
     float4 cmpbits = samples >= saturate(indata.ShadowTex.z);
     float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
 
-    return  1-saturate(4-indata.ShadowTex.z)+avgShadowValue.x;
+    return 1 - saturate(4-indata.ShadowTex.z)+avgShadowValue.x;
 }
 
 VS2PS_DynamicShadowmap vsDynamicShadowmap(APP2VS_BM_Dx9 indata)
@@ -51,7 +50,7 @@ VS2PS_DynamicShadowmap vsDynamicShadowmap(APP2VS_BM_Dx9 indata)
     wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
     wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
 
-     outdata.Pos = mul(wPos, mViewProj);
+    outdata.Pos = mul(wPos, mViewProj);
 
     outdata.ShadowTex = mul(wPos, mLightVP);
     outdata.ShadowTex.z -= 0.007;
@@ -61,18 +60,17 @@ VS2PS_DynamicShadowmap vsDynamicShadowmap(APP2VS_BM_Dx9 indata)
 
 technique Dx9Style_BM
 {
-    pass DynamicShadowmap	//p0
+    pass DynamicShadowmap // p0
     {
         CullMode = CW;
-        //ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 
         ZEnable = FALSE;
         ZWriteEnable = FALSE;
         ZFunc = LESSEQUAL;
 
-         AlphaBlendEnable = TRUE;
-         SrcBlend = DESTCOLOR;
-         DestBlend = ZERO;
+        AlphaBlendEnable = TRUE;
+        SrcBlend = DESTCOLOR;
+        DestBlend = ZERO;
 
         VertexShader = compile vs_2_a vsDynamicShadowmap();
         PixelShader = compile ps_2_a psDynamicShadowmap();

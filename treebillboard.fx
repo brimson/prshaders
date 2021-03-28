@@ -2,40 +2,40 @@
 
 float4x4 mViewProj : matVIEWPROJ;
 
+bool bAlphaBlend  : ALPHABLEND = true;
+dword dwSrcBlend  : SRCBLEND   = D3DBLEND_SRCALPHA;
+dword dwDestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
 
-bool bAlphaBlend : ALPHABLEND		= true;
-dword dwSrcBlend : SRCBLEND		= D3DBLEND_SRCALPHA;
-dword dwDestBlend : DESTBLEND		= D3DBLEND_INVSRCALPHA;
+bool bAlphaTest   : ALPHATEST = true;
+dword dwAlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+dword dwAlphaRef  : ALPHAREF  = 0;
 
-bool bAlphaTest : ALPHATEST		= true;
-dword dwAlphaFunc : ALPHAFUNC		= D3DCMP_GREATER;
-dword dwAlphaRef : ALPHAREF		= 0;
+dword dwZEnable    : ZMODE        = D3DZB_TRUE;
+bool bZWriteEnable : ZWRITEENABLE = false;
 
-dword dwZEnable : ZMODE			= D3DZB_TRUE;
-bool bZWriteEnable : ZWRITEENABLE	= false;
-
-dword dwTexFactor : TEXFACTOR		= 0;
+dword dwTexFactor : TEXFACTOR = 0;
 
 texture texture0: TEXLAYER0;
-sampler sampler0 = sampler_state {
-    Texture			= (texture0);
-    AddressU		= WRAP;
-    AddressV		= CLAMP;
-    MipFilter		= LINEAR;
-    MinFilter 		= LINEAR;
-    MagFilter 		= LINEAR;
+sampler sampler0 = sampler_state
+{
+    Texture = (texture0);
+    AddressU = WRAP;
+    AddressV = CLAMP;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
 
 texture texture1: TEXLAYER1;
-sampler sampler1 = sampler_state {
-    Texture			= (texture0);
-    AddressU		= WRAP;
-    AddressV		= CLAMP;
-    MipFilter		= LINEAR;
-    MinFilter 		= LINEAR;
-    MagFilter 		= LINEAR;
+sampler sampler1 = sampler_state
+{
+    Texture = (texture0);
+    AddressU = WRAP;
+    AddressV = CLAMP;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
-
 
 struct APP2VS
 {
@@ -66,13 +66,11 @@ float4 psFFP(VS2PS indata) : COLOR
 VS2PS vsFFP(APP2VS indata)
 {
     VS2PS outdata;
-
     outdata.Pos = mul(indata.Pos, mViewProj);
     outdata.Col = indata.Col;
     outdata.Col2 = indata.Col2;
-     outdata.Tex = indata.Tex;
-     outdata.Tex2 = indata.Tex2;
-
+    outdata.Tex = indata.Tex;
+    outdata.Tex2 = indata.Tex2;
     return outdata;
 }
 
@@ -108,4 +106,3 @@ technique QuadWithTexture
         PixelShader = compile ps_2_a psFFP();
     }
 }
-

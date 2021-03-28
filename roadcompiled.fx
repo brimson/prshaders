@@ -1,17 +1,17 @@
 #line 2 "RoadCompiled.fx"
 #include "shaders/raCommon.fx"
 
-float4x4	mWorldViewProj : WorldViewProjection;
-float		fTexBlendFactor : TexBlendFactor;
-float2		vFadeoutValues : FadeOut;
-float4		vLocalEyePos : LocalEye;
-float4		vCameraPos : CAMERAPOS;
-float		vScaleY : SCALEY;
-float4		vSunColor : SUNCOLOR;
-float4 		vGIColor : GICOLOR;
+float4x4 mWorldViewProj : WorldViewProjection;
+float    fTexBlendFactor : TexBlendFactor;
+float2 vFadeoutValues : FadeOut;
+float4 vLocalEyePos : LocalEye;
+float4 vCameraPos : CAMERAPOS;
+float  vScaleY : SCALEY;
+float4 vSunColor : SUNCOLOR;
+float4 vGIColor : GICOLOR;
 
-float4		vTexProjOffset : TEXPROJOFFSET;
-float4		vTexProjScale : TEXPROJSCALE;
+float4 vTexProjOffset : TEXPROJOFFSET;
+float4 vTexProjScale : TEXPROJSCALE;
 
 texture detail0 : TEXLAYER3;
 texture detail1 : TEXLAYER4;
@@ -19,28 +19,30 @@ texture lighting : TEXLAYER2;
 
 sampler sampler0 = sampler_state
 {
-    Texture 		= (detail0);
-    AddressU 		= CLAMP;
-    AddressV 		= WRAP;
-    MipFilter 		= FILTER_ROAD_MIP;
-    MinFilter 		= FILTER_ROAD_DIFF_MIN;
-    MagFilter 		= FILTER_ROAD_DIFF_MAG;
-#ifdef FILTER_ROAD_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_ROAD_DIFF_MAX_ANISOTROPY;
-#endif
+    Texture = (detail0);
+    AddressU = CLAMP;
+    AddressV = WRAP;
+    MipFilter = FILTER_ROAD_MIP;
+    MinFilter = FILTER_ROAD_DIFF_MIN;
+    MagFilter = FILTER_ROAD_DIFF_MAG;
+    #ifdef FILTER_ROAD_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy 	= FILTER_ROAD_DIFF_MAX_ANISOTROPY;
+    #endif
 };
+
 sampler sampler1 = sampler_state
 {
-    Texture 		= (detail1);
-    AddressU 		= WRAP;
-    AddressV 		= WRAP;
-    MipFilter 		= FILTER_ROAD_MIP;
-    MinFilter 		= FILTER_ROAD_DIFF_MIN;
-    MagFilter 		= FILTER_ROAD_DIFF_MAG;
-#ifdef FILTER_ROAD_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_ROAD_DIFF_MAX_ANISOTROPY;
-#endif
+    Texture = (detail1);
+    AddressU = WRAP;
+    AddressV = WRAP;
+    MipFilter = FILTER_ROAD_MIP;
+    MinFilter = FILTER_ROAD_DIFF_MIN;
+    MagFilter = FILTER_ROAD_DIFF_MAG;
+    #ifdef FILTER_ROAD_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy = FILTER_ROAD_DIFF_MAX_ANISOTROPY;
+    #endif
 };
+
 sampler sampler2 = sampler_state
 {
     Texture = (lighting);
@@ -78,7 +80,7 @@ float4 projToLighting(float4 hPos)
     //    ProjOffset now includes screen->texture bias as well as half-texel offset
     //    ProjScale is screen->texture scale/invert operation
     // tex = (hpos.x * 0.5 + 0.5 + htexel, hpos.y * -0.5 + 0.5 + htexel, hpos.z, hpos.w)
-     tex = hPos * vTexProjScale + (vTexProjOffset * hPos.w);
+    tex = hPos * vTexProjScale + (vTexProjOffset * hPos.w);
 
     return tex;
 }
@@ -91,28 +93,16 @@ VS2PS RoadCompiledVS(APP2VS input)
 
     float cameraDist = length(vLocalEyePos - input.Pos);
     float interpVal = saturate(cameraDist * vFadeoutValues.x - vFadeoutValues.y);
-//	wPos.y += 0.01 * (1-interpVal);
-    wPos.y += .01;
+    // wPos.y += 0.01 * (1-interpVal);
+    wPos.y += 0.01;
 
     outdata.Pos = mul(wPos, mWorldViewProj);
-
-
-//	outdata.PosTex.xy = outdata.Pos.xy/outdata.Pos.w;
-// 	outdata.PosTex.xy = (outdata.PosTex.xy + 1) / 2;
-// 	outdata.PosTex.y = 1-outdata.PosTex.y;
-// 	outdata.PosTex.xy = outdata.PosTex.xy * outdata.Pos.w;
-//	outdata.PosTex.zw = outdata.Pos.zw;
-
     outdata.PosTex = projToLighting(outdata.Pos);
-
     outdata.Tex0.xy = input.Tex0;
     outdata.Tex1 = input.Tex1;
-
     outdata.ZFade = 1 - saturate((cameraDist * vFadeoutValues.x) - vFadeoutValues.y);
     outdata.ZFade *= input.Alpha;
-
     outdata.Fog = calcFog(outdata.Pos.w);
-
     return outdata;
 }
 
@@ -127,6 +117,7 @@ float4 RoadCompiledPS(VS2PS indata) : COLOR0
 
     float4 accumlights = tex2Dproj(sampler2, indata.PosTex);
     float4 light;
+
     if (FogColor.r < 0.01)
     {
         // On thermals no shadows
@@ -139,8 +130,6 @@ float4 RoadCompiledPS(VS2PS indata) : COLOR0
         light = ((accumlights.w * vSunColor * 2) + accumlights) * 2;
         color.rgb *= light.xyz;
     }
-
-
 
     return color;
 }
@@ -193,7 +182,7 @@ technique roadcompiledFull
         { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
         { 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
         { 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 1 },
-//		{ 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 1 },
+        // { 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 1 },
         { 0, D3DDECLTYPE_FLOAT1, D3DDECLUSAGE_TEXCOORD, 2 },
         DECLARATION_END	// End macro
     };
@@ -205,9 +194,6 @@ technique roadcompiledFull
         AlphaBlendEnable = TRUE;
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
-//		DepthBias = -0.0001f;
-//		SlopeScaleDepthBias = -0.00001f;
-//		FillMode = WIREFRAME;
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         FogEnable = true;
@@ -218,13 +204,9 @@ technique roadcompiledFull
     pass DirectX9
     {
         AlphaBlendEnable = FALSE;
-        //AlphaBlendEnable = TRUE;
-        //SrcBlend = SRCALPHA;
-        //DestBlend = INVSRCALPHA;
         DepthBias = -0.0001f;
         SlopeScaleDepthBias = -0.00001f;
         ZEnable = FALSE;
-//		FillMode = WIREFRAME;
         VertexShader = compile vs_2_a RoadCompiledVSDx9();
         PixelShader = compile ps_2_a RoadCompiledPSDx9();
     }
@@ -232,14 +214,7 @@ technique roadcompiledFull
 
 float4 RoadCompiledPS_LightingOnly(VS2PS indata) : COLOR0
 {
-//	float4 t0 = tex2D(sampler0, indata.Tex0AndZFade);
-//	float4 t2 = tex2D(sampler2, indata.PosTex);
-
-//	float4 final;
-//	final.rgb = t2;
-//	final.a = t0.a * indata.Tex0AndZFade.z;
-//	return final;
-return 0;
+    return 0;
 }
 
 technique roadcompiledLightingOnly
@@ -261,10 +236,7 @@ technique roadcompiledLightingOnly
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         DepthBias = -0.000025;
-        //SlopeScaleDepthBias = -0.5;
         ZEnable = FALSE;
-//CullMode = NONE;
-//FillMode = WIREFRAME;
         VertexShader = compile vs_2_a RoadCompiledVS();
         PixelShader = compile ps_2_a RoadCompiledPS_LightingOnly();
     }

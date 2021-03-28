@@ -1,12 +1,10 @@
 #line 2 "Trail.fx"
 #include "shaders/FXCommon.fx"
 
-
 // UNIFORM INPUTS
 
 uniform float3 eyePos : EyePos;
 uniform float fadeOffset : FresnelOffset = 0;
-
 
 sampler trailDiffuseSampler = sampler_state
 {
@@ -28,8 +26,6 @@ sampler trailDiffuseSampler2 = sampler_state
     AddressV = Clamp;
 };
 
-
-
 // constant array
 struct TemplateParameters
 {
@@ -41,7 +37,6 @@ struct TemplateParameters
     float4 m_transparencyGraph;
     float4 m_sizeGraph;
 };
-
 
 TemplateParameters tParameters : TemplateParameters;
 
@@ -102,7 +97,6 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
 
     // comput size of particle using the constants of the templ[input.ageFactorAndGraphIndex.y]ate (mSizeGraph)
     float size = min(dot(tParameters.m_sizeGraph, pc), 1) * tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
-    //size += input.randomSizeAlphaAndIntensityBlendFactor.x;
 
     // displace vertex
     float4 pos = mul(float4(input.pos.xyz + size*(input.localCoords.xyz*input.texCoords.y), 1), myWV);
@@ -142,10 +136,10 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
     Out.texCoords1 = rotatedTexCoords.xy + uvOffsets.zw;
 
     // hemi lookup coords
-     Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-     Out.texCoords2.y = 1 - Out.texCoords2.y;
+    Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    Out.texCoords2.y = 1 - Out.texCoords2.y;
 
-     Out.lightFactorAndAlpha.a = tParameters.m_color1AndLightFactor.a;
+    Out.lightFactorAndAlpha.a = tParameters.m_color1AndLightFactor.a;
 
     Out.Fog = calcFog(Out.HPos.w);
 
@@ -165,6 +159,7 @@ float4 psTrailHigh(VS_TRAIL_OUTPUT input) : COLOR
 
     return color;
 }
+
 float4 psTrailMedium(VS_TRAIL_OUTPUT input) : COLOR
 {
     float4 tDiffuse = tex2D( trailDiffuseSampler, input.texCoords0);
@@ -177,6 +172,7 @@ float4 psTrailMedium(VS_TRAIL_OUTPUT input) : COLOR
 
     return color;
 }
+
 float4 psTrailLow(VS_TRAIL_OUTPUT input) : COLOR
 {
     float4 color = tex2D( trailDiffuseSampler, input.texCoords0);
@@ -185,17 +181,15 @@ float4 psTrailLow(VS_TRAIL_OUTPUT input) : COLOR
 
     return color;
 }
+
 float4 psTrailShowFill(VS_TRAIL_OUTPUT input) : COLOR
 {
     return effectSunColor.rrrr;
 }
 
 
-
-
-//
 // Ordinary technique
-//
+
 technique TrailLow
 <
 >
@@ -220,6 +214,7 @@ technique TrailLow
         PixelShader = compile ps_2_a psTrailLow();
     }
 }
+
 technique TrailMedium
 <
 >
@@ -244,6 +239,7 @@ technique TrailMedium
         PixelShader = compile ps_2_a psTrailMedium();
     }
 }
+
 technique TrailHigh
 <
 >
@@ -268,6 +264,7 @@ technique TrailHigh
         PixelShader = compile ps_2_a psTrailHigh();
     }
 }
+
 technique TrailShowFill
 <
 >

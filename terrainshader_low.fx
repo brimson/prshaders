@@ -1,9 +1,6 @@
 #line 2 "TerrainShader_nv3x.fx"
-//
+
 // -- Low Terrain
-//
-
-
 
 float4 Low_PS_DirectionalLightShadows(Shared_VS2PS_DirectionalLightShadows indata) : COLOR
 {
@@ -68,7 +65,7 @@ technique Low_Terrain
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         ZFunc = LESSEQUAL;
-         AlphaBlendEnable = FALSE;
+        AlphaBlendEnable = FALSE;
         VertexShader = compile vs_2_a Shared_VS_DirectionalLightShadows();
         PixelShader = compile ps_2_a Low_PS_DirectionalLightShadows();
     }
@@ -79,9 +76,9 @@ technique Low_Terrain
         ZEnable = FALSE;
         ZWriteEnable = FALSE;
         ZFunc = LESSEQUAL;
-         AlphaBlendEnable = TRUE;
-         SrcBlend = DESTCOLOR;
-         DestBlend = ZERO;
+        AlphaBlendEnable = TRUE;
+        SrcBlend = DESTCOLOR;
+        DestBlend = ZERO;
         VertexShader = compile vs_2_a Shared_VS_DynamicShadowmap();
         PixelShader = compile ps_2_a Shared_PS_DynamicShadowmap();
     }

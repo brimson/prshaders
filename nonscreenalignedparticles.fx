@@ -95,8 +95,8 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
     Out.texCoords1.xy = rotatedTexCoords + uvOffsets.zw;
 
     // hemi lookup coords
-     Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-     Out.texCoords2.y = 1 - Out.texCoords2.y;
+    Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    Out.texCoords2.y = 1 - Out.texCoords2.y;
 
     Out.Fog = calcFog(Out.HPos.w);
 
@@ -147,23 +147,9 @@ float4 psParticleHigh(VS_PARTICLE_OUTPUT input) : COLOR
 }
 
 
-//
+
 // Ordinary technique
-//
-/*	int Declaration[] =
-    {
-        // StreamNo, DataType, Usage, UsageIdx
-        { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
-        { 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 0 },
-        { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_TEXCOORD, 1 },
-        { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_TEXCOORD, 2 },
-        { 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 3 },
-        { 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 4 },
-        { 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 5 },
-        { 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 6 },
-        DECLARATION_END	// End macro
-    };
-*/
+
 technique NSAParticleShowFill
 <
 >

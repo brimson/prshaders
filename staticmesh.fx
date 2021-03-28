@@ -49,7 +49,6 @@ sampler samplerShadowAlpha = sampler_state
     AddressV = Wrap;
 };
 
-//sampler diffuseSampler = sampler_state
 sampler samplerWrap0 = sampler_state
 {
     Texture = <texture0>;
@@ -61,7 +60,6 @@ sampler samplerWrap0 = sampler_state
     AddressV = Wrap;
 };
 
-//sampler normalSampler = sampler_state
 sampler samplerWrap1 = sampler_state
 {
     Texture = <texture1>;
@@ -247,7 +245,6 @@ sampler samplerClamp0 = sampler_state
     AddressV = Clamp;
 };
 
-//sampler normalSampler = sampler_state
 sampler samplerClamp1 = sampler_state
 {
     Texture = <texture1>;
@@ -441,14 +438,12 @@ technique alpha_one
         CullMode = NONE;
         AlphaBlendEnable = true;
 
-        //SrcBlend = ONE;
         SrcBlend = SRCALPHA;
         DestBlend = ONE;
 
         AlphaTestEnable = true;
         AlphaRef = 0;
         AlphaFunc = GREATER;
-        //FillMode = WIREFRAME;
 
         VertexShader = compile vs_2_a VSimpleShader(viewProjMatrix);
         PixelShader = compile ps_2_a PSSimpleShader();
@@ -485,41 +480,30 @@ float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 VS2PS_ShadowMap vsShadowMap(APPDATA_ShadowMap input)
 {
     VS2PS_ShadowMap Out;
-
-     float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1);
-     float4 wPos = mul(unpackPos, worldMatrix);
+    float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1);
+    float4 wPos = mul(unpackPos, worldMatrix);
     Out.Pos = calcShadowProjCoords(float4(wPos.xyz,1.0), vpLightTrapezMat, vpLightMat);
-     Out.PosZW.xy = Out.Pos.zw;
-
-//SHADOW
-// TBD: mul matrices on CPU
-//	matrix m = mul( vpLightMat, vpLightTrapezMat );
-//	Out.Pos = mul( float4(unpackPos.xyz, 1.0), vpLightMat );
-//\SHADOW
-
+    Out.PosZW.xy = Out.Pos.zw;
     return Out;
 }
 
 VS2PS_ShadowMapAlpha vsShadowMapAlpha(APPDATA_ShadowMap input)
 {
     VS2PS_ShadowMapAlpha Out;
-
-     float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1);
-     float4 wPos = mul(unpackPos, worldMatrix);
+    float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1);
+    float4 wPos = mul(unpackPos, worldMatrix);
     Out.Pos = calcShadowProjCoords(wPos, vpLightTrapezMat, vpLightMat);
-     Out.PosZW.xy = Out.Pos.zw;
-
+    Out.PosZW.xy = Out.Pos.zw;
     Out.Tex = input.Tex * TexUnpack;
-
     return Out;
 }
 float4 psShadowMap(VS2PS_ShadowMap indata) : COLOR
 {
-#if NVIDIA
-    return 0;
-#else
-    return indata.PosZW.x/indata.PosZW.y;
-#endif
+    #if NVIDIA
+        return 0;
+    #else
+        return indata.PosZW.x/indata.PosZW.y;
+    #endif
 }
 
 float4 psShadowMapAlpha(VS2PS_ShadowMapAlpha indata) : COLOR
@@ -527,61 +511,13 @@ float4 psShadowMapAlpha(VS2PS_ShadowMapAlpha indata) : COLOR
     const float alphaRef = 96.f/255.f;
     float4 alpha = tex2D(samplerShadowAlpha, indata.Tex);
 
-#if NVIDIA
-    return alpha;
-#else
-    clip(alpha.a - alphaRef);
-    return indata.PosZW.x/indata.PosZW.y;
-#endif
+    #if NVIDIA
+        return alpha;
+    #else
+        clip(alpha.a - alphaRef);
+        return indata.PosZW.x/indata.PosZW.y;
+    #endif
 }
-/*
-VS2PS_ShadowMap vsShadowMapPoint(APPDATA_ShadowMap input)
-{
-    VS2PS_ShadowMap Out;
-
-       // Compensate for lack of UBYTE4 on Geforce3
-    //int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
-    //int IndexArray[4] = (int[4])IndexVector;
-
-      float4 oPos = input.Pos;//float4(mul(input.Pos, mOneBoneSkinning[IndexArray[0]]), 1);
-     //float4 vPos = mul(oPos, viewProjMatrix);
-     Out.Pos = mul(oPos, viewProjMatrix);
-
-    Out.Pos.z *= paraboloidValues.x;
-    Out.PosZW = Out.Pos.zwww/10.0 + 0.5;
-
-     float d = length(Out.Pos.xyz);
-     Out.Pos.xyz /= d;
-    Out.Pos.z += 1;
-     Out.Pos.x /= Out.Pos.z;
-     Out.Pos.y /= Out.Pos.z;
-    Out.Pos.z = (d*paraboloidZValues.x) + paraboloidZValues.y;
-    Out.Pos.w = 1;
-
-//SHADOW
-// TBD: mul matrices on CPU
-     float4 unpackPos = input.Pos * PosUnpack;
-//	matrix m = mul( vpLightMat, vpLightTrapezMat );
-    Out.Pos = mul( float4(unpackPos.xyz, 1.0), vpLightMat );
-    Out.PosZW.xy = Out.Pos.zw;
-//\SHADOW
-
-    return Out;
-}
-
-float4 psShadowMapPoint(VS2PS_ShadowMap indata) : COLOR
-{
-#if NVIDIA
-    return 0;
-#else
-//SHADOW
-;;	return indata.PosZW.x/indata.PosZW.y;
-//\SHADOW
-#endif
-
-    clip(indata.PosZW.x-0.5);
-    return indata.PosZW.x - 0.5;
-}*/
 
 #if NVIDIA
     PixelShader psShadowMap_Compiled = compile ps_2_a psShadowMap();
@@ -595,9 +531,9 @@ technique DrawShadowMap
 {
     pass directionalspot
     {
-#if NVIDIA
-        ColorWriteEnable = 0;//0x0000000F;
-#endif
+        #if NVIDIA
+            ColorWriteEnable = 0; // 0x0000000F;
+        #endif
 
         AlphaBlendEnable = FALSE;
         ZEnable = TRUE;
@@ -611,15 +547,15 @@ technique DrawShadowMap
 
     pass directionalspotalpha
     {
-#if NVIDIA
-        ColorWriteEnable = 0;//0x0000000F;
+        #if NVIDIA
+                ColorWriteEnable = 0; // 0x0000000F;
 
-        AlphaTestEnable = TRUE;
-        AlphaRef = 96;
-        AlphaFunc = GREATER;
-#endif
+                AlphaTestEnable = TRUE;
+                AlphaRef = 96;
+                AlphaFunc = GREATER;
+        #endif
 
-CullMode = CW;
+        CullMode = CW;
 
         AlphaBlendEnable = FALSE;
 
@@ -635,9 +571,9 @@ CullMode = CW;
 
     pass point_
     {
-#if NVIDIA
-        ColorWriteEnable = 0;//0x0000000F;
-#endif
+        #if NVIDIA
+            ColorWriteEnable = 0;//0x0000000F;
+        #endif
 
         AlphaBlendEnable = FALSE;
 
@@ -649,7 +585,6 @@ CullMode = CW;
         PixelShader = (psShadowMap_Compiled);
     }
 }
-//#endif
 
 // We actually don't need to have 2 techniques here
 // but it is kept for back-compatibility with original BF2
@@ -657,9 +592,9 @@ technique DrawShadowMapNV
 {
     pass directionalspot
     {
-#if NVIDIA
-        ColorWriteEnable = 0;//0x0000000F;
-#endif
+        #if NVIDIA
+            ColorWriteEnable = 0;//0x0000000F;
+        #endif
 
         AlphaBlendEnable = FALSE;
         ZEnable = TRUE;
@@ -673,15 +608,15 @@ technique DrawShadowMapNV
 
     pass directionalspotalpha
     {
-#if NVIDIA
-        ColorWriteEnable = 0;//0x0000000F;
+        #if NVIDIA
+            ColorWriteEnable = 0;//0x0000000F;
 
-        AlphaTestEnable = TRUE;
-        AlphaRef = 96;
-        AlphaFunc = GREATER;
-#endif
+            AlphaTestEnable = TRUE;
+            AlphaRef = 96;
+            AlphaFunc = GREATER;
+        #endif
 
-CullMode = CW;
+        CullMode = CW;
 
         AlphaBlendEnable = FALSE;
 
@@ -697,9 +632,9 @@ CullMode = CW;
 
     pass point_
     {
-#if NVIDIA
-        ColorWriteEnable = 0;//0x0000000F;
-#endif
+        #if NVIDIA
+            ColorWriteEnable = 0;//0x0000000F;
+        #endif
 
         AlphaBlendEnable = FALSE;
 
@@ -711,12 +646,3 @@ CullMode = CW;
         PixelShader = (psShadowMap_Compiled);
     }
 }
-
-/*
-#include "shaders/StaticMesh_nv3x.fx"
-#include "shaders/StaticMesh_nv3xpp.fx"
-#include "shaders/StaticMesh_r3x0.fx"
-#include "shaders/StaticMesh_editor.fx"
-#include "shaders/StaticMesh_debug.fx"
-#include "shaders/StaticMesh_lightmapgen.fx"
-*/

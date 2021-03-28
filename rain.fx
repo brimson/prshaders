@@ -83,10 +83,10 @@ technique Point
         FogEnable = FALSE;
         ZEnable = TRUE;
         ZFunc = LESSEQUAL;
-        ZWriteEnable = false;//TRUE;
+        ZWriteEnable = false;
         AlphaBlendEnable = TRUE;
         SrcBlend = SrcAlpha;
-        DestBlend = One;//InvSrcAlpha;
+        DestBlend = One;
         CullMode = NONE;
 
         VertexShader = compile vs_2_a vsPoint();
@@ -94,9 +94,8 @@ technique Point
     }
 }
 
-/////////////////////////////////////////////
+
 // Line Technique
-/////////////////////////////////////////////
 
 struct LINE_VSOUT
 {
@@ -137,10 +136,10 @@ technique Line
         FogEnable = FALSE;
         ZEnable = TRUE;
         ZFunc = LESSEQUAL;
-        ZWriteEnable = false;//TRUE;
+        ZWriteEnable = false;
         AlphaBlendEnable = TRUE;
         SrcBlend = SrcAlpha;
-        DestBlend = One;//InvSrcAlpha;
+        DestBlend = One;
         CullMode = NONE;
 
         VertexShader = compile vs_2_a vsLine();
@@ -148,9 +147,8 @@ technique Line
     }
 }
 
-/////////////////////////////////////////////
+
 // Debug Cell Technique
-/////////////////////////////////////////////
 
 struct CELL_VSOUT
 {
@@ -186,10 +184,10 @@ technique Cells
         FogEnable = FALSE;
         ZEnable = TRUE;
         ZFunc = LESSEQUAL;
-        ZWriteEnable = false;//TRUE;
+        ZWriteEnable = false;
         AlphaBlendEnable = TRUE;
         SrcBlend = SrcAlpha;
-        DestBlend = One;//InvSrcAlpha;
+        DestBlend = One;
         CullMode = NONE;
 
         VertexShader = compile vs_2_a vsCells();

@@ -25,7 +25,7 @@ float4 m_transparencyGraph : TRANSPARENCYGRAPH;
 
 float4 ageAndAlphaArray[26] : AgeAndAlphaArray;
 float lightmapIntensityOffset : LightmapIntensityOffset;
-float4x3 mOneBoneSkinning[26]: matONEBONESKINNING;/* : register(c50) < bool sparseArray = true; int arrayStart = 50; >;*/
+float4x3 mOneBoneSkinning[26]: matONEBONESKINNING;
 
 
 struct OUT_vsDiffuse
@@ -47,12 +47,12 @@ OUT_vsDiffuse vsDiffuse
 {
     OUT_vsDiffuse Out = (OUT_vsDiffuse)0;
 
-       // Compensate for lack of UBYTE4 on Geforce3
+    // Compensate for lack of UBYTE4 on Geforce3
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(input.Pos * globalScale, mOneBoneSkinning[IndexArray[0]]);
-     Out.HPos = mul(float4(Pos.xyz, 1.0f), ViewProj);
+    Out.HPos = mul(float4(Pos.xyz, 1.0f), ViewProj);
 
     // Compute Cubic polynomial factors.
     float age = ageAndAlphaArray[IndexArray[0]][0];
@@ -63,16 +63,16 @@ OUT_vsDiffuse vsDiffuse
     color += (1 - colorBlendFactor) * m_color1AndLightFactor.rgb;
 
     Out.lightFactor = m_color1AndLightFactor.a;
-     Out.color.rgb = color;
-     Out.color.a = ageAndAlphaArray[IndexArray[0]][1];
+    Out.color.rgb = color;
+    Out.color.a = ageAndAlphaArray[IndexArray[0]][1];
 
     // Pass-through texcoords
     Out.DiffuseMap = input.TexCoord;
     // hemi lookup coords
-     Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-     Out.LerpAndLMapIntOffset = saturate(clamp((Pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + lightmapIntensityOffset);
+    Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    Out.LerpAndLMapIntOffset = saturate(clamp((Pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + lightmapIntensityOffset);
 
-      Out.Fog = calcFog(Out.HPos.w);
+    Out.Fog = calcFog(Out.HPos.w);
 
     return Out;
 }
@@ -81,9 +81,7 @@ float4 psDiffuse(OUT_vsDiffuse indata) : COLOR
 {
     float4 outColor = tex2D(diffuseSampler, indata.DiffuseMap) * indata.color;
     float4 tLut = tex2D(lutSampler, indata.GroundUV);
-
     outColor.rgb *= calcParticleLighting(tLut.a, indata.LerpAndLMapIntOffset, indata.lightFactor.a);
-
     return outColor;
 }
 
@@ -117,7 +115,7 @@ technique Diffuse
         FogEnable = TRUE;
 
 
-         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
+        VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();
     }
 }
@@ -138,7 +136,7 @@ technique Additive
         FogEnable = FALSE;
 
 
-         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
+        VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psAdditive();
     }
 }
@@ -159,9 +157,7 @@ technique DiffuseWithZWrite
         FogEnable = TRUE;
 
 
-         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
+        VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();
     }
 }
-
-

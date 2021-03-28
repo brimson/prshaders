@@ -1,9 +1,9 @@
 #line 2 "TerrainShader_Shared.fx"
-//
-// -- Basic morphed technique
-//
 
-sampler ssampler0Clamp = sampler_state {
+// -- Basic morphed technique
+
+sampler ssampler0Clamp = sampler_state
+{
     Texture = (texture0);
     AddressU = CLAMP;
     AddressV = CLAMP;
@@ -12,22 +12,24 @@ sampler ssampler0Clamp = sampler_state {
     MagFilter = LINEAR;
 };
 
-sampler ssampler3Wrap = sampler_state {
-    Texture			= (texture3);
-    AddressU		= WRAP;
-    AddressV		= WRAP;
-    MipFilter		= POINT;
-    MinFilter 		= LINEAR;
-    MagFilter 		= LINEAR;
+sampler ssampler3Wrap = sampler_state
+{
+    Texture = (texture3);
+    AddressU = WRAP;
+    AddressV = WRAP;
+    MipFilter = POINT;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
 
-sampler ssampler4Wrap = sampler_state {
-    Texture			= (texture4);
-    AddressU		= WRAP;
-    AddressV		= WRAP;
-    MipFilter		= POINT;
-    MinFilter 		= LINEAR;
-    MagFilter 		= LINEAR;
+sampler ssampler4Wrap = sampler_state
+{
+    Texture = (texture4);
+    AddressU = WRAP;
+    AddressV = WRAP;
+    MipFilter = POINT;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
 };
 
 //void geoMorphPosition(inout float4 wPos, in float4 MorphDelta, out float yDelta, out float interpVal)
@@ -40,7 +42,6 @@ void geoMorphPosition(inout float4 wPos, in float4 MorphDelta, in float morphDel
     //tl: YScale is now pre-multiplied into morphselector
 
     float3 camVec = vCamerapos.xwz-wPos.xwz;
-//	float2 camVec = vCamerapos.xz-wPos.xz;
     float cameraDist = dot(camVec, camVec);
     interpVal = saturate(cameraDist * vNearFarMorphLimits.x - vNearFarMorphLimits.y);
     yDelta = (dot(vMorphDeltaSelector, MorphDelta) * interpVal) + dot(vMorphDeltaAdder[morphDeltaAdderSelector*256], MorphDelta);
@@ -58,11 +59,11 @@ void geoMorphPosition(inout float4 wPos, in float4 MorphDelta, in float morphDel
     }
     else
     {
-#if HIGHTERRAIN
-        adjustedNear = vNearFarMorphLimits.x * 16.0;
-#else
-        adjustedNear = vNearFarMorphLimits.x * 9.0;
-#endif
+        #if HIGHTERRAIN
+                adjustedNear = vNearFarMorphLimits.x * 16.0;
+        #else
+                adjustedNear = vNearFarMorphLimits.x * 9.0;
+        #endif
     }
     interpVal = saturate(cameraDist * adjustedNear - vNearFarMorphLimits.y);
 
@@ -78,7 +79,7 @@ float4 projToLighting(float4 hPos)
     //    ProjOffset now includes screen->texture bias as well as half-texel offset
     //    ProjScale is screen->texture scale/invert operation
     // tex = (hpos.x * 0.5 + 0.5 + htexel, hpos.y * -0.5 + 0.5 + htexel, hpos.z, hpos.w)
-     tex = hPos * vTexProjScale + (vTexProjOffset * hPos.w);
+    tex = hPos * vTexProjScale + (vTexProjOffset * hPos.w);
 
     return tex;
 }
@@ -105,7 +106,6 @@ float4 Shared_PS_ZFillLightmap(Shared_VS2PS_ZFillLightmap indata) : COLOR
     float4 outCol;
     outCol.rgb = col.b * vGIColor;
     outCol.a = saturate(col.g);
-
     return outCol;
 }
 
@@ -120,23 +120,21 @@ Shared_VS2PS_ZFillLightmap Shared_VS_ZFillLightmap(Shared_APP2VS_Default indata)
     Shared_VS2PS_ZFillLightmap outdata;
 
     float4 wPos;
-//	wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
     wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
     //tl: Trans is always 0, and MADs cost more than MULs in certain cards.
     wPos.yw = indata.Pos1.xw * vScaleTransY.xy;
 
-#if DEBUGTERRAIN
-     outdata.Pos = mul(wPos, mViewProj);
-    outdata.Tex0 = float2(0,0);
-    return outdata;
-#endif
+    #if DEBUGTERRAIN
+        outdata.Pos = mul(wPos, mViewProj);
+        outdata.Tex0 = float2(0,0);
+        return outdata;
+    #endif
 
     float yDelta, interpVal;
-//	geoMorphPosition(wPos, indata.MorphDelta, yDelta, interpVal);
     geoMorphPosition(wPos, indata.MorphDelta, indata.Pos0.z, yDelta, interpVal);
 
-     outdata.Pos = mul(wPos, mViewProj);
-     outdata.Tex0 = (indata.Pos0.xy * ScaleBaseUV * vColorLightTex.x) + vColorLightTex.y;
+    outdata.Pos = mul(wPos, mViewProj);
+    outdata.Tex0 = (indata.Pos0.xy * ScaleBaseUV * vColorLightTex.x) + vColorLightTex.y;
 
     return outdata;
 }
@@ -163,16 +161,14 @@ Shared_VS2PS_PointLight Shared_VS_PointLight(Shared_APP2VS_Default indata)
     wPos.yw = indata.Pos1.xw * vScaleTransY.xy;
 
     float yDelta, interpVal;
-//	geoMorphPosition(wPos, indata.MorphDelta, yDelta, interpVal);
     geoMorphPosition(wPos, indata.MorphDelta, indata.Pos0.z, yDelta, interpVal);
 
-     outdata.Pos = mul(wPos, mViewProj);
-// 	outdata.Tex0 = indata.Pos0.xy * ScaleBaseUV;
-     outdata.Tex0 = (indata.Pos0.xy * ScaleBaseUV * vColorLightTex.x) + vColorLightTex.y;
+    outdata.Pos = mul(wPos, mViewProj);
+    outdata.Tex0 = (indata.Pos0.xy * ScaleBaseUV * vColorLightTex.x) + vColorLightTex.y;
 
-     //tl: uncompress normal
-     indata.Normal = indata.Normal * 2 - 1;
-     outdata.Color = float4(calcPVPointTerrain(wPos.xyz, indata.Normal), 0);
+    //tl: uncompress normal
+    indata.Normal = indata.Normal * 2 - 1;
+    outdata.Color = float4(calcPVPointTerrain(wPos.xyz, indata.Normal), 0);
 
     return outdata;
 }
@@ -195,14 +191,14 @@ struct Shared_VS2PS_LowDetail
 //#define LIGHTONLY 1
 float4 Shared_PS_LowDetail(Shared_VS2PS_LowDetail indata) : COLOR
 {
-//	return indata.Tex1;
+    #if DEBUGTERRAIN
+        return float4(1,1,1,1);
+    #endif
 
-#if DEBUGTERRAIN
-    return float4(1,1,1,1);
-#endif
     float4 accumlights = tex2Dproj(sampler1ClampPoint, indata.Tex1);
     float4 light;
     float4 colormap;
+
     if (FogColor.r < 0.01)
     {
         // On thermals no shadows
@@ -213,37 +209,38 @@ float4 Shared_PS_LowDetail(Shared_VS2PS_LowDetail indata) : COLOR
     else
     {
         light = 2 * accumlights.w * vSunColor + accumlights;
-#if HIGHTERRAIN
-        colormap = tex2D(sampler0Clamp, indata.Tex0a);
-#else
-        colormap = tex2D(ssampler0Clamp, indata.Tex0a);
-#endif
+        #if HIGHTERRAIN
+            colormap = tex2D(sampler0Clamp, indata.Tex0a);
+        #else
+            colormap = tex2D(ssampler0Clamp, indata.Tex0a);
+        #endif
     }
-#if LIGHTONLY
-    return light;
-#endif
 
-#if HIGHTERRAIN
-    float4 lowComponent = tex2D(sampler5Clamp, indata.Tex3);
+    #if LIGHTONLY
+        return light;
+    #endif
 
-    float4 yplaneLowDetailmap = tex2D(sampler4Wrap, indata.Tex0b);
-    float4 xplaneLowDetailmap = tex2D(sampler4Wrap2, indata.Tex2a);
-    float4 zplaneLowDetailmap = tex2D(sampler4Wrap3, indata.Tex2b);
+    #if HIGHTERRAIN
+        float4 lowComponent = tex2D(sampler5Clamp, indata.Tex3);
 
-    float mounten = (xplaneLowDetailmap.y * indata.BlendValueAndWater.x) +
-             (yplaneLowDetailmap.x * indata.BlendValueAndWater.y) +
-             (zplaneLowDetailmap.y * indata.BlendValueAndWater.z);
+        float4 yplaneLowDetailmap = tex2D(sampler4Wrap, indata.Tex0b);
+        float4 xplaneLowDetailmap = tex2D(sampler4Wrap2, indata.Tex2a);
+        float4 zplaneLowDetailmap = tex2D(sampler4Wrap3, indata.Tex2b);
 
-    float4 outColor = colormap * light * 2 * lerp(0.5, yplaneLowDetailmap.z, lowComponent.x) * lerp(0.5, mounten, lowComponent.z);
+        float mounten = (xplaneLowDetailmap.y * indata.BlendValueAndWater.x) +
+                (yplaneLowDetailmap.x * indata.BlendValueAndWater.y) +
+                (zplaneLowDetailmap.y * indata.BlendValueAndWater.z);
 
-    return lerp(outColor*4, terrainWaterColor, indata.BlendValueAndWater.w);
-#else
-    float4 yplaneLowDetailmap = tex2D(ssampler4Wrap, indata.Tex0b);
+        float4 outColor = colormap * light * 2 * lerp(0.5, yplaneLowDetailmap.z, lowComponent.x) * lerp(0.5, mounten, lowComponent.z);
 
-    float3 outColor = colormap * light * 2;
-    outColor = outColor * lerp(yplaneLowDetailmap.x, yplaneLowDetailmap.z, indata.BlendValueAndWater.y);
-    return float4(lerp(outColor*2, terrainWaterColor, indata.BlendValueAndWater.w),1);
-#endif
+        return lerp(outColor*4, terrainWaterColor, indata.BlendValueAndWater.w);
+    #else
+        float4 yplaneLowDetailmap = tex2D(ssampler4Wrap, indata.Tex0b);
+
+        float3 outColor = colormap * light * 2;
+        outColor = outColor * lerp(yplaneLowDetailmap.x, yplaneLowDetailmap.z, indata.BlendValueAndWater.y);
+        return float4(lerp(outColor*2, terrainWaterColor, indata.BlendValueAndWater.w),1);
+    #endif
 }
 
 Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
@@ -255,31 +252,30 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
     //tl: Trans is always 0, and MADs cost more than MULs in certain cards.
     wPos.yw = indata.Pos1.xw * vScaleTransY.xy;
 
-#if DEBUGTERRAIN
-    outdata.Pos = mul(wPos, mViewProj);
-    outdata.Tex0a = float2(0,0);
-    outdata.Tex0b = float2(0,0);
-    outdata.Tex1 = float4(0,0,0,0);
-#if HIGHTERRAIN
-    outdata.Tex2a = float2(0,0);
-    outdata.Tex2b = float2(0,0);
-#endif
-    outdata.BlendValueAndWater = float4(0,0,0,0);
-    outdata.Fog = 1.0;
-    return outdata;
-#endif
+    #if DEBUGTERRAIN
+        outdata.Pos = mul(wPos, mViewProj);
+        outdata.Tex0a = float2(0,0);
+        outdata.Tex0b = float2(0,0);
+        outdata.Tex1 = float4(0,0,0,0);
+    #if HIGHTERRAIN
+        outdata.Tex2a = float2(0,0);
+        outdata.Tex2b = float2(0,0);
+    #endif
+        outdata.BlendValueAndWater = float4(0,0,0,0);
+        outdata.Fog = 1.0;
+        return outdata;
+    #endif
 
     float yDelta, interpVal;
     geoMorphPosition(wPos, indata.MorphDelta, indata.Pos0.z, yDelta, interpVal);
-//	geoMorphPosition(wPos, indata.MorphDelta, yDelta, interpVal);
 
     //tl: output HPos as early as possible.
-     outdata.Pos = mul(wPos, mViewProj);
+    outdata.Pos = mul(wPos, mViewProj);
 
-     //tl: uncompress normal
-     indata.Normal = indata.Normal * 2 - 1;
+    //tl: uncompress normal
+    indata.Normal = indata.Normal * 2 - 1;
 
-     outdata.Tex0a = (indata.Pos0.xy * ScaleBaseUV*vColorLightTex.x) + vColorLightTex.y;
+    outdata.Tex0a = (indata.Pos0.xy * ScaleBaseUV*vColorLightTex.x) + vColorLightTex.y;
 
 
     //tl: changed a few things with this factor:
@@ -288,39 +284,34 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
     // - by pre-multiplying the waterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
      outdata.BlendValueAndWater.w = (wPos.y/-3.0) + waterHeight;
 
-#if HIGHTERRAIN
-    float3 tex = float3(indata.Pos0.y * vTexScale.z, wPos.y * vTexScale.y, indata.Pos0.x * vTexScale.x);
-    float2 xPlaneTexCord = tex.xy;
-    float2 yPlaneTexCord = tex.zx;
-    float2 zPlaneTexCord = tex.zy;
+    #if HIGHTERRAIN
+        float3 tex = float3(indata.Pos0.y * vTexScale.z, wPos.y * vTexScale.y, indata.Pos0.x * vTexScale.x);
+        float2 xPlaneTexCord = tex.xy;
+        float2 yPlaneTexCord = tex.zx;
+        float2 zPlaneTexCord = tex.zy;
 
-    outdata.Tex3 = (yPlaneTexCord*vDetailTex.x) + vDetailTex.y;
-     outdata.Tex0b = yPlaneTexCord * vFarTexTiling.z;
-    outdata.Tex2a = xPlaneTexCord.xy * vFarTexTiling.xy;
-    outdata.Tex2a.y += vFarTexTiling.w;
-    outdata.Tex2b = zPlaneTexCord.xy * vFarTexTiling.xy;
-    outdata.Tex2b.y += vFarTexTiling.w;
-#else
-    //tl: vYPlaneTexScaleAndFarTile = vTexScale * vFarTexTiling.z  //CPU pre-multiplied
-     outdata.Tex0b = indata.Pos0.xy * vYPlaneTexScaleAndFarTile.xz;
-#endif
+        outdata.Tex3 = (yPlaneTexCord*vDetailTex.x) + vDetailTex.y;
+        outdata.Tex0b = yPlaneTexCord * vFarTexTiling.z;
+        outdata.Tex2a = xPlaneTexCord.xy * vFarTexTiling.xy;
+        outdata.Tex2a.y += vFarTexTiling.w;
+        outdata.Tex2b = zPlaneTexCord.xy * vFarTexTiling.xy;
+        outdata.Tex2b.y += vFarTexTiling.w;
+    #else
+        //tl: vYPlaneTexScaleAndFarTile = vTexScale * vFarTexTiling.z  //CPU pre-multiplied
+        outdata.Tex0b = indata.Pos0.xy * vYPlaneTexScaleAndFarTile.xz;
+    #endif
 
-#if HIGHTERRAIN
-    outdata.BlendValueAndWater.xyz = saturate(abs(indata.Normal) - vBlendMod);
-    float tot = dot(1, outdata.BlendValueAndWater.xyz);
-    outdata.BlendValueAndWater.xyz /= tot;
-#else
-//	outdata.BlendValueAndWater.xyz = indata.Normal.y * indata.Normal.y;
-    outdata.BlendValueAndWater.xyz = pow(indata.Normal.y,8);
-#endif
+    #if HIGHTERRAIN
+        outdata.BlendValueAndWater.xyz = saturate(abs(indata.Normal) - vBlendMod);
+        float tot = dot(1, outdata.BlendValueAndWater.xyz);
+        outdata.BlendValueAndWater.xyz /= tot;
+    #else
+    //	outdata.BlendValueAndWater.xyz = indata.Normal.y * indata.Normal.y;
+        outdata.BlendValueAndWater.xyz = pow(indata.Normal.y,8);
+    #endif
 
     outdata.Tex1 = projToLighting(outdata.Pos);
-
     outdata.Fog = calcFog(outdata.Pos.w);
-
-//	outdata.Tex1 = interpVal;
-//	outdata.Tex1 = float4(vMorphDeltaAdder[indata.Pos0.z*256], 1) * 256*256;
-
     return outdata;
 }
 
@@ -338,11 +329,8 @@ float4 Shared_PS_DynamicShadowmap(Shared_VS2PS_DynamicShadowmap indata) : COLOR
         float avgShadowValue = tex2Dproj(sampler2PointClamp, indata.ShadowTex);
     #else
         float avgShadowValue = tex2Dproj(sampler2PointClamp, indata.ShadowTex) == 1.0;
-    //	float avgShadowValue = getShadowFactor(ShadowMapSampler, indata.ShadowTex);
-    //	float avgShadowValue = 0.5;
     #endif
     return  avgShadowValue.x;
-//	return  1-saturate(4-indata.Z.x)+avgShadowValue.x;
 }
 
 Shared_VS2PS_DynamicShadowmap Shared_VS_DynamicShadowmap(Shared_APP2VS_Default indata)
@@ -354,7 +342,7 @@ Shared_VS2PS_DynamicShadowmap Shared_VS_DynamicShadowmap(Shared_APP2VS_Default i
     //tl: Trans is always 0, and MADs cost more than MULs in certain cards.
     wPos.yw = indata.Pos1.xw * vScaleTransY.xy;
 
-     outdata.Pos = mul(wPos, mViewProj);
+    outdata.Pos = mul(wPos, mViewProj);
 
     outdata.ShadowTex = mul(wPos, mLightVP);
     outdata.ShadowTex.z = 0.999 * outdata.ShadowTex.w;
@@ -390,18 +378,18 @@ Shared_VS2PS_DirectionalLightShadows Shared_VS_DirectionalLightShadows(Shared_AP
     geoMorphPosition(wPos, indata.MorphDelta, indata.Pos0.z, yDelta, interpVal);
 
     //tl: output HPos as early as possible.
-     outdata.Pos = mul(wPos, mViewProj);
-
+    outdata.Pos = mul(wPos, mViewProj);
     outdata.ShadowTex = mul(wPos, mLightVP);
     float sZ = mul(wPos, mLightVPOrtho).z;
     outdata.Z.xy = outdata.ShadowTex.z;
-#if NVIDIA
-    outdata.ShadowTex.z = sZ * outdata.ShadowTex.w;
-#else
-    outdata.ShadowTex.z = sZ;
-#endif
 
-     outdata.Tex0 = (indata.Pos0.xy * ScaleBaseUV * vColorLightTex.x) + vColorLightTex.y;
+    #if NVIDIA
+        outdata.ShadowTex.z = sZ * outdata.ShadowTex.w;
+    #else
+        outdata.ShadowTex.z = sZ;
+    #endif
+
+    outdata.Tex0 = (indata.Pos0.xy * ScaleBaseUV * vColorLightTex.x) + vColorLightTex.y;
 
     return outdata;
 }
@@ -419,9 +407,9 @@ struct Shared_VS2PS_UnderWater
 
 float4 Shared_PS_UnderWater(Shared_VS2PS_UnderWater indata) : COLOR
 {
-#if DEBUGTERRAIN
-    return float4(1,1,0,1);
-#endif
+    #if DEBUGTERRAIN
+        return float4(1,1,0,1);
+    #endif
     //tl: use color interpolator instead of texcoord, it makes this shader much shorter!
     float4 fogWaterOutColor = lerp(FogColor, terrainWaterColor, indata.WaterAndFog.y);
     fogWaterOutColor.a = indata.WaterAndFog.x;
@@ -438,14 +426,13 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
     //tl: Trans is always 0, and MADs cost more than MULs in certain cards.
     wPos.yw = indata.Pos1.xw * vScaleTransY.xy;
 
-#if DEBUGTERRAIN
-    outdata.Pos = mul(wPos, mViewProj);
-    outdata.WaterAndFog = float4(0,0,0,0);
-    return outdata;
-#endif
+    #if DEBUGTERRAIN
+        outdata.Pos = mul(wPos, mViewProj);
+        outdata.WaterAndFog = float4(0,0,0,0);
+        return outdata;
+    #endif
 
     float yDelta, interpVal;
-//	geoMorphPosition(wPos, indata.MorphDelta, yDelta, interpVal);
     geoMorphPosition(wPos, indata.MorphDelta, indata.Pos0.z, yDelta, interpVal);
 
     //tl: output HPos as early as possible.
@@ -455,7 +442,6 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
     // - saturate is unneeded because color interpolators are clamped [0,1] before the pixel shader
     // - by pre-multiplying the waterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
      outdata.WaterAndFog.x = (wPos.y/-3.0) + waterHeight;
-// 	outdata.WaterAndFog.x = saturate((waterHeight*3 - wPos.y)/3.0f);
 
     outdata.WaterAndFog.yzw = calcFog(outdata.Pos.w);
 
@@ -473,9 +459,8 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
 
 
 
-//
+
 // Surrounding Terrain
-//
 
 struct Shared_APP2VS_STNormal
 {
@@ -503,19 +488,18 @@ Shared_VS2PS_STNormal Shared_VS_STNormal(Shared_APP2VS_STNormal indata)
 
     outdata.Pos.xz = mul(float4(indata.Pos0.xy,0,1), vSTTransXZ).xy;
     outdata.Pos.yw = (indata.Pos1.xw * vSTScaleTransY.xy) + vSTScaleTransY.zw;
-     outdata.ColorLightTex = (indata.TexCoord0*vSTColorLightTex.x) + vSTColorLightTex.y;
+    outdata.ColorLightTex = (indata.TexCoord0*vSTColorLightTex.x) + vSTColorLightTex.y;
     outdata.LowDetailTex = (indata.TexCoord0*vSTLowDetailTex.x) + vSTLowDetailTex.y;
 
-//	float3 tex = float3((indata.Pos0.y * vSTTexScale.z), -(((indata.Pos1.x) * vSTTexScale.y)) , (indata.Pos0.x * vSTTexScale.x));
     float3 tex = float3((outdata.Pos.z * vSTTexScale.z), -(((indata.Pos1.x) * vSTTexScale.y)) , (outdata.Pos.x * vSTTexScale.x));
     float2 xPlaneTexCord = tex.xy;
     float2 yPlaneTexCord = tex.zx;
     float2 zPlaneTexCord = tex.zy;
 
-     outdata.Pos = mul(outdata.Pos, mViewProj);
-     outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Pos = mul(outdata.Pos, mViewProj);
+    outdata.Fog = calcFog(outdata.Pos.w);
 
-     outdata.Tex1 = yPlaneTexCord * vSTFarTexTiling.z;
+    outdata.Tex1 = yPlaneTexCord * vSTFarTexTiling.z;
     outdata.Tex2.xy = xPlaneTexCord.xy * vSTFarTexTiling.xy;
     outdata.Tex2.y += vSTFarTexTiling.w;
     outdata.Tex3.xy = zPlaneTexCord.xy * vSTFarTexTiling.xy;
@@ -548,8 +532,8 @@ float4 Shared_PS_STNormal(Shared_VS2PS_STNormal indata) : COLOR
 
     float4 lowDetailmap = lerp(0.5, yplaneLowDetailmap.z, lowComponent.x);
     float mounten = (xplaneLowDetailmap.y * indata.BlendValue.x) +
-            (yplaneLowDetailmap.x * indata.BlendValue.y) +
-            (zplaneLowDetailmap.y * indata.BlendValue.z);
+                    (yplaneLowDetailmap.x * indata.BlendValue.y) +
+                    (zplaneLowDetailmap.y * indata.BlendValue.z);
     lowDetailmap *= lerp(0.5, mounten, lowComponent.z);
 
     float4 outColor = lowDetailmap * colormap * 4;
@@ -561,9 +545,8 @@ float4 Shared_PS_STNormal(Shared_VS2PS_STNormal indata) : COLOR
 
 
 
-//
+
 // Surrounding Terrain
-//
 
 technique Shared_SurroundingTerrain
 {
@@ -602,8 +585,8 @@ struct HI_VS2PS_OccluderShadow
 
 float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 {
-     float4 shadowcoords = mul(Pos, matTrap);
-     float lightZ = mul(Pos, matLight).z;
+    float4 shadowcoords = mul(Pos, matTrap);
+    float lightZ = mul(Pos, matLight).z;
     shadowcoords.z = lightZ*shadowcoords.w;
     return shadowcoords;
 }
@@ -611,23 +594,21 @@ float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 HI_VS2PS_OccluderShadow Hi_VS_OccluderShadow(HI_APP2VS_OccluderShadow indata)
 {
     HI_VS2PS_OccluderShadow outdata;
-
     float4 wPos;
     wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
     wPos.yw = indata.Pos1.xw * vScaleTransY.xy;
     outdata.Pos = calcShadowProjCoords(wPos, vpLightTrapezMat, vpLightMat);
     outdata.PosZX = outdata.Pos.zw;
-
-     return outdata;
+    return outdata;
 }
 
 float4 Hi_PS_OccluderShadow(HI_VS2PS_OccluderShadow indata) : COLOR
 {
-#if NVIDIA
-    return 0.5;
-#else
-    return indata.PosZX.x/indata.PosZX.y;
-#endif
+    #if NVIDIA
+        return 0.5;
+    #else
+        return indata.PosZX.x/indata.PosZX.y;
+    #endif
 }
 
 
@@ -643,11 +624,11 @@ technique TerrainOccludershadow
         AlphaTestEnable = FALSE;
         FogEnable = FALSE;
 
-#if NVIDIA
-        ColorWriteEnable = 0;
-#else
-        ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
-#endif
+        #if NVIDIA
+            ColorWriteEnable = 0;
+        #else
+            ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+        #endif
 
         VertexShader = compile vs_2_a Hi_VS_OccluderShadow();
         PixelShader = compile ps_2_a Hi_PS_OccluderShadow();

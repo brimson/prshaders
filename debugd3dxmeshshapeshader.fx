@@ -19,7 +19,7 @@ sampler sampler0 = sampler_state
 
 float TextureScale : TEXTURESCALE;
 
-float4 LhtDir = {1.0f, 0.0f, 0.0f, 1.0f};    //light Direction
+float4 LhtDir = {1.0f, 0.0f, 0.0f, 1.0f}; // light Direction
 float4 lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f}; // Light Diffuse
 float4 MaterialAmbient : MATERIALAMBIENT = {0.5f, 0.5f, 0.5f, 1.0f};
 float4 MaterialDiffuse : MATERIALDIFFUSE = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -109,10 +109,9 @@ VS2PS ED_VShader(APP2VS indata,
     tempPos.z += 0.5f;
     float radScale = lerp(ConeSkinValues.x, ConeSkinValues.y, tempPos.z);
     Pos.xy *= radScale;
-
     Pos = mul(Pos, world);
-    outdata.Pos = mul(Pos, mWorldViewProj);
 
+    outdata.Pos = mul(Pos, mWorldViewProj);
     outdata.Diffuse.xyz = materialAmbient.xyz;
     outdata.Diffuse.w = MaterialAmbient.a;
 
@@ -152,10 +151,10 @@ VS2PS_Grid VShader_Grid(APP2VS indata,
     outdata.Pos = mul(float4(Pos.xyz, 1.0f), wvp);
 
     // Lighting. Shade (Ambient + etc.)
-    outdata.Diffuse.xyz = materialAmbient.xyz + Diffuse(indata.Normal,lhtDir) * materialDiffuse.xyz;
+    outdata.Diffuse.xyz = materialAmbient.xyz + Diffuse(indata.Normal, lhtDir) * materialDiffuse.xyz;
     outdata.Diffuse.w = MaterialAmbient.a;
 
-    outdata.Tex = indata.Pos.xz*0.5 + 0.5;
+    outdata.Tex = indata.Pos.xz * 0.5 + 0.5;
     outdata.Tex *= textureScale;
 
     return outdata;
@@ -166,7 +165,7 @@ PS2FB PShader_Grid(VS2PS_Grid indata)
     PS2FB outdata;
     float4 tex = tex2D(sampler0, indata.Tex);
     outdata.Col.rgb = tex * indata.Diffuse;
-    outdata.Col.a = (1-tex.b);
+    outdata.Col.a = 1.0 - tex.b;
     return outdata;
 }
 
@@ -184,7 +183,7 @@ VS2PS OccVShader(APP2VS indata,
     float4 Pos;
     Pos = mul(indata.Pos, world);
     outdata.Pos = mul(Pos, wvp);
-    outdata.Diffuse = 1;
+    outdata.Diffuse = 1.0;
     return outdata;
 }
 
@@ -197,7 +196,6 @@ PS2FB PShaderMarked(VS2PS indata)
 {
     PS2FB outdata;
     outdata.Col = indata.Diffuse;
-
     return outdata;
 }
 

@@ -31,7 +31,6 @@ float2 ScreenSize : VIEWPORTSIZE = {800,600};
 float Glowness : GLOWNESS = 3.0;
 float Cutoff : cutoff = 0.8;
 
-
 struct APP2VS_Quad
 {
     float2 Pos       : POSITION0;
@@ -64,15 +63,16 @@ VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
     return outdata;
 }
 
-const float4 filterkernel[8] = {
--1.0, 1.0, 0, 0.125,
-0.0, 1.0, 0, 0.125,
-1.0, 1.0, 0, 0.125,
--1.0, 0.0, 0, 0.125,
-1.0, 0.0, 0, 0.125,
--1.0, -1.0, 0, 0.125,
-0.0, -1.0, 0, 0.125,
-1.0, -1.0, 0, 0.125,
+const float4 filterkernel[8] =
+{
+    -1.0,  1.0, 0.0, 0.125,
+     0.0,  1.0, 0.0, 0.125,
+     1.0,  1.0, 0.0, 0.125,
+    -1.0,  0.0, 0.0, 0.125,
+     1.0,  0.0, 0.0, 0.125,
+    -1.0, -1.0, 0.0, 0.125,
+     0.0, -1.0, 0.0, 0.125,
+     1.0, -1.0, 0.0, 0.125,
 };
 
 VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)
@@ -87,7 +87,7 @@ VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)
 PS2FB_Combine psDx9_Tinnitus(VS2PS_Quad2 indata)
 {
     PS2FB_Combine outdata;
-float4 blur = float4(0,0,0,0);
+    float4 blur = float4(0,0,0,0);
     for(int i=0;i<8;i++)
         blur += filterkernel[i].w * tex2D(sampler0bilin, float2(indata.TexCoord0.x + 0.02 * filterkernel[i].x, indata.TexCoord0.y + 0.02 * filterkernel[i].y));
     float4 color = tex2D(sampler0bilin, indata.TexCoord0);
@@ -119,7 +119,6 @@ technique Tinnitus
 
         VertexShader = compile vs_2_a vsDx9_Tinnitus();
         PixelShader = compile ps_2_a psDx9_Tinnitus();
-
     }
 }
 
@@ -131,7 +130,6 @@ float4 psDx9_Glow(VS2PS_Quad indata) : COLOR
 float4 psDx9_GlowMaterial(VS2PS_Quad indata) : COLOR
 {
     float4 diffuse =  tex2D(sampler0bilin, indata.TexCoord0);
-    //return (1-diffuse.a);
     return float4(diffuse.rgb*(1-diffuse.a),1);
 }
 
@@ -144,7 +142,6 @@ technique GlowMaterial
         SrcBlend = SRCCOLOR;
         DestBlend = ONE;
 
-
         StencilEnable = TRUE;
         StencilFunc = NOTEQUAL;
         StencilRef = 0x80;
@@ -152,8 +149,6 @@ technique GlowMaterial
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilPass = KEEP;
-
-
 
         VertexShader = compile vs_2_a vsDx9_OneTexcoord();
         PixelShader = compile ps_2_a psDx9_GlowMaterial();
@@ -172,7 +167,6 @@ technique Glow
         SrcBlend = SRCCOLOR;
         DestBlend = ONE;
 
-
         VertexShader = compile vs_2_a vsDx9_OneTexcoord();
         PixelShader = compile ps_2_a psDx9_Glow();
     }
@@ -183,7 +177,6 @@ float4 psDx9_Fog(VS2PS_Quad indata) : COLOR
     float3 wPos = tex2D(sampler0, indata.TexCoord0);
     float uvCoord =  saturate((wPos.zzzz-fogStartAndEnd.r)/fogStartAndEnd.g);//fogColorAndViewDistance.a);
     return saturate(float4(fogColor.rgb,uvCoord));
-    //float2 fogcoords = float2(uvCoord, 0.0);
     return tex2D(sampler1, float2(uvCoord, 0.0))*fogColor.rgbb;
 }
 
@@ -194,11 +187,8 @@ technique Fog
     {
         ZEnable = FALSE;
         AlphaBlendEnable = TRUE;
-        //SrcBlend = SRCCOLOR;
-        //DestBlend = ZERO;
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
-        //StencilEnable = FALSE;
 
         StencilEnable = TRUE;
         StencilFunc = NOTEQUAL;

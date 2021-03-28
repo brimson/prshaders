@@ -6,15 +6,13 @@
 float3	TerrainSunColor;
 float2	RoadFadeOut;
 float4	WorldSpaceCamPos;
-//float	RoadDepthBias;
-//float	RoadSlopeScaleDepthBias;
 
 float4	PosUnpack;
 float	TexUnpack;
 
 vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-//-----------VS/PS----
+// VS --- PS
 
 struct VS_OUTPUT
 {
@@ -42,13 +40,13 @@ sampler DetailMapSampler = sampler_state
 {
     Texture = (DetailMap);
     MipFilter = LINEAR;
-    MinFilter 		= FILTER_STM_DIFF_MIN;
-    MagFilter 		= FILTER_STM_DIFF_MAG;
-#ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
-#endif
-    AddressU  = WRAP;
-    AddressV  = WRAP;
+    MinFilter = FILTER_STM_DIFF_MIN;
+    MagFilter = FILTER_STM_DIFF_MAG;
+    #ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy = FILTER_STM_DIFF_MAX_ANISOTROPY;
+    #endif
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 texture	DiffuseMap;
@@ -56,45 +54,44 @@ sampler DiffuseMapSampler = sampler_state
 {
     Texture = (DiffuseMap);
     MipFilter = LINEAR;
-    MinFilter 		= FILTER_STM_DIFF_MIN;
-    MagFilter 		= FILTER_STM_DIFF_MAG;
-#ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
-#endif
-    AddressU  = WRAP;
-    AddressV  = WRAP;
+    MinFilter = FILTER_STM_DIFF_MIN;
+    MagFilter = FILTER_STM_DIFF_MAG;
+    #ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
+    #endif
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {
-     "PositionPacked",
-     "TBasePacked2D",
-     "TDetailPacked2D"
+    "PositionPacked",
+    "TBasePacked2D",
+    "TDetailPacked2D"
 };
 
 VS_OUTPUT basicVertexShader
 (
-float4 inPos: POSITION0,
-float2 tex0	: TEXCOORD0,
-float2 tex1	: TEXCOORD1
+    float4 inPos : POSITION0,
+    float2 tex0  : TEXCOORD0,
+    float2 tex1  : TEXCOORD1
 )
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
     float4 wPos = mul(inPos * PosUnpack, World);
-    wPos.y += .01;
+    wPos.y += 0.01;
 
-
-     Out.Pos	= mul(wPos, ViewProjection);
+    Out.Pos	= mul(wPos, ViewProjection);
     Out.Tex0.xy = tex0 * TexUnpack;
     Out.Tex1 = tex1 * TexUnpack;
 
     Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
-     Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
-     Out.lightTex.y = 1-Out.lightTex.y;
-     Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
+    Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
+    Out.lightTex.y = 1-Out.lightTex.y;
+    Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
     Out.lightTex.zw = Out.Pos.zw;
 
     float cameraDist = length(WorldSpaceCamPos - wPos);
@@ -104,23 +101,24 @@ float2 tex1	: TEXCOORD1
     return Out;
 }
 
-string GlobalParameters[] = {
+string GlobalParameters[] =
+{
     "FogRange",
     "FogColor",
     "ViewProjection",
     "TerrainSunColor",
     "RoadFadeOut",
     "WorldSpaceCamPos",
-//	"RoadDepthBias",
-//	"RoadSlopeScaleDepthBias"
 };
 
-string TemplateParameters[] = {
+string TemplateParameters[] =
+{
     "DiffuseMap",
     "DetailMap",
 };
 
-string InstanceParameters[] = {
+string InstanceParameters[] =
+{
     "World",
     "Transparency",
     "LightMap",
@@ -134,6 +132,7 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
     float4 light;
     float4 accumlights = tex2Dproj(LightMapSampler, VsOut.lightTex);
     float4 terrainColor = float4(TerrainSunColor,1);
+
     if (FogColor.r < 0.01)
     {
         // On thermals no shadows
@@ -146,6 +145,7 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
         light = ((accumlights.w * terrainColor * 2) + accumlights) * 2;
         color.rgb *= light.xyz;
     }
+
     color.a *= VsOut.ZFade;
 
     return color;
@@ -155,12 +155,12 @@ technique defaultTechnique
 {
     pass P0
     {
-        vertexShader	= compile vs_2_a basicVertexShader();
-        pixelShader		= compile ps_2_a basicPixelShader();
+        vertexShader = compile vs_2_a basicVertexShader();
+        pixelShader  = compile ps_2_a basicPixelShader();
 
-#ifdef ENABLE_WIREFRAME
-        FillMode		= WireFrame;
-#endif
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
 
         CullMode = CCW;
         AlphaBlendEnable = true;
@@ -173,8 +173,5 @@ technique defaultTechnique
         ZWriteEnable = false;
 
         fogenable = true;
-
-//		DepthBias = < RoadDepthBias >;
-//		SlopeScaleDepthBias = < RoadSlopeScaleDepthBias >;
     }
 }

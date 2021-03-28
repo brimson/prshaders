@@ -37,18 +37,18 @@ sampler CubeMapSampler = sampler_state
 texture	DiffuseMap;
 sampler DiffuseMapSampler = sampler_state
 {
-    Texture 		= (DiffuseMap);
-    MipFilter 		= LINEAR;
-    MinFilter 		= FILTER_BM_DIFF_MIN;
-    MagFilter 		= FILTER_BM_DIFF_MAG;
-#ifdef FILTER_BM_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_BM_DIFF_MAX_ANISOTROPY;
-#endif
-    AddressU  		= CLAMP;
-    AddressV  		= CLAMP;
+    Texture = (DiffuseMap);
+    MipFilter = LINEAR;
+    MinFilter = FILTER_BM_DIFF_MIN;
+    MagFilter = FILTER_BM_DIFF_MAG;
+    #ifdef FILTER_BM_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy = FILTER_BM_DIFF_MAX_ANISOTROPY;
+    #endif
+    AddressU = CLAMP;
+    AddressV = CLAMP;
 };
 
-texture	NormalMap;
+texture NormalMap;
 sampler NormalMapSampler = sampler_state
 {
     Texture = (NormalMap);
@@ -59,26 +59,26 @@ sampler NormalMapSampler = sampler_state
     AddressV  = CLAMP;
 };
 
-float4	ObjectSpaceCamPos;
-float4	WorldSpaceCamPos;
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
 
-bool	AlphaBlendEnable 	= false;
-int		AlphaTestRef		= 0;
-bool	DepthWrite			= 1;
-bool	DoubleSided			= 2;
+bool AlphaBlendEnable = false;
+int  AlphaTestRef     = 0;
+bool DepthWrite       = 1;
+bool DoubleSided      = 2;
 
-float4 	DiffuseColor;
-float4 	DiffuseColorAndAmbient;
-float4 	SpecularColor;
-float 	SpecularPower;
-float4	StaticGloss;
-float4 	Ambient;
+float4 DiffuseColor;
+float4 DiffuseColorAndAmbient;
+float4 SpecularColor;
+float  SpecularPower;
+float4 StaticGloss;
+float4 Ambient;
 
-float4	HemiMapSkyColor;
-float	InvHemiHeightScale	= 100;
-float	HeightOverTerrain = 0;
+float4 HemiMapSkyColor;
+float  InvHemiHeightScale = 100;
+float  HeightOverTerrain = 0;
 
-float	Reflectivity;
+float Reflectivity;
 
 float4x3 GeomBones[26];
 

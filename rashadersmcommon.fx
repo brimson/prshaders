@@ -1,6 +1,5 @@
 // common StaticMesh samplers
 
-
 // Fallback stuff
 string DeprecationList[] =
 {
@@ -59,23 +58,23 @@ sampler NormalMapSampler = sampler_state
     MipMapLodBias = 0;
 };
 
-float4	ObjectSpaceCamPos;
-float4	WorldSpaceCamPos;
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
 
-int		AlphaTestRef		= 0;
-bool	DepthWrite			= 1;
-bool	DoubleSided			= 2;
+int  AlphaTestRef = 0;
+bool DepthWrite   = 1;
+bool DoubleSided  = 2;
 
-float4 	DiffuseColor;
-float4 	SpecularColor;
-float 	SpecularPower;
-float	StaticGloss;
-float4 	Ambient;
+float4 DiffuseColor;
+float4 SpecularColor;
+float  SpecularPower;
+float  StaticGloss;
+float4 Ambient;
 
-float4	HemiMapSkyColor;
-float	HeightOverTerrain = 0;
+float4 HemiMapSkyColor;
+float  HeightOverTerrain = 0;
 
-float	Reflectivity;
+float Reflectivity;
 
 float4x3 MatBones[26];
 

@@ -1,20 +1,20 @@
 #line 2 "PortedMenuShader.fx"
 
 float4x4 mWorld : matWORLD;
-float4x4 mView : matVIEW;
-float4x4 mProj : matPROJ;
+float4x4 mView  : matVIEW;
+float4x4 mProj  : matPROJ;
 
-bool bAlphaBlend : ALPHABLEND		= false;
-dword dwSrcBlend : SRCBLEND		= D3DBLEND_INVSRCALPHA;
-dword dwDestBlend : DESTBLEND		= D3DBLEND_SRCALPHA;
+bool bAlphaBlend  : ALPHABLEND = false;
+dword dwSrcBlend  : SRCBLEND   = D3DBLEND_INVSRCALPHA;
+dword dwDestBlend : DESTBLEND  = D3DBLEND_SRCALPHA;
 
-bool bAlphaTest : ALPHATEST		= false;
-dword dwAlphaFunc : ALPHAFUNC		= D3DCMP_GREATER;
-dword dwAlphaRef : ALPHAREF		= 0;
+bool bAlphaTest   : ALPHATEST = false;
+dword dwAlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+dword dwAlphaRef  : ALPHAREF  = 0;
 
-dword dwZEnable : ZMODE			= D3DZB_TRUE;
-dword dwZFunc : ZFUNC			= D3DCMP_LESSEQUAL;
-bool bZWriteEnable : ZWRITEENABLE	= true;
+dword dwZEnable    : ZMODE        = D3DZB_TRUE;
+dword dwZFunc      : ZFUNC        = D3DCMP_LESSEQUAL;
+bool bZWriteEnable : ZWRITEENABLE = true;
 
 texture texture0: TEXLAYER0;
 texture texture1: TEXLAYER1;
@@ -42,13 +42,11 @@ struct VS2PS
 VS2PS vsFFP(APP2VS indata)
 {
     VS2PS outdata;
-
     float4x4 mWVP = mWorld * mView * mProj;
     outdata.Pos = mul(indata.Pos, mWVP);
     outdata.Col = indata.Col;
-     outdata.Tex = indata.Tex;
-     outdata.Tex2 = indata.Tex2;
-
+    outdata.Tex = indata.Tex;
+    outdata.Tex2 = indata.Tex2;
     return outdata;
 }
 
@@ -65,18 +63,15 @@ float4 psQuadWTexOneTex(VS2PS indata) : COLOR
 float4 psQuadWTexOneTexMasked(VS2PS indata) : COLOR
 {
     float4 outcol = indata.Col * tex2D(sampler0Clamp, indata.Tex);
-//	outcol *= tex2D(sampler1Clamp, indata.Tex2);
     outcol.a *= tex2D(sampler1Clamp, indata.Tex2).a;
     return outcol;
 }
 
-technique Menu{pass{}}
-technique Menu_States <bool Restore = true;> {
-    pass BeginStates {
-    }
-
-    pass EndStates {
-    }
+technique Menu{ pass{ } }
+technique Menu_States <bool Restore = true;>
+{
+    pass BeginStates { }
+    pass EndStates { }
 }
 
 technique QuadWithTexture

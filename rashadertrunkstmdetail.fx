@@ -51,47 +51,46 @@ sampler DiffuseMapSampler = sampler_state
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {
-     "PositionPacked",
-     "NormalPacked8",
+    "PositionPacked",
+    "NormalPacked8",
     "TBasePacked2D"
-#ifndef BASEDIFFUSEONLY
-    ,"TDetailPacked2D"
-#endif
+    #ifndef BASEDIFFUSEONLY
+        ,"TDetailPacked2D"
+    #endif
 };
 
 VS_OUTPUT basicVertexShader
 (
-    float4 inPos: POSITION0,
-    float3 normal: NORMAL,
-    float2 tex0	: TEXCOORD0
-#ifndef BASEDIFFUSEONLY
-    ,float2 tex1	: TEXCOORD1
-#endif
+    float4 inPos  : POSITION0,
+    float3 normal : NORMAL,
+    float2 tex0   : TEXCOORD0
+    #ifndef BASEDIFFUSEONLY
+        , float2 tex1 : TEXCOORD1
+    #endif
 )
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
     inPos *= PosUnpack;
-    Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
+    Out.Pos = mul(float4(inPos.xyz, 1), WorldViewProjection);
+    Out.Fog  = calcFog(Out.Pos.w);
+    Out.Tex0 = tex0 * TexUnpack;
 
-    Out.Fog		= calcFog(Out.Pos.w);
-    Out.Tex0	= tex0 * TexUnpack;
-#ifndef BASEDIFFUSEONLY
-    Out.Tex1	= tex1 * TexUnpack;
-#endif
+    #ifndef BASEDIFFUSEONLY
+        Out.Tex1	= tex1 * TexUnpack;
+    #endif
 
-      normal = normal * NormalUnpack.x + NormalUnpack.y;
+    normal = normal * NormalUnpack.x + NormalUnpack.y;
 
-    //float LdotN	= saturate( (dot(normal, -Lights[0].dir ) + 0.6 ) / 1.4 );
     float LdotN	= saturate( dot(normal, -Lights[0].dir ));
     Out.Color.rgb = Lights[0].color * LdotN;
     Out.Color.a = Transparency;
 
-#if _HASSHADOW_
-    Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1));
-#else
-    Out.Color.rgb += OverGrowthAmbient;
-#endif
+    #if _HASSHADOW_
+        Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1));
+    #else
+        Out.Color.rgb += OverGrowthAmbient;
+    #endif
 
     Out.Color = Out.Color * 0.5;
 
@@ -101,16 +100,17 @@ VS_OUTPUT basicVertexShader
 float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
 {
     float3 vertexColor = VsOut.Color;
-#ifdef BASEDIFFUSEONLY
-    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
-#else
-    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * tex2D(DetailMapSampler, VsOut.Tex1);
-#endif
 
-#if _HASSHADOW_
-    vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
-    vertexColor.rgb += OverGrowthAmbient/2;
-#endif
+    #ifdef BASEDIFFUSEONLY
+        float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
+    #else
+        float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * tex2D(DetailMapSampler, VsOut.Tex1);
+    #endif
+
+    #if _HASSHADOW_
+        vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
+        vertexColor.rgb += OverGrowthAmbient/2;
+    #endif
 
     //tl: use compressed color register to avoid this being compiled as a 2.0 shader.
     return float4(vertexColor.rgb * diffuseMap * 4, VsOut.Color.a * 2);
@@ -118,9 +118,9 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
 
 string GlobalParameters[] =
 {
-#if _HASSHADOW_
-    "ShadowMap",
-#endif
+    #if _HASSHADOW_
+        "ShadowMap",
+    #endif
     "FogRange",
     "FogColor"
 };
@@ -131,17 +131,17 @@ string TemplateParameters[] =
     "NormalUnpack",
     "TexUnpack",
     "DiffuseMap"
-#ifndef BASEDIFFUSEONLY
-    ,"DetailMap"
-#endif
+    #ifndef BASEDIFFUSEONLY
+        , "DetailMap"
+    #endif
 };
 
 string InstanceParameters[] =
 {
-#if _HASSHADOW_
-    "ShadowProjMat",
-    "ShadowTrapMat",
-#endif
+    #if _HASSHADOW_
+        "ShadowProjMat",
+        "ShadowTrapMat",
+    #endif
     "WorldViewProjection",
     "Transparency",
     "Lights",
@@ -152,15 +152,15 @@ technique defaultTechnique
 {
     pass P0
     {
-        vertexShader		= compile vs_2_a basicVertexShader();
+        vertexShader = compile vs_2_a basicVertexShader();
         TextureTransFormFlags[2] = PROJECTED;
-        pixelShader			= compile ps_2_a basicPixelShader();
+        pixelShader = compile ps_2_a basicPixelShader();
 
-#ifdef ENABLE_WIREFRAME
-        FillMode			= WireFrame;
-#endif
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
         AlphaTestEnable = < AlphaTest >;
-        AlphaRef		= 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
-        fogenable		= true;
+        AlphaRef        = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
+        fogenable       = true;
     }
 }

@@ -11,7 +11,7 @@ uniform texture texture1: Texture1;
 uniform float4x4 viewMat : ViewMat;
 uniform float4x4 projMat : ProjMat;
 
-uniform float uvScale = 1.0f/sqrt(2.0f);
+uniform float uvScale = rsqrt(2.0f);
 uniform float4 hemiMapInfo : HemiMapInfo;
 uniform float hemiShadowAltitude : HemiShadowAltitude;
 uniform float alphaPixelTestRef : AlphaPixelTestRef = 0;

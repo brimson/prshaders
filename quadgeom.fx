@@ -16,14 +16,12 @@ struct VS2PS
 VS2PS vsFFP(APP2VS indata)
 {
     VS2PS outdata;
-
     outdata.Pos.x = indata.Pos.x;
     outdata.Pos.y = indata.Pos.y;
     outdata.Pos.z = 0.f;
     outdata.Pos.w = 1.0f;
-     outdata.Tex.x = 0.5f * (indata.Pos.x + 1.0f);
-     outdata.Tex.y = 1.0f - (0.5f * (indata.Pos.y + 1.0f));
-
+    outdata.Tex.x = 0.5f * (indata.Pos.x + 1.0f);
+    outdata.Tex.y = 1.0f - (0.5f * (indata.Pos.y + 1.0f));
     return outdata;
 }
 
@@ -51,12 +49,6 @@ technique TexturedQuad
         StencilFunc = EQUAL;
         StencilPass = ZERO;
         StencilRef = 0;
-
-//		StencilEnable = FALSE;
-//		StencilFunc = ALWAYS;
-//		StencilPass = ZERO;
-//		StencilRef = 0;
-
 
         // App pixel settings
         ColorOp[0] = SELECTARG2;

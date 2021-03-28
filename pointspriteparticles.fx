@@ -74,11 +74,11 @@ struct VS_POINTSPRITE_OUTPUT
 VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input, uniform float4x4 myWVP, uniform TemplateParameters templ[10], uniform float scale, uniform float myHeightmapSize)
 {
     VS_POINTSPRITE_OUTPUT Out;
-     Out.HPos = mul(float4(input.pos.xyz, 1.0f), myWVP);
+    Out.HPos = mul(float4(input.pos.xyz, 1.0f), myWVP);
     Out.texCoords.xy = 0;
 
     // hemi lookup coords
-     Out.texCoords1 = (input.pos.xyz + (myHeightmapSize/2)).xz / myHeightmapSize;
+    Out.texCoords1 = (input.pos.xyz + (myHeightmapSize/2)).xz / myHeightmapSize;
 
 
     // Compute Cubic polynomial factors.
@@ -148,13 +148,8 @@ technique PointSprite
 
         PointSpriteEnable = TRUE;
         PointScaleEnable = TRUE;
-        //ColorArg1[0] = DIFFUSE;
-        //ColorArg2[0] = TEXTURE;
-        //ColorOp[0] = MODULATE;
 
-        //PointSpriteScaleEnable = TRUE;
-
-         VertexShader = compile vs_2_a vsPointSprite(wvpMat, tParameters, baseSize, heightmapSize);
+        VertexShader = compile vs_2_a vsPointSprite(wvpMat, tParameters, baseSize, heightmapSize);
         PixelShader = compile ps_2_a psPointSprite();
     }
 }

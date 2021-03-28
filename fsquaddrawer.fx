@@ -1,12 +1,9 @@
 texture texture0 : TEXLAYER0;
 texture texture1 : TEXLAYER1;
-//texture texture2 : TEXLAYER2;
-//texture texture3 : TEXLAYER3;
 
 sampler sampler0point = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
 sampler sampler1point = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
-//sampler sampler2 = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
-//sampler sampler3 = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
+
 sampler sampler0bilin = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; };
 sampler sampler0aniso = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = ANISOTROPIC; MagFilter = ANISOTROPIC; MaxAnisotropy = 8; };
 
@@ -37,7 +34,6 @@ float bloomHorizOffsets[5] : BLOOMHORIZOFFSETS;
 float bloomVertOffsets[5] : BLOOMVERTOFFSETS;
 
 float highPassGate : HIGHPASSGATE; // 3d optics blur; xxxx.yyyy; x - aspect ratio(H/V), y - blur amount(0=no blur, 0.9=full blur)
-
 float blurStrength : BLURSTRENGTH; // 3d optics blur; xxxx.yyyy; x - inner radius, y - outer radius
 
 float2 texelSize : TEXELSIZE;
@@ -83,16 +79,16 @@ struct VS2PS_5SampleFilter14
 VS2PS_blit vsDx9_blit(APP2VS_blit indata)
 {
     VS2PS_blit outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-     outdata.TexCoord0 = indata.TexCoord0;
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 
 VS2PS_blit vsDx9_blitCustom(APP2VS_blit indata)
 {
     VS2PS_blit outdata;
-     outdata.Pos = mul(float4(indata.Pos.x, indata.Pos.y, 0, 1), customMtx);
-     outdata.TexCoord0 = indata.TexCoord0;
+    outdata.Pos = mul(float4(indata.Pos.x, indata.Pos.y, 0, 1), customMtx);
+    outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 
@@ -110,12 +106,12 @@ VS2PS_tr_blit vsDx9_tr_blit(APP2VS_blit indata) // TODO: implement support for o
     return outdata;
 }
 
-const float tr_gauss[9] = {0.087544737,0.085811235,0.080813978,0.073123511,0.063570527,0.053098567,0.042612598,0.032856512,0.024340702};
+const float tr_gauss[9] = { 0.087544737, 0.085811235, 0.080813978, 0.073123511, 0.063570527, 0.053098567, 0.042612598, 0.032856512, 0.024340702 };
 
 float4 psDx9_tr_opticsBlurH(VS2PS_tr_blit indata) : COLOR
 {
     float1 aspectRatio = highPassGate/1000.f; // floor() isn't used for perfomance reasons
-    float1 blurSize = 0.0033333333/aspectRatio;
+    float1 blurSize = 0.0033333333 / aspectRatio;
     float4 color = tex2D(sampler0point, indata.TexCoord0)*tr_gauss[0];
     for (int i=1;i<9;i++)
     {
@@ -139,7 +135,7 @@ float4 psDx9_tr_opticsBlurV(VS2PS_tr_blit indata) : COLOR
 
 float4 psDx9_tr_opticsNoBlurCircle(VS2PS_tr_blit indata) : COLOR
 {
-   float1 aspectRatio = highPassGate/1000.f; // aspect ratio (1.333 for 4:3) (floor() isn't used for perfomance reasons)
+   float1 aspectRatio = highPassGate / 1000.f; // aspect ratio (1.333 for 4:3) (floor() isn't used for perfomance reasons)
    float1 blurAmountMod = frac(highPassGate)/0.9; // used for the fade-in effect
    float1 radius1 = blurStrength/1000.f; // 0.2 by default (floor() isn't used for perfomance reasons)
    float1 radius2 = frac(blurStrength); // 0.25 by default
@@ -165,20 +161,20 @@ float4 ps_dummy() : COLOR
 VS2PS_blit_ vsDx9_blitMagnified(APP2VS_blit indata)
 {
     VS2PS_blit_ outdata;
-     outdata.Pos = float4(indata.Pos.x*1.1, indata.Pos.y*1.1, 0, 1);
-     outdata.TexCoord0 = indata.TexCoord0;
+    outdata.Pos = float4(indata.Pos.x*1.1, indata.Pos.y*1.1, 0, 1);
+    outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 
 VS2PS_4TapFilter vsDx9_4TapFilter(APP2VS_blit indata, uniform float4 offsets[4])
 {
     VS2PS_4TapFilter outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
 
-     for (int i = 0; i < 4; ++i)
-     {
-         outdata.FilterCoords[i] = indata.TexCoord0 + offsets[i].xy;
-     }
+    for (int i = 0; i < 4; ++i)
+    {
+        outdata.FilterCoords[i] = indata.TexCoord0 + offsets[i].xy;
+    }
 
     return outdata;
 }
@@ -186,7 +182,7 @@ VS2PS_4TapFilter vsDx9_4TapFilter(APP2VS_blit indata, uniform float4 offsets[4])
 VS2PS_5SampleFilter vsDx9_5SampleFilter(APP2VS_blit indata, uniform float offsets[5], uniform bool horizontal)
 {
     VS2PS_5SampleFilter outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
 
     if(horizontal)
     {
@@ -201,13 +197,13 @@ VS2PS_5SampleFilter vsDx9_5SampleFilter(APP2VS_blit indata, uniform float offset
     {
         if(horizontal)
         {
-            outdata.FilterCoords[i].xy = indata.TexCoord0.xy + float2(offsets[i*2],0);
-            outdata.FilterCoords[i].zw = indata.TexCoord0.xy + float2(offsets[i*2+1],0);
+            outdata.FilterCoords[i].xy = indata.TexCoord0.xy + float2(offsets[i*2], 0);
+            outdata.FilterCoords[i].zw = indata.TexCoord0.xy + float2(offsets[i*2+1], 0);
         }
         else
         {
-            outdata.FilterCoords[i].xy = indata.TexCoord0.xy + float2(0,offsets[i*2]);
-            outdata.FilterCoords[i].zw = indata.TexCoord0.xy + float2(0,offsets[i*2+1]);
+            outdata.FilterCoords[i].xy = indata.TexCoord0.xy + float2(0, offsets[i*2]);
+            outdata.FilterCoords[i].zw = indata.TexCoord0.xy + float2(0, offsets[i*2+1]);
         }
     }
 
@@ -217,7 +213,7 @@ VS2PS_5SampleFilter vsDx9_5SampleFilter(APP2VS_blit indata, uniform float offset
 VS2PS_5SampleFilter14 vsDx9_5SampleFilter14(APP2VS_blit indata, uniform float offsets[5], uniform bool horizontal)
 {
     VS2PS_5SampleFilter14 outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
 
     for(int i=0; i<5; ++i)
     {
@@ -236,7 +232,7 @@ VS2PS_5SampleFilter14 vsDx9_5SampleFilter14(APP2VS_blit indata, uniform float of
 
 struct VS2PS_Down4x4Filter14
 {
-    float4 Pos      : POSITION;
+    float4 Pos       : POSITION;
     float2 TexCoord0 : TEXCOORD0;
     float2 TexCoord1 : TEXCOORD1;
     float2 TexCoord2 : TEXCOORD2;
@@ -246,11 +242,11 @@ struct VS2PS_Down4x4Filter14
 VS2PS_Down4x4Filter14 vsDx9_Down4x4Filter14(APP2VS_blit indata)
 {
     VS2PS_Down4x4Filter14 outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-     outdata.TexCoord0 = indata.TexCoord0 + scaleDown4x4SampleOffsets[0];
-     outdata.TexCoord1 = indata.TexCoord0 + scaleDown4x4SampleOffsets[4]*2;
-     outdata.TexCoord2 = indata.TexCoord0 + scaleDown4x4SampleOffsets[8]*2;
-     outdata.TexCoord3 = indata.TexCoord0 + scaleDown4x4SampleOffsets[12]*2;
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.TexCoord0 = indata.TexCoord0 + scaleDown4x4SampleOffsets[0];
+    outdata.TexCoord1 = indata.TexCoord0 + scaleDown4x4SampleOffsets[4]*2;
+    outdata.TexCoord2 = indata.TexCoord0 + scaleDown4x4SampleOffsets[8]*2;
+    outdata.TexCoord3 = indata.TexCoord0 + scaleDown4x4SampleOffsets[12]*2;
     return outdata;
 }
 
@@ -270,7 +266,6 @@ float4 psDx9_FSBMPassThroughSaturateAlpha(VS2PS_blit indata) : COLOR
     color.a = 1.f;
     return color;
 }
-
 
 float4 psDx9_FSBMCopyOtherRGBToAlpha(VS2PS_blit indata) : COLOR
 {
@@ -294,8 +289,7 @@ float4 psDx9_FSBMConvertPosTo8Bit(VS2PS_blit indata) : COLOR
 
 float4 psDx9_FSBMConvertNormalTo8Bit(VS2PS_blit indata) : COLOR
 {
-    return normalize(tex2D(sampler0point, indata.TexCoord0)) / 2 + 0.5;
-    //return tex2D(sampler0point, indata.TexCoord0).a;
+    return normalize(tex2D(sampler0point, indata.TexCoord0)) * 0.5 + 0.5;
 }
 
 float4 psDx9_FSBMConvertShadowMapFrontTo8Bit(VS2PS_blit indata) : COLOR
@@ -317,11 +311,10 @@ float4 psDx9_FSBMScaleUp4x4LinearFilter(VS2PS_blit indata) : COLOR
 float4 psDx9_FSBMScaleDown2x2Filter(VS2PS_blit indata) : COLOR
 {
     float4 accum;
-    accum = tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[0]);
+    accum  = tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[0]);
     accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[1]);
     accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[2]);
     accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[3]);
-
     return accum * 0.25; // div 4
 }
 
@@ -342,19 +335,17 @@ float4 psDx9_FSBMScaleDown4x4Filter14(VS2PS_Down4x4Filter14 indata) : COLOR
     accum += tex2D(sampler0bilin, indata.TexCoord1);
     accum += tex2D(sampler0bilin, indata.TexCoord2);
     accum += tex2D(sampler0bilin, indata.TexCoord3);
-
     return accum * 0.25; // div 4
 }
 
 float4 psDx9_FSBMScaleDown4x4LinearFilter(VS2PS_4TapFilter indata) : COLOR
 {
-    float4 accum = float4(0,0,0,0);
+    float4 accum;
     accum = tex2D(sampler0bilin, indata.FilterCoords[0].xy);
     accum += tex2D(sampler0bilin, indata.FilterCoords[1].xy);
     accum += tex2D(sampler0bilin, indata.FilterCoords[2].xy);
     accum += tex2D(sampler0bilin, indata.FilterCoords[3].xy);
-
-    return accum/4;
+    return accum * 0.25;
 }
 
 float4 psDx9_FSBMGaussianBlur5x5CheapFilter(VS2PS_blit indata) : COLOR
@@ -426,7 +417,6 @@ float4 psDx9_FSBMGrowablePoisson13Filter(VS2PS_blit indata) : COLOR
     accum = tex2D(sampler0point, indata.TexCoord0);
     for(int tap = 0; tap < 11; ++tap)
     {
-//		float4 v = tex2D(sampler0point, indata.TexCoord0 + growablePoisson13SampleOffsets[tap]*1);
         float4 v = tex2D(sampler0point, indata.TexCoord0 + growablePoisson13SampleOffsets[tap]*0.1*accum.a);
         if(v.a > 0)
         {
@@ -435,15 +425,14 @@ float4 psDx9_FSBMGrowablePoisson13Filter(VS2PS_blit indata) : COLOR
         }
     }
 
-//return tex2D(sampler0point, indata.TexCoord0);
     return accum / samples;
 }
 
 float4 psDx9_FSBMGrowablePoisson13AndDilationFilter(VS2PS_blit indata) : COLOR
 {
     float4 center = tex2D(sampler0point, indata.TexCoord0);
-
     float4 accum = 0;
+
     if(center.a > 0)
     {
         accum.rgb = center;
@@ -463,14 +452,7 @@ float4 psDx9_FSBMGrowablePoisson13AndDilationFilter(VS2PS_blit indata) : COLOR
         }
     }
 
-//	if(center.a == 0)
-//	{
-//		accum.gb = center.gb;
-//		accum.r / accum.a;
-//		return accum;
-//	}
-//	else
-        return accum / accum.a;
+    return accum / accum.a;
 }
 
 float4 psDx9_FSBMGlowFilter(VS2PS_5SampleFilter indata, uniform float weights[5], uniform bool horizontal) : COLOR
@@ -480,7 +462,6 @@ float4 psDx9_FSBMGlowFilter(VS2PS_5SampleFilter indata, uniform float weights[5]
     color += weights[2] * tex2D(sampler0bilin, indata.FilterCoords[1].xy);
     color += weights[3] * tex2D(sampler0bilin, indata.FilterCoords[1].zw);
     color += weights[4] * tex2D(sampler0bilin, indata.TexCoord0);
-
     return color;
 }
 
@@ -491,26 +472,21 @@ float4 psDx9_FSBMGlowFilter14(VS2PS_5SampleFilter14 indata, uniform float weight
     color += weights[2] * tex2D(sampler0bilin, indata.FilterCoords[2].xy);
     color += weights[3] * tex2D(sampler0bilin, indata.FilterCoords[3].xy);
     color += weights[4] * tex2D(sampler0bilin, indata.FilterCoords[4].xy);
-
     return color;
 }
 
 float4 psDx9_FSBMHighPassFilter(VS2PS_blit indata) : COLOR
 {
     float4 color = tex2D(sampler0point, indata.TexCoord0);
-
     color -= highPassGate;
-
     return max(color,0);
 }
 
 float4 psDx9_FSBMHighPassFilterFade(VS2PS_blit indata) : COLOR
 {
     float4 color = tex2D(sampler0point, indata.TexCoord0);
-
     color.rgb = saturate(color.rgb - highPassGate);
     color.a = blurStrength;
-
     return color;
 }
 
@@ -522,20 +498,16 @@ float4 psDx9_FSBMClear(VS2PS_blit_ indata) : COLOR
 float4 psDx9_FSBMExtractGlowFilter(VS2PS_blit indata) : COLOR
 {
     float4 color = tex2D(sampler0point, indata.TexCoord0);
-
     color.rgb = color.a;
     color.a = 1;
-
     return color;
 }
 
 float4 psDx9_FSBMExtractHDRFilterFade(VS2PS_blit indata) : COLOR
 {
     float4 color = tex2D(sampler0point, indata.TexCoord0);
-
     color.rgb = saturate(color.a - highPassGate);
     color.a = blurStrength;
-
     return color;
 }
 
@@ -587,29 +559,7 @@ float4 psDx9_FSBMBloomFilter14(VS2PS_5SampleFilter14 indata, uniform bool is_blu
 float4 psDx9_FSBMScaleUpBloomFilter(VS2PS_blit indata) : COLOR
 {
     float offSet = 0.01;
-
     float4 close = tex2D(sampler0point, indata.TexCoord0);
-/*
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x - offSet*4.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x - offSet*3.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x - offSet*2.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x - offSet*1.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x + offSet*1.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x + offSet*2.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x + offSet*3.5), indata.TexCoord0.y));
-    close += tex2D(sampler0bilin, float2((indata.TexCoord0.x + offSet*4.5), indata.TexCoord0.y));
-
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y - offSet*4.5));
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y - offSet*3.5));
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y - offSet*2.5));
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y - offSet*1.5));
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y + offSet*1.5));
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y + offSet*2.5));
-    close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y + offSet*3.5));
-    //close += tex2D(sampler0bilin, float2(indata.TexCoord0.x, indata.TexCoord0.y + offSet*4.5));
-
-    return close / 16;
-*/
     return close;
 }
 
@@ -618,9 +568,7 @@ float4 psDx9_FSBMBlur(VS2PS_blit indata) : COLOR
     return float4( tex2D(sampler0point, indata.TexCoord0).rgb, blurStrength );
 }
 
-//
 //	Techniques
-//
 
 technique Blit
 {
@@ -794,19 +742,6 @@ technique Blit
 
     pass FSBMPassThroughBilinearAdditive
     {
-/* 		ZEnable = FALSE;
-        AlphaBlendEnable = TRUE;
-        SrcBlend = ONE;
-        DestBlend = ONE;
-        StencilEnable = FALSE;
-        AlphaTestEnable = FALSE; */
-        //VertexShader = compile vs_2_a vsDx9_blit();
-        //PixelShader = compile ps_2_a psDx9_FSBMPassThroughBilinear();
-
-          /*ZEnable = FALSE;
-        AlphaBlendEnable = FALSE;
-        StencilEnable = FALSE;
-        AlphaTestEnable = FALSE;*/
         ZEnable = FALSE;
         AlphaBlendEnable = TRUE;
         SrcBlend = ZERO;

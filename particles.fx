@@ -92,10 +92,10 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
 
     // hemi lookup coords
     Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-     Out.texCoords2.y = 1 - Out.texCoords2.y;
+    Out.texCoords2.y = 1 - Out.texCoords2.y;
 
-     Out.lightFactorAndAlphaBlend.a = templ[input.ageFactorAndGraphIndex.y].m_color1AndLightFactor.a;
-     Out.Fog = calcFog(Out.HPos.w);
+    Out.lightFactorAndAlphaBlend.a = templ[input.ageFactorAndGraphIndex.y].m_color1AndLightFactor.a;
+    Out.Fog = calcFog(Out.HPos.w);
 
     return Out;
 }
@@ -107,31 +107,30 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
 
 float4 psParticle(VS_PARTICLE_OUTPUT input) : COLOR
 {
-
     float4 tDiffuse = tex2D( diffuseSampler, input.texCoords0);
-#ifndef LOW
-    float4 tDiffuse2 = tex2D( diffuseSampler2, input.texCoords1);
-#endif
 
-#ifdef HIGH
-    float4 tLut = tex2D( lutSampler, input.texCoords2.xy);
-#else
-    float4 tLut = 1;
-#endif
+    #ifndef LOW
+        float4 tDiffuse2 = tex2D( diffuseSampler2, input.texCoords1);
+    #endif
 
-#ifndef LOW
-    float4 color = lerp(tDiffuse, tDiffuse2, input.animBFactorAndLMapIntOffset.a);
-    color.rgb *=  calcParticleLighting(tLut.a, input.animBFactorAndLMapIntOffset.b, input.lightFactorAndAlphaBlend.a);
-#else
-    float4 color = tDiffuse;
-#endif
+    #ifdef HIGH
+        float4 tLut = tex2D( lutSampler, input.texCoords2.xy);
+    #else
+        float4 tLut = 1;
+    #endif
+
+    #ifndef LOW
+        float4 color = lerp(tDiffuse, tDiffuse2, input.animBFactorAndLMapIntOffset.a);
+        color.rgb *=  calcParticleLighting(tLut.a, input.animBFactorAndLMapIntOffset.b, input.lightFactorAndAlphaBlend.a);
+    #else
+        float4 color = tDiffuse;
+    #endif
+
     color.rgb *= 2*input.color.rgb;
-
-
     color.a *= input.lightFactorAndAlphaBlend.b;
 
     // use me if we decide to sort by blendMode
-    //color.rgb *= color.a;
+    // color.rgb *= color.a;
 
     return color;
 }
@@ -139,10 +138,8 @@ float4 psParticle(VS_PARTICLE_OUTPUT input) : COLOR
 float4 psParticleLow(VS_PARTICLE_OUTPUT input) : COLOR
 {
     float4 color = tex2D( diffuseSampler, input.texCoords0);
-    //color.rgb *= 2*input.color.rgb; // M (before)
-    color.rgb *= 2*input.color.rgb*effectSunColor; // M
+    color.rgb *= 2*input.color.rgb*effectSunColor;
     color.a *= input.lightFactorAndAlphaBlend.b;
-
     return color;
 }
 
@@ -206,10 +203,7 @@ float4 psParticleAdditiveHigh(VS_PARTICLE_OUTPUT input) : COLOR
 }
 
 
-
-//
 // Ordinary techniques
-//
 technique ParticleLow
 <
 >
@@ -227,7 +221,7 @@ technique ParticleLow
         AlphaRef = <alphaPixelTestRef>;
         AlphaBlendEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
+        VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleLow();
     }
 }
@@ -249,7 +243,7 @@ technique ParticleMedium
         AlphaRef = <alphaPixelTestRef>;
         AlphaBlendEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
+        VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleMedium();
     }
 }
@@ -271,7 +265,7 @@ technique ParticleHigh
         AlphaRef = <alphaPixelTestRef>;
         AlphaBlendEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
+        VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleHigh();
     }
 }
@@ -295,15 +289,12 @@ technique ParticleShowFill
         SrcBlend = ONE;
         DestBlend = ONE;
 
-         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
+        VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleShowFill();
     }
 }
 
-
-//
 // Ordinary technique
-//
 technique AdditiveLow
 <
 >
@@ -324,7 +315,7 @@ technique AdditiveLow
         DestBlend = ONE;
         FogEnable = FALSE;
 
-         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
+        VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleAdditiveLow();
     }
 }
@@ -348,7 +339,7 @@ technique AdditiveHigh
         DestBlend = ONE;
         FogEnable = FALSE;
 
-         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
+        VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleAdditiveHigh();
     }
 }

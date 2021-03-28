@@ -22,7 +22,7 @@ sampler DiffuseMapSampler = sampler_state
     MipMapLodBias = 0;
 };
 
-//-----------VS/PS----
+// VS - PS
 
 struct VS_OUTPUT
 {
@@ -51,9 +51,9 @@ float4 blendIndices : BLENDINDICES
     int4 indexVector = D3DCOLORtoUBYTE4(blendIndices);
     int indexArray[4] = (int[4])indexVector;
 
-    Out.Pos		= mul(float4(inPos, 1), mul(Bones[indexArray[0]], ViewProjection));
-    Out.Fog		= calcFog(Out.Pos.w);
-    Out.Tex		= tex0;
+    Out.Pos = mul(float4(inPos, 1), mul(Bones[indexArray[0]], ViewProjection));
+    Out.Fog = calcFog(Out.Pos.w);
+    Out.Tex = tex0;
 
     return Out;
 }
@@ -79,17 +79,17 @@ technique defaultTechnique
 {
     pass P0
     {
-        vertexShader	= compile vs_2_a basicVertexShader();
-        pixelShader		= compile ps_2_a PixelShader();
+        vertexShader = compile vs_2_a basicVertexShader();
+        pixelShader  = compile ps_2_a PixelShader();
 
-#ifdef ENABLE_WIREFRAME
-        FillMode		= WireFrame;
-#endif
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
 
-        AlphaTestEnable = < AlphaTest >;
-        AlphaBlendEnable= < AlphaBlendEnable >;
-        AlphaRef		= < alphaRef >;
-        SrcBlend		= < srcBlend >;
-        DestBlend		= < destBlend >;
+        AlphaTestEnable  = < AlphaTest >;
+        AlphaBlendEnable = < AlphaBlendEnable >;
+        AlphaRef         = < alphaRef >;
+        SrcBlend         = < srcBlend >;
+        DestBlend        = < destBlend >;
     }
 }

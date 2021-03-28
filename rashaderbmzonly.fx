@@ -1,21 +1,21 @@
-//
+
 // ZOnlyShader
-//
 
-
-string reqVertexElement[] = {
+string reqVertexElement[] =
+{
     "PositionPacked",
     "NormalPacked8",
     "Bone4Idcs",
     "TBasePacked2D"
 };
 
-string GlobalParameters[] = {
+string GlobalParameters[] =
+{
     "ViewProjection",
 };
 
-
-string InstanceParameters[] = {
+string InstanceParameters[] =
+{
     "World",
     "AlphaBlendEnable",
     "DepthWrite",
@@ -67,9 +67,7 @@ float4 getWorldPos(BMVariableVSInput input)
 BMVariableVSOutput vs(BMVariableVSInput input)
 {
     BMVariableVSOutput Out = (BMVariableVSOutput)0;
-
     Out.HPos = mul(getWorldPos(input), ViewProjection);	// output HPOS
-
     return Out;
 }
 
@@ -77,14 +75,14 @@ technique Variable
 {
     pass p0
     {
-        VertexShader	= compile vs_2_a vs();
-        PixelShader		= NULL;
+        VertexShader = compile vs_2_a vs();
+        PixelShader  = NULL;
 
         AlphaBlendEnable = FALSE;
-        AlphaTestEnable = FALSE;
-        ZWriteEnable = TRUE;
-        ZFunc = LESSEQUAL;
+        AlphaTestEnable  = FALSE;
+        ZWriteEnable     = TRUE;
+        ZFunc            = LESSEQUAL;
         ColorWriteEnable = 0;
-        CullMode		= CCW;
+        CullMode         = CCW;
     }
 }

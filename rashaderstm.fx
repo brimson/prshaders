@@ -9,7 +9,6 @@
 // if we want to run the same path on 1_4 we should disable this.
 #define _USERENORMALIZEDTEXTURES_ 	1
 #define _USESPECULAR_  1
-//#define USEVERTEXSPECULAR 1
 
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSTMCommon.fx"
@@ -21,15 +20,19 @@
 #ifdef TexBasePackedInd
     #define TexBaseInd	TexBasePackedInd
 #endif
+
 #ifdef TexDetailPackedInd
     #define TexDetailInd	TexDetailPackedInd
 #endif
+
 #ifdef TexDirtPackedInd
     #define TexDirtInd	TexDirtPackedInd
 #endif
+
 #ifdef TexCrackPackedInd
     #define TexCrackInd	TexCrackPackedInd
 #endif
+
 #ifdef TexLightMapPackedInd
     #define TexLightMapInd	TexLightMapPackedInd
 #endif
@@ -50,9 +53,7 @@ struct VS_IN
     float4 TexSets[NUM_TEXSETS] : TEXCOORD0;
 };
 
-//
 // setup interpolators
-//
 #ifdef PERPIXEL
     #define __LVEC_INTER 0
     #define __EYEVEC_INTER 1
@@ -60,12 +61,11 @@ struct VS_IN
 #else
     #define __LVEC_INTER 0
     #define __EYEVEC_INTER 1
-    //#define __NORMAL_INTER 2
     #define __TEXBASE_INTER 2
 #endif
 
+#define __TEXLMAP_INTER __TEXBASE_INTER + _LIGHTMAP_
 
-    #define __TEXLMAP_INTER __TEXBASE_INTER + _LIGHTMAP_
 #if	(_DETAIL_||_NDETAIL_||_PARALLAXDETAIL_)
     #define __TEXDETAIL_INTER __TEXLMAP_INTER + 1
 #else
@@ -124,18 +124,16 @@ float3 getVectorTo(float3 vertexPos, float3 camPos)
     return camPos - vertexPos;
 }
 
-//
 // common vertex shader methods
-//
-VS_OUT
-vsStaticMesh(VS_IN indata)
+VS_OUT vsStaticMesh(VS_IN indata)
 {
     VS_OUT Out = (VS_OUT)0;
 
-     // output position early
-     float4 unpackedPos = float4(indata.Pos.xyz,1) * PosUnpack;
-     Out.Pos	= mul(unpackedPos, WorldViewProjection);
+    // output position early
+    float4 unpackedPos = float4(indata.Pos.xyz,1) * PosUnpack;
+    Out.Pos	= mul(unpackedPos, WorldViewProjection);
     float3 unpackedNormal = indata.Normal * NormalUnpack.x + NormalUnpack.y;
+
     #if _POINTLIGHT_
         float3 unpackedTan = indata.Tan * NormalUnpack.x + NormalUnpack.y;
         float3x3 objI = getTanBasisTranspose(indata, unpackedNormal, unpackedTan);
@@ -178,14 +176,10 @@ vsStaticMesh(VS_IN indata)
 
                 Out.Interpolated[__EYEVEC_INTER].rgb = mul(getVectorTo(unpackedPos, ObjectSpaceCamPos), objI);
                 Out.Interpolated[__LVEC_INTER].rgb = mul(-Lights[0].dir, objI);
-
-                //Out.Interpolated[__EYEVEC_INTER].rgb = getVectorTo(unpackedPos, ObjectSpaceCamPos);
-                //Out.Interpolated[__LVEC_INTER].rgb = -Lights[0].dir;
                 #if (!_USEPERPIXELNORMALIZE_)
                     Out.Interpolated[__EYEVEC_INTER].rgb = normalize(Out.Interpolated[__EYEVEC_INTER].rgb);
                     Out.Interpolated[__LVEC_INTER].rgb = normalize(Out.Interpolated[__LVEC_INTER].rgb);
                 #endif
-
             #endif
 
             float invDot = 1-saturate(dot(unpackedNormal*0.2, -Lights[0].dir));
@@ -228,57 +222,55 @@ vsStaticMesh(VS_IN indata)
 }
 
 #if _PARALLAXDETAIL_
-float2
-calculateParallaxCoordinatesFromAlpha(float2 inHeightTexCoords, sampler2D inHeightSampler, float4 inScaleBias, float3 inEyeVecNormalized)
-{
-    float2 height = tex2D(inHeightSampler, inHeightTexCoords).aa;
-    float2 eyeVecN = inEyeVecNormalized.xy * float2(1,-1);
-    float4 fakeBias = float4(FH2_HARDCODED_PARALLAX_BIAS, FH2_HARDCODED_PARALLAX_BIAS, 0.0, 0.0);
-    height = height * fakeBias.xy + fakeBias.wz;
-    return inHeightTexCoords + height * eyeVecN.xy;
-}
+    float2 calculateParallaxCoordinatesFromAlpha(float2 inHeightTexCoords, sampler2D inHeightSampler, float4 inScaleBias, float3 inEyeVecNormalized)
+    {
+        float2 height = tex2D(inHeightSampler, inHeightTexCoords).aa;
+        float2 eyeVecN = inEyeVecNormalized.xy * float2(1,-1);
+        float4 fakeBias = float4(FH2_HARDCODED_PARALLAX_BIAS, FH2_HARDCODED_PARALLAX_BIAS, 0.0, 0.0);
+        height = height * fakeBias.xy + fakeBias.wz;
+        return inHeightTexCoords + height * eyeVecN.xy;
+    }
 #endif
 
 
 float4
 getCompositeDiffuse(VS_OUT indata, float3 normTanEyeVec, out float gloss)
 {
-    //float4 base, detail, dirt, crack;
     float4 totalDiffuse = 0;
     gloss = StaticGloss;
 
-#if _BASE_
-    totalDiffuse = tex2D(DiffuseMapSampler, indata.Interpolated[__TEXBASE_INTER].xy);
-#endif
+    #if _BASE_
+        totalDiffuse = tex2D(DiffuseMapSampler, indata.Interpolated[__TEXBASE_INTER].xy);
+    #endif
 
-#if _PARALLAXDETAIL_
-    float4 detail = tex2D(DetailMapSampler, calculateParallaxCoordinatesFromAlpha(indata.Interpolated[__TEXDETAIL_INTER].xy, NormalMapSampler, ParallaxScaleBias, normTanEyeVec));
-#elif _DETAIL_
-    float4 detail = tex2D(DetailMapSampler, indata.Interpolated[__TEXDETAIL_INTER].xy);
-#endif
+    #if _PARALLAXDETAIL_
+        float4 detail = tex2D(DetailMapSampler, calculateParallaxCoordinatesFromAlpha(indata.Interpolated[__TEXDETAIL_INTER].xy, NormalMapSampler, ParallaxScaleBias, normTanEyeVec));
+    #elif _DETAIL_
+        float4 detail = tex2D(DetailMapSampler, indata.Interpolated[__TEXDETAIL_INTER].xy);
+    #endif
 
-#if (_DETAIL_|| _PARALLAXDETAIL_)
-    //tl: assumes base has .a = 1 (which should be the case)
-//	totalDiffuse.rgb *= detail.rgb;
-    totalDiffuse *= detail;
-    #if (!_ALPHATEST_)
-        gloss = detail.a;
-        totalDiffuse.a = Transparency.a;
+    #if (_DETAIL_|| _PARALLAXDETAIL_)
+        // tl: assumes base has .a = 1 (which should be the case)
+        // totalDiffuse.rgb *= detail.rgb;
+        totalDiffuse *= detail;
+        #if (!_ALPHATEST_)
+            gloss = detail.a;
+            totalDiffuse.a = Transparency.a;
+        #else
+            totalDiffuse.a *= Transparency.a;
+        #endif
     #else
         totalDiffuse.a *= Transparency.a;
     #endif
-#else
-    totalDiffuse.a *= Transparency.a;
-#endif
 
-#if _DIRT_
-    totalDiffuse.rgb *= tex2D(DirtMapSampler, indata.Interpolated[__TEXDIRT_INTER].xy).rgb;
-#endif
+    #if _DIRT_
+        totalDiffuse.rgb *= tex2D(DirtMapSampler, indata.Interpolated[__TEXDIRT_INTER].xy).rgb;
+    #endif
 
-#if _CRACK_
-    float4 crack = tex2D(CrackMapSampler, indata.Interpolated[__TEXCRACK_INTER].xy);
-    totalDiffuse.rgb = lerp(totalDiffuse.rgb, crack.rgb, crack.a);
-#endif
+    #if _CRACK_
+        float4 crack = tex2D(CrackMapSampler, indata.Interpolated[__TEXCRACK_INTER].xy);
+        totalDiffuse.rgb = lerp(totalDiffuse.rgb, crack.rgb, crack.a);
+    #endif
 
     return totalDiffuse;
 }
@@ -286,17 +278,10 @@ getCompositeDiffuse(VS_OUT indata, float3 normTanEyeVec, out float gloss)
 float3 reNormalize(float3 t)
 {
     return normalize(t);
-    //float3 tempVec = t;
-    //return (tempVec * (1 - saturate(dot(tempVec, tempVec))) + tempVec * 2)/2;
-
-    //float3 tempVec = 0.5*(t);
-    //return (tempVec * (1 - saturate(dot(tempVec, tempVec))) + tempVec * 2)/2;
-
 }
 
 // This also includes the composite gloss map
-float3
-getCompositeNormals(VS_OUT indata, float3 normTanEyeVec)
+float3 getCompositeNormals(VS_OUT indata, float3 normTanEyeVec)
 {
     float3 totalNormal = 0;
 
@@ -326,8 +311,7 @@ getCompositeNormals(VS_OUT indata, float3 normTanEyeVec)
 }
 
 
-float3
-getLightmap(VS_OUT indata)
+float3 getLightmap(VS_OUT indata)
 {
     #if _LIGHTMAP_
         return  tex2D(LightMapSampler, indata.Interpolated[__TEXLMAP_INTER].xy);
@@ -336,32 +320,29 @@ getLightmap(VS_OUT indata)
     #endif
 }
 
-float3
-getDiffuseVertexLighting(float3 lightmap, VS_OUT indata)
+float3 getDiffuseVertexLighting(float3 lightmap, VS_OUT indata)
 {
-#if 	_LIGHTMAP_
-    float3 diffuse = indata.ColorOrPointLightFog.rgb;
-    float3 bumpedSky = lightmap.b * indata.InvDotAndLightAtt.rgb;
+    #if _LIGHTMAP_
+        float3 diffuse = indata.ColorOrPointLightFog.rgb;
+        float3 bumpedSky = lightmap.b * indata.InvDotAndLightAtt.rgb;
 
-    // we add ambient here as well to get correct ambient for surfaces parallel to the sun
-    float3 bumpedDiff = diffuse + bumpedSky;
-    diffuse = lerp(bumpedSky, bumpedDiff, lightmap.g);
-    diffuse += lightmap.r * SinglePointColor;
+        // we add ambient here as well to get correct ambient for surfaces parallel to the sun
+        float3 bumpedDiff = diffuse + bumpedSky;
+        diffuse = lerp(bumpedSky, bumpedDiff, lightmap.g);
+        diffuse += lightmap.r * SinglePointColor;
 
-#else
-    float3 diffuse =	indata.ColorOrPointLightFog.rgb;
-    float3 bumpedSky = indata.InvDotAndLightAtt.rgb;
+    #else
+        float3 diffuse =	indata.ColorOrPointLightFog.rgb;
+        float3 bumpedSky = indata.InvDotAndLightAtt.rgb;
 
-    diffuse *= lightmap.g;
-    diffuse += bumpedSky;
-#endif
+        diffuse *= lightmap.g;
+        diffuse += bumpedSky;
+    #endif
 
     return diffuse;
 }
 
-
-float3
-getDiffusePixelLighting(float3 lightmap, float3 compNormals, float3 normalizedLightVec, VS_OUT indata)
+float3 getDiffusePixelLighting(float3 lightmap, float3 compNormals, float3 normalizedLightVec, VS_OUT indata)
 {
     float3 diffuse = saturate(dot(compNormals, normalizedLightVec)) * Lights[0].color;
     //pre-calc: lightmap.b *= invDot
@@ -373,8 +354,7 @@ getDiffusePixelLighting(float3 lightmap, float3 compNormals, float3 normalizedLi
     return diffuse;
 }
 
-float
-getSpecularPixelLighting(float3 lightmap, float3 compNormals, float3 normalizedLightVec, float3 eyeVec, float gloss)
+float getSpecularPixelLighting(float3 lightmap, float3 compNormals, float3 normalizedLightVec, float3 eyeVec, float gloss)
 {
     float3 halfVec = normalize(normalizedLightVec + eyeVec);
     float specular = saturate(dot(compNormals.xyz, halfVec));
@@ -389,8 +369,7 @@ getSpecularPixelLighting(float3 lightmap, float3 compNormals, float3 normalizedL
 }
 
 
-float3
-getPointPixelLighting(VS_OUT indata, float3 compNormal, float3 normLightVec, float3 normEyeVec, float gloss)
+float3 getPointPixelLighting(VS_OUT indata, float3 compNormal, float3 normLightVec, float3 normEyeVec, float gloss)
 {
     float3 pointDiff = saturate(dot(compNormal.xyz, normLightVec)) * Lights[0].color;
     float3 lightPos = indata.Interpolated[__LVEC_INTER].rgb;
@@ -404,127 +383,122 @@ getPointPixelLighting(VS_OUT indata, float3 compNormal, float3 normLightVec, flo
     return saturate(pointDiff * sat * indata.ColorOrPointLightFog.a);
 }
 
-
-
-float4
-psStaticMesh(VS_OUT indata) : COLOR
+float4 psStaticMesh(VS_OUT indata) : COLOR
 {
-//float x = 0.5;
-//return float4(x,x,x,1);
-//return 1;
-#if _FINDSHADER_
-    return float4(1,1,0.4,1);
-#endif
+
+    #if _FINDSHADER_
+        return float4(1,1,0.4,1);
+    #endif
 
     float gloss;
     float4 FinalColor;
 
-#if _POINTLIGHT_
-    float3 normEyeVec = indata.Interpolated[__EYEVEC_INTER].rgb;
-    float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
-
-    #if	_USEPERPIXELNORMALIZE_
-        normEyeVec = normalize(normEyeVec);
-    #endif
-
-    // here we must do it since we upload the unnormalized lightvec
-    #if	_USEPERPIXELNORMALIZE_
-        normLightVec = normalize(normLightVec);
-    #endif
-    FinalColor = getCompositeDiffuse(indata, normEyeVec, gloss);
-
-    #ifdef PERPIXEL
-        float3 compNormals = getCompositeNormals(indata, normEyeVec);
-    #else
-        float3 compNormals = float3(0,0,1);
-    #endif
-
-    float3 diffuse = getPointPixelLighting(indata, compNormals, normLightVec, normEyeVec, gloss);
-
-    FinalColor.rgb = 2*(FinalColor * diffuse);
-
-    return FinalColor;
-#else	//if _POINTLIGHT_
-
-    #ifdef PERPIXEL
+    #if _POINTLIGHT_
         float3 normEyeVec = indata.Interpolated[__EYEVEC_INTER].rgb;
+        float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
+
         #if	_USEPERPIXELNORMALIZE_
             normEyeVec = normalize(normEyeVec);
         #endif
 
-        float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
+        // here we must do it since we upload the unnormalized lightvec
         #if	_USEPERPIXELNORMALIZE_
             normLightVec = normalize(normLightVec);
         #endif
-
         FinalColor = getCompositeDiffuse(indata, normEyeVec, gloss);
 
-        #ifdef	DIFFUSE_CHANNEL
-            return float4(FinalColor.rgb,1);
+        #ifdef PERPIXEL
+            float3 compNormals = getCompositeNormals(indata, normEyeVec);
+        #else
+            float3 compNormals = float3(0,0,1);
         #endif
 
-        float3 compNormals = getCompositeNormals(indata, normEyeVec);
+        float3 diffuse = getPointPixelLighting(indata, compNormals, normLightVec, normEyeVec, gloss);
+
+        FinalColor.rgb = 2*(FinalColor * diffuse);
+
+        return FinalColor;
+    #else	//if _POINTLIGHT_
+
+        #ifdef PERPIXEL
+            float3 normEyeVec = indata.Interpolated[__EYEVEC_INTER].rgb;
+            #if	_USEPERPIXELNORMALIZE_
+                normEyeVec = normalize(normEyeVec);
+            #endif
+
+            float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
+            #if	_USEPERPIXELNORMALIZE_
+                normLightVec = normalize(normLightVec);
+            #endif
+
+            FinalColor = getCompositeDiffuse(indata, normEyeVec, gloss);
+
+            #ifdef	DIFFUSE_CHANNEL
+                return float4(FinalColor.rgb,1);
+            #endif
+
+            float3 compNormals = getCompositeNormals(indata, normEyeVec);
 
 
-        // directional light + lightmap etc
-        float3 lightmap = getLightmap(indata);
+            // directional light + lightmap etc
+            float3 lightmap = getLightmap(indata);
 
-        #if _SHADOW_
-            lightmap.g *= getShadowFactorExact(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);
-        #endif
+            #if _SHADOW_
+                lightmap.g *= getShadowFactorExact(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);
+            #endif
 
-        float3 diffuse = getDiffusePixelLighting(lightmap, compNormals.rgb, normLightVec, indata);
+            float3 diffuse = getDiffusePixelLighting(lightmap, compNormals.rgb, normLightVec, indata);
 
-        #ifdef	SHADOW_CHANNEL
-            return float4(diffuse,1);
-        #endif
+            #ifdef	SHADOW_CHANNEL
+                return float4(diffuse,1);
+            #endif
 
-        FinalColor.rgb *= 2 * diffuse;
+            FinalColor.rgb *= 2 * diffuse;
 
-        #if _USESPECULAR_
-            float specular = getSpecularPixelLighting(lightmap, compNormals, normLightVec, normEyeVec, gloss);
-            FinalColor.rgb += specular * StaticSpecularColor;
-        #endif
-
-    #else //if PERPIXEL
-
-        FinalColor = getCompositeDiffuse(indata, 0, gloss);
-
-        #ifdef	DIFFUSE_CHANNEL
-            return float4(FinalColor.rgb,1);
-        #endif
-
-        float3 lightmap = getLightmap(indata);
-
-        #if _SHADOW_
-            lightmap.g *= getShadowFactor(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);
-        #endif
-
-        float3 diffuse = getDiffuseVertexLighting(lightmap, indata);
-
-        #ifdef	SHADOW_CHANNEL
-            return float4(diffuse,1);
-        #endif
-
-        FinalColor.rgb *= 2 * diffuse;
-
-        #if _USESPECULAR_
-            #ifdef USEVERTEXSPECULAR
-                FinalColor.rgb += indata.Interpolated[__NORMAL_INTER].rgb;
-            #else
-                float3 normEyeVec = indata.Interpolated[__EYEVEC_INTER].rgb;
-                #if	_USEPERPIXELNORMALIZE_
-                    normEyeVec = normalize(normEyeVec);
-                #endif
-                float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
-
-                //float specular = getSpecularPixelLighting(lightmap, float4(normalize(indata.Interpolated[__NORMAL_INTER].rgb), StaticGloss), normLightVec, normEyeVec);
-                float specular = getSpecularPixelLighting(lightmap, float4(0.f,0.f,1.f, StaticGloss), normLightVec, normEyeVec, gloss);
+            #if _USESPECULAR_
+                float specular = getSpecularPixelLighting(lightmap, compNormals, normLightVec, normEyeVec, gloss);
                 FinalColor.rgb += specular * StaticSpecularColor;
             #endif
-        #endif //if _USESPECULAR_
-    #endif //if PERPIXEL
-#endif //if _POINTLIGHT_
+
+        #else //if PERPIXEL
+
+            FinalColor = getCompositeDiffuse(indata, 0, gloss);
+
+            #ifdef	DIFFUSE_CHANNEL
+                return float4(FinalColor.rgb,1);
+            #endif
+
+            float3 lightmap = getLightmap(indata);
+
+            #if _SHADOW_
+                lightmap.g *= getShadowFactor(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);
+            #endif
+
+            float3 diffuse = getDiffuseVertexLighting(lightmap, indata);
+
+            #ifdef	SHADOW_CHANNEL
+                return float4(diffuse,1);
+            #endif
+
+            FinalColor.rgb *= 2 * diffuse;
+
+            #if _USESPECULAR_
+                #ifdef USEVERTEXSPECULAR
+                    FinalColor.rgb += indata.Interpolated[__NORMAL_INTER].rgb;
+                #else
+                    float3 normEyeVec = indata.Interpolated[__EYEVEC_INTER].rgb;
+                    #if	_USEPERPIXELNORMALIZE_
+                        normEyeVec = normalize(normEyeVec);
+                    #endif
+                    float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
+
+                    //float specular = getSpecularPixelLighting(lightmap, float4(normalize(indata.Interpolated[__NORMAL_INTER].rgb), StaticGloss), normLightVec, normEyeVec);
+                    float specular = getSpecularPixelLighting(lightmap, float4(0.f,0.f,1.f, StaticGloss), normLightVec, normEyeVec, gloss);
+                    FinalColor.rgb += specular * StaticSpecularColor;
+                #endif
+            #endif //if _USESPECULAR_
+        #endif //if PERPIXEL
+    #endif //if _POINTLIGHT_
 
     return FinalColor;
 };
@@ -533,24 +507,24 @@ technique defaultTechnique
 {
     pass P0
     {
-        vertexShader	= compile vs_2_a vsStaticMesh();
-        pixelShader		= compile ps_2_a psStaticMesh();
+        vertexShader = compile vs_2_a vsStaticMesh();
+        pixelShader  = compile ps_2_a psStaticMesh();
 
         ZFunc = LESS;
 
-#ifdef ENABLE_WIREFRAME
-        FillMode		= WireFrame;
-#endif
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
 
-#if _POINTLIGHT_
-        ZFunc			= LessEqual;
-        AlphaBlendEnable= true;
-        SrcBlend		= ONE;
-        DestBlend		= ONE;
-        fogenable		= false;
-#else
-        fogenable		= true;
-#endif
+        #if _POINTLIGHT_
+            ZFunc            = LessEqual;
+            AlphaBlendEnable = true;
+            SrcBlend         = ONE;
+            DestBlend        = ONE;
+            fogenable        = false;
+        #else
+            fogenable = true;
+        #endif
         AlphaTestEnable = < AlphaTest >;
         AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
     }

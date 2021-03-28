@@ -89,8 +89,8 @@ struct VS_OUTPUTDualClouds
 VS_OUTPUT vsSkyDome(appdata input)
 {
     VS_OUTPUT Out;
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
-     Out.Tex0 = input.TexCoord;
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
+    Out.Tex0 = input.TexCoord;
     Out.Tex1 = (input.TexCoord1.xy + texOffset.xy);
     float dist = length(input.Pos.xyz);
     Out.FadeOut = 1-saturate((dist - fadeOutDist.x) / fadeOutDist.y);	//tl: TODO - optimize out division
@@ -101,7 +101,7 @@ VS_OUTPUT vsSkyDome(appdata input)
 VS_OUTPUTNoClouds vsSkyDomeNoClouds(appdataNoClouds input)
 {
     VS_OUTPUTNoClouds Out;
-    float4 posScaled = float4(input.Pos.xyz, 10.0); //plo: fix for artifacts on BFO.
+    float4 posScaled = float4(input.Pos.xyz, 10.0); // plo: fix for artifacts on BFO.
     Out.HPos = mul(posScaled, viewProjMatrix);
     Out.Tex0 = input.TexCoord;
     return Out;
@@ -115,7 +115,7 @@ VS_OUTPUTDualClouds vsSkyDomeDualClouds(appdata input)
     Out.Tex1 = (input.TexCoord1.xy + texOffset.xy);
     Out.Tex2 = (input.TexCoord1.xy + texOffset2.xy);
     float dist = length(input.Pos.xyz);
-    Out.FadeOut = 1-saturate((dist - fadeOutDist.x) / fadeOutDist.y);	//tl: TODO - optimize out division
+    Out.FadeOut = 1-saturate((dist - fadeOutDist.x) / fadeOutDist.y); // tl: TODO - optimize out division
     Out.FadeOut *= input.Pos.y > 0;
     return Out;
 }
@@ -167,16 +167,13 @@ float4 psSkyDomeDualClouds(VS_OUTPUTDualClouds indata) : COLOR
 VS_OUTPUTNoClouds vsSkyDomeSunFlare(appdataNoClouds input)
 {
     VS_OUTPUTNoClouds Out;
-     //Out.HPos = input.Pos * 10000;
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
-     Out.Tex0 = input.TexCoord;
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0), viewProjMatrix);
+    Out.Tex0 = input.TexCoord;
     return Out;
 }
 
 float4 psSkyDomeSunFlare(VS_OUTPUT indata) : COLOR
 {
-    //return 1;
-    //return float4(flareParams[0],0,0,1);
     float3 rgb = tex2D(samplerClamp, indata.Tex0).rgb * flareParams[0];
     return float4(rgb, 1);
 }
@@ -196,7 +193,7 @@ technique SkyDomeUnderWater
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
 
-         VertexShader = compile vs_2_a vsSkyDome();
+        VertexShader = compile vs_2_a vsSkyDome();
         PixelShader = compile ps_2_a psSkyDomeUnderWater();
     }
 }
@@ -209,7 +206,7 @@ technique SkyDomeNV3x
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
 
-         VertexShader = compile vs_2_a vsSkyDome();
+        VertexShader = compile vs_2_a vsSkyDome();
         PixelShader = compile ps_2_a psSkyDome();
     }
 }
@@ -222,7 +219,7 @@ technique SkyDomeNV3xLit
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
 
-         VertexShader = compile vs_2_a vsSkyDome();
+        VertexShader = compile vs_2_a vsSkyDome();
         PixelShader = compile ps_2_a psSkyDomeLit();
     }
 }
@@ -235,7 +232,7 @@ technique SkyDomeNV3xNoClouds
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
 
-         VertexShader = compile vs_2_a vsSkyDomeNoClouds();
+        VertexShader = compile vs_2_a vsSkyDomeNoClouds();
         PixelShader = compile ps_2_a psSkyDomeNoClouds();
     }
 }
@@ -248,7 +245,7 @@ technique SkyDomeNV3xNoCloudsLit
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
 
-         VertexShader = compile vs_2_a vsSkyDomeNoClouds();
+        VertexShader = compile vs_2_a vsSkyDomeNoClouds();
         PixelShader = compile ps_2_a psSkyDomeNoCloudsLit();
     }
 }
@@ -261,7 +258,7 @@ technique SkyDomeNV3xDualClouds
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
 
-         VertexShader = compile vs_2_a vsSkyDomeDualClouds();
+        VertexShader = compile vs_2_a vsSkyDomeDualClouds();
         PixelShader = compile ps_2_a psSkyDomeDualClouds();
     }
 }
@@ -278,8 +275,8 @@ technique SkyDomeSunFlare
         SrcBlend = ONE;
         DestBlend = ONE;
         FogEnable = FALSE;
-        //ColorWriteEnable = 0;
-         VertexShader = compile vs_2_a vsSkyDomeSunFlare();
+
+        VertexShader = compile vs_2_a vsSkyDomeSunFlare();
         PixelShader = compile ps_2_a psSkyDomeSunFlare();
     }
 }
@@ -302,13 +299,9 @@ technique SkyDomeFlareOccludeCheck
         AlphaRef = 50;
         AlphaFunc = GREATER;
 
-
-        //AlphaRef = 255;
-        //AlphaFunc = LESS;
-
         FogEnable = FALSE;
 
-         VertexShader = compile vs_2_a vsSkyDomeSunFlare();
+        VertexShader = compile vs_2_a vsSkyDomeSunFlare();
         PixelShader = compile ps_2_a psSkyDomeFlareOcclude();
     }
 }
@@ -331,13 +324,9 @@ technique SkyDomeFlareOcclude
         AlphaRef = 50;
         AlphaFunc = GREATER;
 
-
-        //AlphaRef = 255;
-        //AlphaFunc = LESS;
-
         FogEnable = FALSE;
 
-         VertexShader = compile vs_2_a vsSkyDomeSunFlare();
+        VertexShader = compile vs_2_a vsSkyDomeSunFlare();
         PixelShader = compile ps_2_a psSkyDomeFlareOcclude();
     }
 }

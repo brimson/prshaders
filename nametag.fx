@@ -1,34 +1,32 @@
 #line 2 "Nametag.fx"
 
-float4x4	mWorldViewProj : WorldViewProjection;
-float		fTexBlendFactor : TexBlendFactor;
-float2		vFadeoutValues : FadeOut;
-float4		vLocalEyePos : LocalEye;
+float4x4 mWorldViewProj : WorldViewProjection;
+float    fTexBlendFactor : TexBlendFactor;
+float2   vFadeoutValues : FadeOut;
+float4   vLocalEyePos : LocalEye;
 
-float4		Transformations[64] : TransformationArray;
+float4 Transformations[64] : TransformationArray;
 // dep: this is a suboptimal Camp EA hack; rewrite this
-float		Alphas[64] : AlphaArray;
-float4		Colors[9] : ColorArray;
-float4		fAspectMul : AspectMul;
+float  Alphas[64] : AlphaArray;
+float4 Colors[9] : ColorArray;
+float4 fAspectMul : AspectMul;
 
-float4		fArrowMult = float4(1.05, 1.05, 1, 1);
+float4 fArrowMult = float4(1.05, 1.05, 1, 1);
+float4 ArrowTrans : ArrowTransformation;
+float4 ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
 
-float4		ArrowTrans : ArrowTransformation;
-float4		ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
+float4 IconRot : IconRotation;
+float2 iconTexOffset : IconTexOffset;
+float4 iconFlashTexScaleOffset : IconFlashTexScaleOffset;
 
-float4		IconRot : IconRotation;
-// float4		FIconRot : FIconRotation;
-float2		iconTexOffset : IconTexOffset;
-float4		iconFlashTexScaleOffset : IconFlashTexScaleOffset;
+int colorIndex1 : ColorIndex1;
+int colorIndex2 : ColorIndex2;
 
-int			colorIndex1 : ColorIndex1;
-int			colorIndex2 : ColorIndex2;
+float4 HealthBarTrans : HealthBarTrans;
+float  fHealthValue : HealthValue;
 
-float4		HealthBarTrans : HealthBarTrans;
-float		fHealthValue : HealthValue;
-
-float		crossFadeValue : CrossFadeValue;
-float		fAspectComp = 4.0/3.0;
+float crossFadeValue : CrossFadeValue;
+float fAspectComp = 4.0/3.0;
 
 texture detail0 : TEXLAYER0;
 texture detail1 : TEXLAYER1;
@@ -119,7 +117,6 @@ VS2PS vsNametag_arrow(APP2VS input)
 {
     VS2PS output = (VS2PS)0;
 
-
     // does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
     output.Pos.x = dot(input.Pos, float3(ArrowRot.x, ArrowRot.y, 0));
     output.Pos.y = dot(input.Pos, float3(ArrowRot.z, ArrowRot.w, 0));
@@ -177,17 +174,7 @@ VS2PS vsNametag_vehicleIcons(APP2VS input)
     output.Pos.w = 1;
 
     output.Tex0 = input.Tex0 + iconTexOffset;
-
     output.Tex1 = input.Tex0 * iconFlashTexScaleOffset.xy + iconFlashTexScaleOffset.zw;
-
-    //counter-rotate tex1 (flash icon)
-//	float2 tempUV = input.Tex0;
-//	tempUV -= 0.5;
-//	float2 rotUV;
-//	rotUV.x = dot(tempUV, float2(FIconRot.x, FIconRot.z));
-//	rotUV.y = dot(tempUV, float2(FIconRot.y, FIconRot.w));
-//	rotUV += 0.5;
-//	output.Tex1 = rotUV * iconFlashTexScaleOffset.xy + iconFlashTexScaleOffset.zw;
 
     float4 Col0 = Colors[colorIndex1];
     float4 Col1 = Colors[colorIndex2];

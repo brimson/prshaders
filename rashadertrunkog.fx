@@ -26,8 +26,8 @@ sampler DiffuseMapSampler = sampler_state
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {
-     "Position",
-     "Normal",
+    "Position",
+    "Normal",
     "TBase2D"
 };
 
@@ -40,10 +40,9 @@ float2 tex0	: TEXCOORD0
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
-    Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
-
-    Out.Fog		= calcFog(Out.Pos.w);
-    Out.Tex0	= tex0 / 32767.0f;
+    Out.Pos = mul(float4(inPos.xyz, 1), WorldViewProjection);
+    Out.Fog = calcFog(Out.Pos.w);
+    Out.Tex0 = tex0 / 32767.0f;
 
     normal = normal * 2.0f - 1.0f;
 
@@ -55,9 +54,11 @@ float2 tex0	: TEXCOORD0
     return Out;
 }
 
-// There will be small differences between this lighting and the one produced by the static mesh shader,
-// not enough to worry about, ambient is added here and lerped in the static mesh, etc
-// NOTE: could be an issue at some point.
+/*
+    There will be small differences between this lighting and the one produced by the static mesh shader,
+    not enough to worry about, ambient is added here and lerped in the static mesh, etc
+    NOTE: could be an issue at some point.
+*/
 float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
 {
     float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * 2;
@@ -89,12 +90,12 @@ technique defaultTechnique
 {
     pass P0
     {
-        vertexShader		= compile vs_2_a basicVertexShader();
-        pixelShader			= compile ps_2_a basicPixelShader();
+        vertexShader = compile vs_2_a basicVertexShader();
+        pixelShader  = compile ps_2_a basicPixelShader();
 
-#ifdef ENABLE_WIREFRAME
-        FillMode			= WireFrame;
-#endif
-        FogEnable			= true;
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
+        FogEnable = true;
     }
 }

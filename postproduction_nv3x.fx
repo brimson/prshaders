@@ -222,35 +222,8 @@ float4 psDx9_Fog(VS2PS_Quad indata) : COLOR
     float3 wPos = tex2D(sampler0, indata.TexCoord0);
     float uvCoord =  saturate((wPos.zzzz-fogStartAndEnd.r)/fogStartAndEnd.g);//fogColorAndViewDistance.a);
     return saturate(float4(fogColor.rgb,uvCoord));
-    //float2 fogcoords = float2(uvCoord, 0.0);
     return tex2D(sampler1, float2(uvCoord, 0.0))*fogColor.rgbb;
 }
-/*
-technique Fog
-{
-    pass p0
-    {
-        ZEnable = FALSE;
-        AlphaBlendEnable = TRUE;
-        //SrcBlend = SRCCOLOR;
-        //DestBlend = ZERO;
-        SrcBlend = SRCALPHA;
-        DestBlend = INVSRCALPHA;
-        //StencilEnable = FALSE;
-
-        StencilEnable = TRUE;
-        StencilFunc = NOTEQUAL;
-        StencilRef = 0x00;
-        StencilMask = 0xFF;
-        StencilFail = KEEP;
-        StencilZFail = KEEP;
-        StencilPass = KEEP;
-
-        VertexShader = compile vs_2_a vsDx9_OneTexcoord();
-        PixelShader = compile ps_2_a psDx9_Fog();
-    }
-}
-*/
 
 // TVEffect specific...
 
@@ -303,7 +276,6 @@ PS2FB_Combine ps_TVEffect20(VS2PS_Quad3 indata)
             image += tex2D(sampler0bilin, img - float2(hblur,0))*0.125;
             image += tex2D(sampler0bilin, img + float2(0,vblur))*0.125;
             image += tex2D(sampler0bilin, img - float2(0,vblur))*0.125;
-            //outdata.Col0.r = lerp(lerp(lerp(0.43, 0.17, image.g), lerp(0.75f, 0.50f, image.b), image.b),image.r,image.r); // M
             outdata.Col0.r = lerp(0.43,0,image.g) + image.r; // terrain max light mod should be 0.608
             outdata.Col0.r -= interference * rand; // add -interference
             outdata.Col0 = float4(tvColor * outdata.Col0.rrr,image.a);
@@ -338,9 +310,8 @@ PS2FB_Combine ps_TVEffect14(VS2PS_Quad3 indata)
     return outdata;
 }
 
-//
+
 //	TV Effect with usage of gradient texture
-//
 
 PS2FB_Combine ps_TVEffect_Gradient_Tex(VS2PS_Quad3 indata)
 {
@@ -402,19 +373,14 @@ technique TVEffect_Gradient_Tex
     }
 }
 
-//
 //	Wave Distortion
-//
 
 VS2PS_Quad2 vs_WaveDistortion( APP2VS_Quad indata )
 {
     VS2PS_Quad2 output;
-
     output.Pos = float4(indata.Pos.xy, 0, 1);
     output.TexCoord0 = indata.TexCoord0;
-
     output.TexCoord1 = indata.Pos.xy;
-
     return output;
 }
 
@@ -422,7 +388,7 @@ VS2PS_Quad2 vs_WaveDistortion( APP2VS_Quad indata )
 PS2FB_Combine ps_WaveDistortion(VS2PS_Quad2 indata)
 {
     PS2FB_Combine outdata;
-    outdata.Col0 = float4(0.0, 0.0, 0.0, 0.0); //
+    outdata.Col0 = float4(0.0, 0.0, 0.0, 0.0);
     return outdata;
 }
 
@@ -437,15 +403,7 @@ technique WaveDistortion
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
 
-        //PixelShaderConstant2[0] = <time_0_X>;
-        //PixelShaderConstant1[1] = <deltaU>;
-        //PixelShaderConstant1[2] = <deltaV>;
-
-        //TextureTransform[2] = <UpScaleTexBy8>;
-
         VertexShader = compile vs_2_a vs_WaveDistortion();
-
-
         PixelShader = compile ps_2_a ps_WaveDistortion();
     }
 }

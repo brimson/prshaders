@@ -5,38 +5,46 @@
 // Dependencies and sanity checks
 //Tmp
 #ifndef _HASUVANIMATION_
-#define _HASUVANIMATION_ 0
+    #define _HASUVANIMATION_ 0
 #endif
+
 #ifndef _HASNORMALMAP_
-#define _HASNORMALMAP_ 0
+    #define _HASNORMALMAP_ 0
 #endif
+
 #ifndef _HASGIMAP_
-#define _HASGIMAP_ 0
+    #define _HASGIMAP_ 0
 #endif
+
 #ifndef _HASENVMAP_
-#define _HASENVMAP_ 0
+    #define _HASENVMAP_ 0
 #endif
+
 #if _HASENVMAP_
     #define _FRESNELVALUES_ 1
 #else
     #define _FRESNELVALUES_ 0
 #endif
+
 #ifndef _USEHEMIMAP_
-#define _USEHEMIMAP_ 0
+    #define _USEHEMIMAP_ 0
 #endif
+
 #ifndef _HASSHADOW_
-#define _HASSHADOW_ 0
+    #define _HASSHADOW_ 0
 #endif
+
 #ifndef _HASCOLORMAPGLOSS_
-#define _HASCOLORMAPGLOSS_ 0
+    #define _HASCOLORMAPGLOSS_ 0
 #endif
+
 #ifndef _HASDOT3ALPHATEST_
-#define _HASDOT3ALPHATEST_ 0
+    #define _HASDOT3ALPHATEST_ 0
 #endif
 
 //resolve illegal combo GI + ENVMAP
 #if _HASGIMAP_ && _HASENVMAP_
- # define _HASENVMAP_ 0
+    # define _HASENVMAP_ 0
 #endif
 
 // Lighting stuff
@@ -77,12 +85,15 @@
 #if _USEHEMIMAP_
     #define __HEMINTERPIDX 0
 #endif
+
 #if _HASSHADOW_
     #define __SHADOWINTERPIDX _USEHEMIMAP_
 #endif
+
 #if _FRESNELVALUES_
     #define __ENVMAPINTERPIDX _USEHEMIMAP_+_HASSHADOW_
 #endif
+
 #if _HASPERPIXELLIGHTING_
     #define __LVECINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_
     #define __HVECINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+1
@@ -90,20 +101,18 @@
         #define __WNORMALINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+2
     #endif
 #else
-//	#define __DIFFUSEINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_
-//	#define __SPECULARINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+1
+
 #endif
+
 #if _HASSHADOWOCCLUSION_
     #define __OCCSHADOWINTERPIDX _USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+(2*_HASPERPIXELLIGHTING_)+(_HASPERPIXELLIGHTING_&&!_HASNORMALMAP_)
 #endif
 
-//#define MAX_INTERPS (_USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+2 + (_HASPERPIXELLIGHTING_&&!_HASNORMALMAP_) )
 #define MAX_INTERPS (_USEHEMIMAP_+_HASSHADOW_+_FRESNELVALUES_+ (2*_HASPERPIXELLIGHTING_) + (_HASPERPIXELLIGHTING_&&!_HASNORMALMAP_) + _HASSHADOWOCCLUSION_)
 
 // Rod's magic numbers ;-)
-#define refractionIndexRatio 	0.15
-#define R0	(pow(1.0 - refractionIndexRatio, 2.0) / pow(1.0 + refractionIndexRatio, 4.0))
-
+#define refractionIndexRatio 0.15
+#define R0 (pow(1.0 - refractionIndexRatio, 2.0) / pow(1.0 + refractionIndexRatio, 4.0))
 
 struct BMVariableVSInput
 {
@@ -491,27 +500,27 @@ technique Variable
 {
     pass p0
     {
-        VertexShader	= compile vs_2_a vs();
-        PixelShader		= compile ps_2_a ps();
+        VertexShader = compile vs_2_a vs();
+        PixelShader  = compile ps_2_a ps();
 
-#ifdef ENABLE_WIREFRAME
-        FillMode		= WireFrame;
-#endif
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
 
-        AlphaTestEnable		= (AlphaTest);
-        AlphaRef			= (AlphaTestRef);
-#if _POINTLIGHT_
-        AlphaBlendEnable	= true;
-        SrcBlend			= SRCALPHA;
-        DestBlend			= ONE;
-        Fogenable			= false;
-#else
-        AlphaBlendEnable	= ( AlphaBlendEnable );
-        SrcBlend			= SRCALPHA;
-        DestBlend			= INVSRCALPHA;
-        ZWriteEnable		= (DepthWrite);
-        Fogenable			= true;
-#endif
+        AlphaTestEnable = (AlphaTest);
+        AlphaRef        = (AlphaTestRef);
 
+        #if _POINTLIGHT_
+            AlphaBlendEnable = true;
+            SrcBlend         = SRCALPHA;
+            DestBlend        = ONE;
+            Fogenable        = false;
+        #else
+            AlphaBlendEnable = (AlphaBlendEnable);
+            SrcBlend         = SRCALPHA;
+            DestBlend        = INVSRCALPHA;
+            ZWriteEnable     = (DepthWrite);
+            Fogenable        = true;
+        #endif
     }
 }

@@ -24,36 +24,36 @@ struct Light
     float  attenuation;
 };
 
-int			srcBlend = 5;
-int			destBlend = 6;
-bool		alphaBlendEnable = true;
+int  srcBlend = 5;
+int  destBlend = 6;
+bool alphaBlendEnable = true;
 
-int			alphaRef = 20;
-int			CullMode = 3;	//D3DCULL_CCW
+int alphaRef = 20;
+int CullMode = 3;	//D3DCULL_CCW
 #define FH2_HARDCODED_PARALLAX_BIAS 0.0025
 
-float		GlobalTime;
-float		WindSpeed = 0;
+float GlobalTime;
+float WindSpeed = 0;
 
-float4		HemiMapConstants;
+float4 HemiMapConstants;
 
 //tl: This is a float replicated to a float4 to make 1.3 shaders more efficient (they can't access .rg directly)
-float4		Transparency = 1.0f;
+float4 Transparency = 1.0f;
 
-float4x4	World;
-float4x4	ViewProjection;
-float4x4	WorldViewProjection;
+float4x4 World;
+float4x4 ViewProjection;
+float4x4 WorldViewProjection;
 
-bool		AlphaTest	= false;
+bool AlphaTest	= false;
 
-float4		FogRange : fogRange;
-float4		FogColor : fogColor;
+float4 FogRange : fogRange;
+float4 FogColor : fogColor;
 
 float calcFog(float w)
 {
     half2 fogVals = w*FogRange.xy + FogRange.zw;
     half close = max(fogVals.y, FogColor.w);
-    half far = pow(fogVals.x,3);
+    half far = pow(fogVals.x, 3);
     return close-far;
 }
 
@@ -68,29 +68,29 @@ float4 showChannel(
     float3 environment = NO_VAL)
 {
     float4 returnVal = float4(0, 1, 1, 0);
-#ifdef DIFFUSE_CHANNEL
-    returnVal = float4(diffuse, 1);
-#endif
+    #ifdef DIFFUSE_CHANNEL
+        returnVal = float4(diffuse, 1);
+    #endif
 
-#ifdef NORMAL_CHANNEL
-    returnVal = float4(normal, 1);
-#endif
+    #ifdef NORMAL_CHANNEL
+        returnVal = float4(normal, 1);
+    #endif
 
-#ifdef SPECULAR_CHANNEL
-    returnVal = float4(specular, specular, specular, 1);
-#endif
+    #ifdef SPECULAR_CHANNEL
+        returnVal = float4(specular, specular, specular, 1);
+    #endif
 
-#ifdef ALPHA_CHANNEL
-    returnVal = float4(alpha, alpha, alpha, 1);
-#endif
+    #ifdef ALPHA_CHANNEL
+        returnVal = float4(alpha, alpha, alpha, 1);
+    #endif
 
-#ifdef ENVIRONMENT_CHANNEL
-    returnVal = float4(environment, 1);
-#endif
+    #ifdef ENVIRONMENT_CHANNEL
+        returnVal = float4(environment, 1);
+    #endif
 
-#ifdef SHADOW_CHANNEL
-    returnVal = float4(shadow, 1);
-#endif
+    #ifdef SHADOW_CHANNEL
+        returnVal = float4(shadow, 1);
+    #endif
 
     return returnVal;
 }
@@ -110,13 +110,13 @@ sampler ShadowMapSampler
 = sampler_state
 {
     Texture = (ShadowMap);
-#if NVIDIA
-    MinFilter = Linear;
-    MagFilter = Linear;
-#else
-    MinFilter = Point;
-    MagFilter = Point;
-#endif
+    #if NVIDIA
+        MinFilter = Linear;
+        MagFilter = Linear;
+    #else
+        MinFilter = Point;
+        MagFilter = Point;
+    #endif
     MipFilter = None;
     AddressU = Clamp;
     AddressV = Clamp;
@@ -128,13 +128,13 @@ sampler ShadowOccluderMapSampler
 = sampler_state
 {
     Texture = (ShadowOccluderMap);
-#if NVIDIA
-    MinFilter = Linear;
-    MagFilter = Linear;
-#else
-    MinFilter = Point;
-    MagFilter = Point;
-#endif
+    #if NVIDIA
+        MinFilter = Linear;
+        MagFilter = Linear;
+    #else
+        MinFilter = Point;
+        MagFilter = Point;
+    #endif
     MipFilter = None;
     AddressU = Clamp;
     AddressV = Clamp;
@@ -153,11 +153,11 @@ float4 calcShadowProjection(float4 pos, uniform float BIAS = -0.003, uniform boo
         texShadow2 = mul(pos, ShadowProjMat).zw;
 
     texShadow2.x += BIAS;
-#if !NVIDIA
-    texShadow1.z = texShadow2.x;
-#else
-    texShadow1.z = (texShadow2.x*texShadow1.w)/texShadow2.y; 	// (zL*wT)/wL == zL/wL post homo
-#endif
+    #if !NVIDIA
+        texShadow1.z = texShadow2.x;
+    #else
+        texShadow1.z = (texShadow2.x*texShadow1.w)/texShadow2.y; 	// (zL*wT)/wL == zL/wL post homo
+    #endif
 
     return texShadow1;
 }

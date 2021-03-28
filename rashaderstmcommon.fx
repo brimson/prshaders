@@ -1,7 +1,6 @@
 #define nbase 0x1
 #define ndetail 0x10
 
-
 // common staticMesh samplers
 texture	LightMap;
 sampler LightMapSampler = sampler_state
@@ -18,15 +17,15 @@ sampler LightMapSampler = sampler_state
 texture	DetailMap;
 sampler DetailMapSampler = sampler_state
 {
-    Texture 		= (DetailMap);
-    MipFilter 		= LINEAR;
-    MinFilter 		= FILTER_STM_DIFF_MIN;
-    MagFilter 		= FILTER_STM_DIFF_MAG;
-#ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
-#endif
-    AddressU  		= WRAP;
-    AddressV  		= WRAP;
+    Texture   = (DetailMap);
+    MipFilter = LINEAR;
+    MinFilter = FILTER_STM_DIFF_MIN;
+    MagFilter = FILTER_STM_DIFF_MAG;
+    #ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy = FILTER_STM_DIFF_MAX_ANISOTROPY;
+    #endif
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 texture	DirtMap;
@@ -43,15 +42,15 @@ sampler DirtMapSampler = sampler_state
 texture CrackMap;
 sampler CrackMapSampler = sampler_state
 {
-    Texture 		= (CrackMap);
-    MipFilter 		= LINEAR;
-    MinFilter 		= FILTER_STM_DIFF_MIN;
-    MagFilter 		= FILTER_STM_DIFF_MAG;
-#ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-    MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
-#endif
-    AddressU  		= WRAP;
-    AddressV  		= WRAP;
+    Texture = (CrackMap);
+    MipFilter = LINEAR;
+    MinFilter = FILTER_STM_DIFF_MIN;
+    MagFilter = FILTER_STM_DIFF_MAG;
+    #ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
+        MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
+    #endif
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 texture	CrackNormalMap;
@@ -61,8 +60,8 @@ sampler CrackNormalMapSampler = sampler_state
     MipFilter = FILTER_STM_NORM_MIP;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-    AddressU  = WRAP;
-    AddressV  = WRAP;
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 texture	DiffuseMap;
@@ -72,8 +71,8 @@ sampler DiffuseMapSampler = sampler_state
     MipFilter = LINEAR;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-    AddressU  = WRAP;
-    AddressV  = WRAP;
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 texture	NormalMap;
@@ -83,20 +82,20 @@ sampler NormalMapSampler = sampler_state
     MipFilter = FILTER_STM_NORM_MIP;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-    AddressU  = WRAP;
-    AddressV  = WRAP;
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
-float4	ObjectSpaceCamPos;
-float4	PosUnpack;
-float	TexUnpack;
-float2	NormalUnpack;
-float4	LightMapOffset;
-bool	AlphaBlendEnable;
-float4	StaticSkyColor;
-float4	StaticSpecularColor;
-float4	PointColor;
-float4	StaticSunColor;
-float4	SinglePointColor;
-float4	ParallaxScaleBias;
+float4 ObjectSpaceCamPos;
+float4 PosUnpack;
+float  TexUnpack;
+float2 NormalUnpack;
+float4 LightMapOffset;
+bool   AlphaBlendEnable;
+float4 StaticSkyColor;
+float4 StaticSpecularColor;
+float4 PointColor;
+float4 StaticSunColor;
+float4 SinglePointColor;
+float4 ParallaxScaleBias;
 float  StaticGloss;

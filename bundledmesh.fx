@@ -423,9 +423,9 @@ technique Full
 {
     pass p0
     {
-         VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	viewProjMatrix,
-                                        viewInverseMatrix,
-                                        lightPos);
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	viewProjMatrix,
+                                                                        viewInverseMatrix,
+                                                                        lightPos);
         PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1();
     }
 }
@@ -713,7 +713,6 @@ struct VS2PS_ShadowMapAlpha
     float4 Tex0PosZW   : TEXCOORD0;
     // SHADOWS
     float4 Attenuation : COLOR0;
-    // SHADOWS
 };
 
 VS2PS_ShadowMap vsShadowMap(appdata input)

@@ -1,9 +1,8 @@
 #line 2 "TreeMesh.fx"
 
-float4x4 mvpMatrix : WorldViewProjection;// : register(vs_1_1, c0);
-float4x4 worldIMatrix : WorldI;// : register(vs_1_1, c4);
+float4x4 mvpMatrix : WorldViewProjection; // : register(vs_1_1, c0);
+float4x4 worldIMatrix : WorldI; // : register(vs_1_1, c4);
 float4x4 viewInverseMatrix : ViewI; //: register(vs_1_1, c8);
-//float4x3 mOneBoneSkinning[26]: matONEBONESKINNING; //: register(vs_1_1, c15);
 
 // Sprite parameters
 float4x4 worldViewMatrix : WorldView;
@@ -14,9 +13,9 @@ float4 boundingboxScaledInvGradientMag : BoundingboxScaledInvGradientMag;
 float4 invBoundingBoxScale : InvBoundingBoxScale;
 float4 shadowColor : ShadowColor;
 
-float4 ambColor : Ambient = {0.0f, 0.0f, 0.0f, 1.0f};
-float4 diffColor : Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
-float4 specColor : Specular = {0.0f, 0.0f, 0.0f, 1.0f};
+float4 ambColor  : Ambient  = { 0.0f, 0.0f, 0.0f, 1.0f };
+float4 diffColor : Diffuse  = { 1.0f, 1.0f, 1.0f, 1.0f };
+float4 specColor : Specular = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 texture texture0: TEXLAYER0;
 texture texture1: TEXLAYER1;
@@ -25,11 +24,11 @@ texture texture3: TEXLAYER3;
 
 sampler sampler0 = sampler_state { Texture = (texture0); };
 sampler sampler1 = sampler_state { Texture = (texture1); };
-sampler sampler2 = sampler_state { Texture = (texture2); AddressU=CLAMP; AddressV=CLAMP; };
+sampler sampler2 = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; };
 sampler sampler3 = sampler_state { Texture = (texture3); };
 
 //texture colorLUT: LUTMap;
-float4 eyePos : EyePosition = {0.0f, 0.0f, 1.0f, 0.0f};
+float4 eyePos : EyePosition = { 0.0f, 0.0f, 1.0f, 0.0f };
 
 float4 lightPos : LightPosition
 <
@@ -55,7 +54,6 @@ sampler diffuseSampler = sampler_state
     MinFilter = Linear;
     MagFilter = Linear;
     MipFilter = Linear;
-//	MipMapLodBias = 0;
     AddressU = Wrap;
     AddressV = Wrap;
 };
@@ -66,7 +64,6 @@ sampler normalSampler = sampler_state
     MinFilter = Linear;
     MagFilter = Linear;
     MipFilter = Linear;
-//	MipMapLodBias = 0;
     AddressU = Wrap;
     AddressV = Wrap;
 };
@@ -94,7 +91,6 @@ sampler diffuseAlphaSampler = sampler_state
     MinFilter = Linear;
     MagFilter = Linear;
     MipFilter = Linear;
-//	MipMapLodBias = 0;
     AddressU = Wrap;
     AddressV = Wrap;
 };
@@ -181,7 +177,6 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
     // Transform eye pos to tangent space
     float4 matsEyePos = float4(0.0f, 0.0f, 1.0f, 0.0f);
     float4 worldPos = mul(matsEyePos, ViewInv);
-    //float4 worldPos = mul(EyePos, ViewInv);
 
     float3 objPos = mul(float4(worldPos.xyz, 1.0f), WorldIT);
     float3 tanPos = float3(	dot(objPos,input.Tan),
@@ -258,30 +253,21 @@ OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
 {
     OUT_vsBumpSpecularHemiAndSunPV Out = (OUT_vsBumpSpecularHemiAndSunPV)0;
 
-       //float4 Constants = float4(0.5, 0.5, 0.5, 1.0);
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
 
-     //float3 Pos = mul(input.Pos, mOneBoneSkinning[IndexArray[0]]);
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
-
-     // Hemi lookup values
-     float3 AlmostNormal = input.Normal.xyz;
-     Out.GroundUVAndLerp.xy = (input.Pos +(HeightmapSize/2) + AlmostNormal*1).xz / HeightmapSize;
-     Out.GroundUVAndLerp.z = (AlmostNormal.y+1)/2;
+    // Hemi lookup values
+    float3 AlmostNormal = input.Normal.xyz;
+    Out.GroundUVAndLerp.xy = (input.Pos +(HeightmapSize/2) + AlmostNormal*1).xz / HeightmapSize;
+    Out.GroundUVAndLerp.z = (AlmostNormal.y+1)/2;
 
     // Cross product to create BiNormal
     float3 binormal = normalize(cross(input.Tan, input.Normal));
 
     // Need to calculate the WorldI based on each matBone skinning world matrix
-    float3x3 TanBasis = float3x3( input.Tan.xyz,
-                        binormal,
-                        input.Normal.xyz);
-    // Calculate WorldTangent directly... inverse is the transpose for affine rotations
-
-    //float3x3 worldI = transpose(mul(TanBasis, mOneBoneSkinning[IndexArray[0]]));
+    float3x3 TanBasis = float3x3(input.Tan.xyz, binormal, input.Normal.xyz);
 
     // Pass-through texcoords
     Out.NormalMap = input.TexCoord;
-    //Out.DiffMap = input.TexCoord;
 
     // Transform Light dir to Object space, lightdir is already in object space.
     float3 normalizedTanLightVec = normalize(mul(-LightDir, TanBasis));
@@ -297,10 +283,10 @@ OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
     return Out;
 }
 
-float4 psBumpSpecularHemiAndSunPV(	OUT_vsBumpSpecularHemiAndSunPV indata,
-                    uniform float4 SkyColor,
-                    uniform float4 AmbientColor,
-                    uniform float4 SunColor ) : COLOR
+float4 psBumpSpecularHemiAndSunPV(  OUT_vsBumpSpecularHemiAndSunPV indata,
+                                    uniform float4 SkyColor,
+                                    uniform float4 AmbientColor,
+                                    uniform float4 SunColor ) : COLOR
 {
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
     float3 expandedNormal = (normalmap.xyz - 0.5) * 2;
@@ -366,14 +352,12 @@ technique HemiAndSun
         ZFunc = LESSEQUAL;
         ZWriteEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsBumpSpecularHemiAndSunPV(	mvpMatrix,
-                                        viewInverseMatrix,
-                                        lightDir,
-                                        heightmapSize,
-                                        normalOffsetScale );
-
+        VertexShader = compile vs_2_a vsBumpSpecularHemiAndSunPV(   mvpMatrix,
+                                                                    viewInverseMatrix,
+                                                                    lightDir,
+                                                                    heightmapSize,
+                                                                    normalOffsetScale );
         PixelShader = compile ps_2_a psBumpSpecularHemiAndSunPV(skyColor, ambientColor, sunColor);
-
     }
 }
 
@@ -396,17 +380,13 @@ OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight
 {
     OUT_vsBumpSpecularPointLight Out = (OUT_vsBumpSpecularPointLight)0;
 
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
 
     // Cross product to create BiNormal
     float3 binormal = normalize(cross(input.Tan, input.Normal));
 
     // Need to calculate the WorldI based on each matBone skinning world matrix
-    float3x3 TanBasis = float3x3( input.Tan.xyz,
-                        binormal,
-                        input.Normal.xyz);
-    // Calculate WorldTangent directly... inverse is the transpose for affine rotations
-    //float3x3 worldI = transpose(mul(TanBasis, mOneBoneSkinning[IndexArray[0]]));
+    float3x3 TanBasis = float3x3( input.Tan.xyz, binormal, input.Normal.xyz);
 
     // Pass-through texcoords
     Out.NormalMap = input.TexCoord;
@@ -423,23 +403,20 @@ OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight
     float3 tanEyeVec = mul(objEyeVec, TanBasis);
 
     Out.HalfVec = normalize(normalize(tanLightVec) + normalize(tanEyeVec));
-    //Out.HalfVec = (normalize(tanLightVec) + normalize(tanEyeVec)) * 0.5;
 
     return Out;
 }
 
-float4 psBumpSpecularPointLight(	OUT_vsBumpSpecularPointLight indata,
-                    uniform float AttenuationSqrInv,
-                    uniform float4 LightColor ) : COLOR
+float4 psBumpSpecularPointLight(OUT_vsBumpSpecularPointLight indata,
+                                uniform float AttenuationSqrInv,
+                                uniform float4 LightColor) : COLOR
 {
-//return float4(1.f,1.f,1.f,1.f);
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
     float3 expandedNormal = (normalmap.xyz - 0.5) * 2;
     float4 diffuse = tex2D(sampler3, indata.NormalMap);
 
     float3 normalizedLVec = normalize(indata.LightVec);
     float2 intensityuv = float2(dot(normalizedLVec,expandedNormal), dot(indata.HalfVec,expandedNormal));
-    //float4 intensity = tex2D(sampler2, intensityuv);
     float4 realintensity = intensityuv.r + pow(intensityuv.g,36)*normalmap.a;
     realintensity *= LightColor;
 
@@ -447,11 +424,12 @@ float4 psBumpSpecularPointLight(	OUT_vsBumpSpecularPointLight indata,
     float4 result = attenuation * realintensity;
     result.a = diffuse.a;
     return result;
-
 }
 
-technique PointLight_States <bool Restore = true;> {
-    pass BeginStates {
+technique PointLight_States <bool Restore = true;>
+{
+    pass BeginStates
+    {
         AlphaBlendEnable = TRUE;
         SrcBlend = DESTALPHA;
         DestBlend = ONE;
@@ -464,8 +442,7 @@ technique PointLight_States <bool Restore = true;> {
         MagFilter[0] = LINEAR;
     }
 
-    pass EndStates {
-    }
+    pass EndStates { }
 }
 
 technique PointLight
@@ -483,9 +460,9 @@ technique PointLight
         MinFilter[0] = LINEAR;
         MagFilter[0] = LINEAR;
 
-         VertexShader = compile vs_2_a vsBumpSpecularPointLight(	mvpMatrix,
-                                    viewInverseMatrix,
-                                    lightPos );
+        VertexShader = compile vs_2_a vsBumpSpecularPointLight( mvpMatrix,
+                                                                viewInverseMatrix,
+                                                                lightPos);
 
         PixelShader = compile ps_2_a psBumpSpecularPointLight(attenuationSqrInv, lightColor);
     }
@@ -511,7 +488,7 @@ OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
 {
     OUT_vsBumpSpecularSpotLight Out = (OUT_vsBumpSpecularSpotLight)0;
 
-       // Compensate for lack of UBYTE4 on Geforce3
+    // Compensate for lack of UBYTE4 on Geforce3
     Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
 
     // Cross product to create BiNormal
@@ -519,8 +496,6 @@ OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
 
     // Need to calculate the WorldI based on each matBone skinning world matrix
     float3x3 TanBasis = float3x3( input.Tan.xyz, binormal, input.Normal.xyz);
-    // Calculate WorldTangent directly... inverse is the transpose for affine rotations
-    //float3x3 worldI = transpose(mul(TanBasis, mOneBoneSkinning[IndexArray[0]]));
 
     // Pass-through texcoords
     Out.NormalMap = input.TexCoord;
@@ -536,7 +511,6 @@ OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
     float3 tanEyeVec = mul(objEyeVec, TanBasis);
 
     Out.HalfVec = normalize(normalize(tanLightVec) + normalize(tanEyeVec));
-    //Out.HalfVec = (normalize(tanLightVec) + normalize(tanEyeVec)) * 0.5;
 
     // Light direction in tan space
     Out.LightDir = mul(-LightDir, TanBasis);
@@ -544,10 +518,10 @@ OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
     return Out;
 }
 
-float4 psBumpSpecularSpotLight(	OUT_vsBumpSpecularSpotLight indata,
-                    uniform float AttenuationSqrInv,
-                    uniform float4 LightColor,
-                    uniform float LightConeAngle ) : COLOR
+float4 psBumpSpecularSpotLight( OUT_vsBumpSpecularSpotLight indata,
+                                uniform float AttenuationSqrInv,
+                                uniform float4 LightColor,
+                                uniform float LightConeAngle) : COLOR
 {
     float offCenter = dot(normalize(indata.LightVec), indata.LightDir);
     float conicalAtt = saturate(offCenter-(1-LightConeAngle))/LightConeAngle;
@@ -563,8 +537,10 @@ float4 psBumpSpecularSpotLight(	OUT_vsBumpSpecularSpotLight indata,
     return realintensity * conicalAtt * radialAtt;
 }
 
-technique SpotLight_States <bool Restore = true;> {
-    pass BeginStates {
+technique SpotLight_States <bool Restore = true;>
+{
+    pass BeginStates
+    {
         AlphaBlendEnable = TRUE;
         SrcBlend = DESTALPHA;
         DestBlend = ONE;
@@ -577,8 +553,7 @@ technique SpotLight_States <bool Restore = true;> {
         MagFilter[0] = LINEAR;
     }
 
-    pass EndStates {
-    }
+    pass EndStates { }
 }
 
 technique SpotLight
@@ -596,10 +571,9 @@ technique SpotLight
         MinFilter[0] = LINEAR;
         MagFilter[0] = LINEAR;
 
-         VertexShader = compile vs_2_a vsBumpSpecularSpotLight(	mvpMatrix,
-                                    viewInverseMatrix,
-                                    lightPos, lightDir );
-
+        VertexShader = compile vs_2_a vsBumpSpecularSpotLight(	mvpMatrix,
+                                                                viewInverseMatrix,
+                                                                lightPos, lightDir );
         PixelShader = compile ps_2_a psBumpSpecularSpotLight(attenuationSqrInv, lightColor, coneAngle);
     }
 }
@@ -618,13 +592,10 @@ OUT_vsBumpSpecularMulDiffuse vsBumpSpecularMulDiffuse
 )
 {
     OUT_vsBumpSpecularMulDiffuse Out = (OUT_vsBumpSpecularMulDiffuse)0;
-
-       // Compensate for lack of UBYTE4 on Geforce3
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
-
+    // Compensate for lack of UBYTE4 on Geforce3
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0f), ViewProj);
     // Pass-through texcoords
     Out.DiffuseMap = input.TexCoord;
-
     return Out;
 }
 
@@ -651,10 +622,8 @@ technique MulDiffuse
         MinFilter[0] = LINEAR;
         MagFilter[0] = LINEAR;
 
-         VertexShader = compile vs_2_a vsBumpSpecularMulDiffuse(	mvpMatrix,
-                                    viewInverseMatrix);
+        VertexShader = compile vs_2_a vsBumpSpecularMulDiffuse(mvpMatrix, viewInverseMatrix);
         PixelShader = compile ps_2_a psBumpSpecularMulDiffuse();
-
     }
 }
 
@@ -666,14 +635,12 @@ technique trunk
 
         ZEnable = true;
         ZWriteEnable = true;
-        //ZWriteEnable = false;
-        //FillMode = WIREFRAME;
         AlphaBlendEnable = false;
         AlphaTestEnable = true;
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-         VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(   mvpMatrix,
                                                                         worldIMatrix,
                                                                         viewInverseMatrix,
                                                                         lightPos,
@@ -688,24 +655,21 @@ technique sprite
     {
 
         ZEnable = true;
-        //ZEnable = false;
         ZWriteEnable = true;
-        //ZWriteEnable = false;
-        //FillMode = WIREFRAME;
         CullMode = NONE;
         AlphaBlendEnable = false;
         AlphaTestEnable = true;
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-         VertexShader = compile vs_2_a spriteVertexShader(	worldViewMatrix,
-                                                             projMatrix,
+        VertexShader = compile vs_2_a spriteVertexShader(   worldViewMatrix,
+                                                            projMatrix,
                                                             spriteScale,
                                                             shadowSpherePoint,
                                                             invBoundingBoxScale,
                                                             boundingboxScaledInvGradientMag,
                                                             shadowColor,
-                                                            lightColor	);
+                                                            lightColor);
         PixelShader = compile ps_2_a spritePixelShader();
     }
 }

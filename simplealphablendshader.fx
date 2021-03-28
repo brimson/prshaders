@@ -2,8 +2,8 @@ float4x4 mWorldViewProj : WorldViewProjection;
 
 texture basetex: TEXLAYER0
 <
-     string File = "aniso2.dds";
-     string TextureType = "2D";
+    string File = "aniso2.dds";
+    string TextureType = "2D";
 >;
 
 struct APP2VS
@@ -21,7 +21,6 @@ struct VS2PS
 sampler diffuseSampler = sampler_state
 {
     Texture = <basetex>;
-    //Target = Texture2D;
     MinFilter = Linear;
     MagFilter = Linear;
     MipFilter = Linear;
@@ -40,7 +39,8 @@ VS2PS VShader(APP2VS indata,
     return outdata;
 }
 
-technique t0_States <bool Restore = true;> {
+technique t0_States <bool Restore = true;>
+{
     pass BeginStates {
         ZEnable = true;
         // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
@@ -50,12 +50,9 @@ technique t0_States <bool Restore = true;> {
         AlphaBlendEnable = true;
         SrcBlend = ONE;
         DestBlend = ONE;
-        //SrcBlend = SRCALPHA;
-        //DestBlend = INVSRCALPHA;
     }
 
-    pass EndStates {
-    }
+    pass EndStates { }
 }
 
 technique t0
@@ -76,16 +73,3 @@ technique t0
         AlphaOp[1] = Disable;
     }
 }
-
-/*technique marked
-{
-    pass p0
-    {
-        CullMode = NONE;
-        AlphaBlendEnable = FALSE;
-        Lighting = TRUE;
-
-        VertexShader = compile vs_2_a VShader(mWorldViewProj,MaterialAmbient,MaterialDiffuse,LhtDir);
-        PixelShader = compile ps_2_a PShaderMarked(samplebase);
-    }
-}*/

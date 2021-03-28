@@ -5,11 +5,8 @@ float4x4 wvpMat : WorldViewProj;
 float4x4 wvMat : WorldView;
 float4 lightColor : LightColor;
 
-
 float3 spotDir : SpotDir;
 float spotConeAngle : ConeAngle;
-
-//float3 spotPosition : SpotPosition;
 
 struct appdata
 {
@@ -31,7 +28,6 @@ VS_OUTPUT vsPointLight(appdata input, uniform float4x4 myWVP)
 float4 psPointLight() : COLOR
 {
     return lightColor;
-    //return float4(1,0,0,1);
 }
 
 technique Pointlight
@@ -54,7 +50,7 @@ technique Pointlight
         StencilFunc = ALWAYS;
         StencilPass = ZERO;
 
-         VertexShader = compile vs_2_a vsPointLight(wvpMat);
+        VertexShader = compile vs_2_a vsPointLight(wvpMat);
         PixelShader = compile ps_2_a psPointLight();
     }
 }
@@ -70,7 +66,7 @@ struct VS_SPOT_OUTPUT
 VS_SPOT_OUTPUT vsSpotLight(appdata input, uniform float4x4 myWVP, uniform float4x4 myWV, uniform float3 lightDir)
 {
     VS_SPOT_OUTPUT Out;
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0f), myWVP);
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0f), myWVP);
 
     // transform vertex
     float3 vertPos = mul(float4(input.Pos.xyz, 1.0f), myWV);
@@ -90,9 +86,6 @@ float4 psSpotLight(VS_SPOT_OUTPUT input, uniform float coneAngle, uniform float 
 
     return lightColor * conicalAtt;
 }
-
-///
-
 
 technique Spotlight
 <
@@ -114,7 +107,7 @@ technique Spotlight
         StencilFunc = ALWAYS;
         StencilPass = ZERO;
 
-         VertexShader = compile vs_2_a vsSpotLight(wvpMat, wvMat, spotDir);
+        VertexShader = compile vs_2_a vsSpotLight(wvpMat, wvMat, spotDir);
         PixelShader = compile ps_2_a psSpotLight(spotConeAngle, 1.f - spotConeAngle);
     }
 }

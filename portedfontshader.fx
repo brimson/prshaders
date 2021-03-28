@@ -37,19 +37,17 @@ float4 HPosPS(VS2PS indata) : COLOR
     return outCol;
 }
 
-technique Text_States <bool Restore = true;> {
-    pass BeginStates {
+technique Text_States <bool Restore = true;>
+{
+    pass BeginStates
+    {
         ZEnable = FALSE;
-
         AlphaBlendEnable = TRUE;
-//		SrcBlend = INVSRCCOLOR;
-//		DestBlend = SRCCOLOR;
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
     }
 
-    pass EndStates {
-    }
+    pass EndStates { }
 }
 
 technique Text <

@@ -23,8 +23,8 @@ sampler DiffuseMapSampler = sampler_state
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {
-     "Position",
-     "TBase2D"
+    "Position",
+    "TBase2D"
 };
 
 VS_OUTPUT basicVertexShader
@@ -34,11 +34,9 @@ float2 tex0	: TEXCOORD0
 )
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
-
-    Out.Pos		= mul(float4(inPos, 1), mul(World, ViewProjection));
-    Out.Fog		= calcFog(Out.Pos.w);
-    Out.Tex0	= tex0;
-
+    Out.Pos  = mul(float4(inPos, 1), mul(World, ViewProjection));
+    Out.Fog  = calcFog(Out.Pos.w);
+    Out.Tex0 = tex0;
     return Out;
 }
 
@@ -70,18 +68,18 @@ technique defaultTechnique
 {
     pass P0
     {
-        vertexShader	= compile vs_2_a basicVertexShader();
-        pixelShader		= compile ps_2_a basicPixelShader();
+        vertexShader = compile vs_2_a basicVertexShader();
+        pixelShader  = compile ps_2_a basicPixelShader();
 
-#ifdef ENABLE_WIREFRAME
-        FillMode		= WireFrame;
-#endif
+        #ifdef ENABLE_WIREFRAME
+            FillMode = WireFrame;
+        #endif
 
-        AlphaTestEnable = true;//< AlphaTest >;
-        AlphaBlendEnable= < alphaBlendEnable >;
-        AlphaRef		= < alphaRef >;
-        SrcBlend		= < srcBlend >;
-        DestBlend		= < destBlend >;
+        AlphaTestEnable  = true;//< AlphaTest >;
+        AlphaBlendEnable = < alphaBlendEnable >;
+        AlphaRef         = < alphaRef >;
+        SrcBlend         = < srcBlend >;
+        DestBlend        = < destBlend >;
 
         AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 

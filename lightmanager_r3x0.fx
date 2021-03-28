@@ -185,21 +185,10 @@ PS2FB_DiffSpec psDx9_SunLightTransparent(VS2PS_Quad indata)
     float4 viewNormal = tex2D(sampler0, indata.TexCoord0);
     float4 wPos = tex2D(sampler1, indata.TexCoord0);
     float4 diffTex = tex2D(sampler5, indata.TexCoord0);
-
-//	wPos.w = 1;
-//	wPos.xy = wPos.xy*2 - 1;
-//	wPos = mul(wPos, mCamPI);
-//	wPos.xyz /= wPos.w;
-//	wPos.w = 1;
-//	wPos = mul(wPos, mCamVI);
-
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
-//	float3 halfVec = normalize(-LightDir.xyz + normalize(-wPos.xyz));
-//	float spec = saturate(dot(viewNormal.xyz, halfVec));
 
     outdata.Col0 = diff * LightCol * diffTex.a;
     outdata.Col1 = 0; //TL don't need specular decals; //pow(spec, 36) * viewNormal.a * LightCol * diffTex.a;
-
     return outdata;
 }
 
@@ -235,14 +224,6 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamicObjectsNV(VS2PS_D3DXMesh indata)
     float4 lightUV = mul(viewPos, mLightVP);
     lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
 
-    /*
-    float4 samples;
-    samples.x = tex2D(sampler3, lightUV);
-    samples.y = tex2D(sampler3, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler3, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler3, lightUV + float2(texel, texel));
-    */
-
     float avgShadowValue = tex2Dproj(sampler3bilin, lightUV); // HW percentage closer filtering.
 
     float texel = 1.0 / 1024.0;
@@ -252,10 +233,6 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamicObjectsNV(VS2PS_D3DXMesh indata)
     staticSamples.z = tex2D(sampler4bilin, lightUV + float2(-texel*1,  texel*2)).r;
     staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
     staticSamples.x = dot(staticSamples, 0.25);
-
-    /*const float epsilon = 0.05;
-    float4 cmpbits = (samples.xyzw + epsilon) >= saturate(lightUV.zzzz);
-    float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));*/
 
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
 
@@ -320,12 +297,6 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamic1pObjectsNV(VS2PS_D3DXMesh indata)
     float4 lightUV = mul(viewPos, mLightVP);
     lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
 
-    /*
-    float4 samples;
-    samples.x = tex2D(sampler3, lightUV);
-    samples.y = tex2D(sampler3, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler3, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler3, lightUV + float2(texel, texel));*/
     float avgShadowValue = tex2D(sampler3bilin, lightUV); // HW percentage closer filtering.
 
     float texel = 1.0 / 1024.0;
@@ -336,20 +307,14 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamic1pObjectsNV(VS2PS_D3DXMesh indata)
     staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
     staticSamples.x = dot(staticSamples, 0.25);
 
-    /*const float epsilon = 0.05;
-    float4 cmpbits = (samples.xyzw + epsilon) >= saturate(lightUV.zzzz);
-    float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));*/
-
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
 
     float3 halfVec = normalize(-LightDir.xyz + normalize(-viewPos.xyz));
     float spec = saturate(dot(viewNormal.xyz, halfVec));
 
-    //float totShadow = avgShadowValue*staticSamples.x;
     float totShadow = staticSamples.x;
 
     outdata.Col0 =  diff * LightCol * totShadow;
-    //outdata.Col0 = diff * LightCol * saturate(totShadow+0.35);
     outdata.Col1 = pow(spec, 36) * viewNormal.a * LightCol * totShadow;
 
     return outdata;
@@ -366,13 +331,6 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamic1pObjects(VS2PS_D3DXMesh indata)
     lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
 
     float texel = 1.0 / 1024.0;
-/*
-    float4 samples;
-    samples.x = tex2D(sampler3, lightUV);
-    samples.y = tex2D(sampler3, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler3, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler3, lightUV + float2(texel, texel));
-*/
 
     float4 staticSamples;
     staticSamples.x = tex2D(sampler4bilin, lightUV + float2(-texel*1, -texel*2)).r;
@@ -381,22 +339,14 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamic1pObjects(VS2PS_D3DXMesh indata)
     staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
     staticSamples.x = dot(staticSamples, 0.25);
 
-/*
-    const float epsilon = 0.05;
-    float4 cmpbits = (samples.xyzw + epsilon) >= saturate(lightUV.zzzz);
-    float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
-*/
-
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
 
     float3 halfVec = normalize(-LightDir.xyz + normalize(-viewPos.xyz));
     float spec = saturate(dot(viewNormal.xyz, halfVec));
 
-    //float totShadow = avgShadowValue*staticSamples.x;
     float totShadow = staticSamples.x;
 
     outdata.Col0 =  diff * LightCol * totShadow;
-    //outdata.Col0 = diff * LightCol * saturate(totShadow+0.35);
     outdata.Col1 = pow(spec, 36) * viewNormal.a * LightCol * totShadow;
 
     return outdata;
@@ -406,20 +356,17 @@ VS2PS_D3DXMesh vsDx9_SunLightShadowStaticObjects(APP2VS_D3DXMesh indata)
 {
     VS2PS_D3DXMesh outdata;
 
-//	float4 scaledPos = indata.Pos + float4(0, 0, 0.5, 0);
-//	outdata.Pos = mul(scaledPos, mWVP);
-
     float4 scaledPos = indata.Pos + float4(0, 0, 0.5, 0);
     scaledPos = mul(scaledPos, mObjW);
     scaledPos = mul(scaledPos, mCamV);
     scaledPos = mul(scaledPos, mCamP);
     outdata.Pos = scaledPos;
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -437,24 +384,10 @@ PS2FB_DiffSpec psDx9_SunLightShadowStaticObjectsNV(VS2PS_D3DXMesh indata)
 
     float4 lightUV = mul(viewPos, mLightVP);
 
-    //lightUV.xy = clamp(lightUV.xy, vViewportMap.zw, vViewportMap.xy+vViewportMap.zw);
     lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
-    //lightUV.z *= lightUV.w;
 
-    /*float texel = 1.0 / 1024.0;
-    float4 samples;
-    samples.x = tex2D(sampler3, lightUV);
-    samples.y = tex2D(sampler3, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler3, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler3, lightUV + float2(texel, texel));*/
-    lightUV.z = /*clamp(lightUV.z, 0, 0.999);//*/saturate(lightUV.z) - 0.001;
+    lightUV.z = saturate(lightUV.z) - 0.001;
     float avgShadowValue = tex2Dproj(sampler3bilin, lightUV); // HW percentage closer filtering.
-
-    /*const float epsilon = 0.0075;
-//const float epsilon = 0.085;
-//	float epsilon = 0.00000001;// -projPos.z / 100;
-    float4 cmpbits = (samples.xyzw + epsilon) >= saturate(lightUV.zzzz);
-    float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));*/
 
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
     float3 halfVec = normalize(-LightDir.xyz + normalize(-viewPos.xyz));
@@ -477,7 +410,6 @@ PS2FB_DiffSpec psDx9_SunLightShadowStaticObjects(VS2PS_D3DXMesh indata)
 
     float4 lightUV = mul(viewPos, mLightVP);
 
-    //lightUV.xy = clamp(lightUV.xy, vViewportMap.zw, vViewportMap.xy+vViewportMap.zw);
     lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
 
     float texel = 1.0 / 1024.0;
@@ -488,8 +420,6 @@ PS2FB_DiffSpec psDx9_SunLightShadowStaticObjects(VS2PS_D3DXMesh indata)
     samples.w = tex2D(sampler3, lightUV + float2(texel, texel));
 
     const float epsilon = 0.0075;
-//const float epsilon = 0.085;
-//	float epsilon = 0.00000001;// -projPos.z / 100;
     float4 cmpbits = (samples.xyzw + epsilon) >= saturate(lightUV.zzzz);
     float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
 
@@ -507,14 +437,14 @@ VS2PS_D3DXMesh vsDx9_PointLight(APP2VS_D3DXMesh indata)
 {
     VS2PS_D3DXMesh outdata;
 
-     float3 wPos = indata.Pos * LightAttenuationRange + LightWorldPos.xyz;
-     outdata.Pos = mul(float4(wPos, 1), mVP);
+    float3 wPos = indata.Pos * LightAttenuationRange + LightWorldPos.xyz;
+    outdata.Pos = mul(float4(wPos, 1), mVP);
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -591,8 +521,7 @@ PS2FB_DiffSpec psDx9_PointLight2(VS2PS_D3DXMesh indata)
     float3 halfVec = normalize(-LightDir.xyz + normalize(-viewPos.xyz));
     float spec = saturate(dot(viewNormal.xyz, halfVec)) * radialAtt;
 
-outdata.Col0 = max(diff * LightCol, currDiff);
-//	outdata.Col0 = max(max(lightmap,diff * LightCol), currDiff);
+    outdata.Col0 = max(diff * LightCol, currDiff);
     outdata.Col1 = max(pow(spec, 36) * viewNormal.a * LightCol, currSpec);
 
     return outdata;
@@ -623,10 +552,7 @@ PS2FB_DiffSpec psDx9_PointLightShadowNV(VS2PS_D3DXMesh indata)
     paraPos1.xy /= paraPos1.z;
     paraPos2.xy /= paraPos2.z;
 
-    //paraboloidZValues.x *= 1;
-    //paraboloidZValues.y += 1;
     float paraPosZ = lightDist*paraboloidZValues.x + paraboloidZValues.y;
-    //float paraPosZ = (paraPos1.z - paraboloidZValues.y) / paraboloidZValues.x;//lightDist*paraboloidZValues.x + paraboloidZValues.y;
 
     paraPos1.xy = saturate(paraPos1.xy * float2(0.5, -0.5) + 0.5);
     paraPos1.xy = paraPos1.xy * vViewportMap.wz + vViewportMap.xy;
@@ -637,12 +563,9 @@ PS2FB_DiffSpec psDx9_PointLightShadowNV(VS2PS_D3DXMesh indata)
     avgPara.x = tex2Dproj(sampler5bilin, float4(paraPos1.xy, paraPosZ, 1));
     avgPara.y = tex2Dproj(sampler6bilin, float4(paraPos2.xy, paraPosZ, 1));
 
-    //const float epsilon = 0.0075;
-    //float2 avgPara = (paraSamples.xy + epsilon) >= paraPosZ;
-
     float diff = saturate(dot(viewNormal.xyz, normalize(lightVec))) * radialAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(-viewPos.xyz));
-    float spec = 0;//saturate(dot(viewNormal.xyz, halfVec)) * radialAtt;
+    float spec = 0;
 
     float shad = hemiSel >= 0 ? avgPara.x : avgPara.y;
     outdata.Col0 = max(diff * LightCol * shad, currDiff);
@@ -743,7 +666,7 @@ PS2FB_DiffSpec psDx9_PointLightShadowNV40(VS2PS_D3DXMesh indata)
 
     float diff = saturate(dot(viewNormal.xyz, normalize(lightVec))) * radialAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(-viewPos.xyz));
-    float spec = 0;//saturate(dot(viewNormal.xyz, halfVec)) * radialAtt;
+    float spec = 0;
 
     float shad = hemiSel >= 0 ? avgPara.x : avgPara.y;
     outdata.Col0 = diff * LightCol * shad;
@@ -757,8 +680,8 @@ VS2PS_D3DXMesh2 vsDx9_PointLightGlow(APP2VS_D3DXMesh indata)
     VS2PS_D3DXMesh2 outdata;
 
     float scale = LightAttenuationRange;
-     float3 wPos = (indata.Pos*scale) + LightWorldPos.xyz;
-     outdata.Pos = mul(float4(wPos, 1), mVP);
+    float3 wPos = (indata.Pos*scale) + LightWorldPos.xyz;
+    outdata.Pos = mul(float4(wPos, 1), mVP);
 
     outdata.wPos = dot(normalize(EyePos-LightWorldPos.xyz),normalize(wPos-LightWorldPos.xyz));
     outdata.wPos = outdata.wPos*outdata.wPos*outdata.wPos*outdata.wPos;
@@ -775,13 +698,13 @@ VS2PS_D3DXMesh vsDx9_SpotLight(APP2VS_D3DXMesh indata)
     VS2PS_D3DXMesh outdata;
 
     float4 scaledPos = indata.Pos * float4(1.5, 1.5, 1, 1) + float4(0, 0, 0.5, 0);
-     outdata.Pos = mul(scaledPos, mWVP);
+    outdata.Pos = mul(scaledPos, mWVP);
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -857,8 +780,6 @@ PS2FB_DiffSpec psDx9_SpotLightShadowNV(VS2PS_D3DXMesh indata)
     lightUV.xyz /= lightUV.w;
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
 
-    //float texel = 1.0 / 1024.0;
-    //const float epsilon = 0.005;
     float4 samples = tex2D(sampler6bilin, lightUV);
 
     float3 lightVec = LightPos.xyz - viewPos;
@@ -891,8 +812,6 @@ PS2FB_DiffSpec psDx9_SpotLightShadowNV40(VS2PS_D3DXMesh indata)
     lightUV.xyz /= lightUV.w;
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
 
-    //float texel = 1.0 / 1024.0;
-    //const float epsilon = 0.005;
     float4 samples = tex2D(sampler6, lightUV);
 
     float3 lightVec = LightPos.xyz - viewPos;
@@ -928,8 +847,6 @@ PS2FB_DiffSpec psDx9_SpotLightShadow(VS2PS_D3DXMesh indata)
     lightUV.xyz /= lightUV.w;
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
 
-    //float texel = 1.0 / 1024.0;
-    //const float epsilon = 0.005;
     float4 samples = tex2D(sampler6, lightUV);
 
     float3 lightVec = LightPos.xyz - viewPos;
@@ -960,14 +877,13 @@ VS2PS_D3DXMesh vsDx9_SpotProjector(APP2VS_D3DXMesh indata)
     float vdist = far-near;
 
     float4 properPos = indata.Pos + float4(0, 0, 0.5, 0);
-    //properPos.xy *= properPos.z;
-     outdata.Pos = mul(properPos, mWVP);
+    outdata.Pos = mul(properPos, mWVP);
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -1053,19 +969,6 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadowNV(VS2PS_D3DXMesh indata)
     float2 headlightuv = lightUV.xy * float2(0.5, 0.5) + 0.5;
     float4 headlight = tex2D(sampler5bilin, headlightuv);
 
-//	lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
-//	lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
-//	lightUV.xy = lightUV.xy * float2(1, -1);
-
-    /*float texel = 1.0 / 1024.0;
-    const float epsilon = 0.005;
-    float4 samples;
-    samples.x = tex2D(sampler6, lightUV);
-    samples.y = tex2D(sampler6, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler6, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler6, lightUV + float2(texel, texel));
-    float4 avgSamples = (samples.xyzw+epsilon) > lightUV.zzzz;
-    avgSamples = dot(avgSamples, 0.25);*/
     float4 avgSamples = tex2D(sampler6bilin, lightUV);
 
     float3 lightVec = LightPos.xyz - viewPos;
@@ -1091,9 +994,6 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadowNV40(VS2PS_D3DXMesh indata)
 {
     PS2FB_DiffSpec outdata;
 
-    //float4 currDiff = tex2Dproj(sampler0, indata.TexCoord0);
-    //float4 currSpec = tex2Dproj(sampler1, indata.TexCoord0);
-
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
@@ -1104,8 +1004,6 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadowNV40(VS2PS_D3DXMesh indata)
     float2 headlightuv = lightUV.xy * float2(0.5, 0.5) + 0.5;
     float4 headlight = tex2D(sampler5bilin, headlightuv);
 
-
-//	lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
     lightUV.xy = saturate(lightUV.xy * float2(0.5, -0.5) + 0.5);
     lightUV.xy = lightUV.xy * vViewportMap.zw + vViewportMap.xy;
 
@@ -1154,11 +1052,8 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadow(VS2PS_D3DXMesh indata)
     float2 headlightuv = lightUV.xy * float2(0.5, 0.5) + 0.5;
     float4 headlight = tex2D(sampler5bilin, headlightuv);
 
-
-//	lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
     lightUV.xy = saturate(lightUV.xy * vViewportMap.zw + vViewportMap.xy);
-//	lightUV.xy = lightUV.xy * float2(1, -1);
 
     float texel = 1.0 / 1024.0;
     const float epsilon = 0.005;
@@ -1193,14 +1088,14 @@ VS2PS_D3DXMesh vsDx9_BlitBackLightContribPoint(APP2VS_D3DXMesh indata)
 {
     VS2PS_D3DXMesh outdata;
 
-     float3 wPos = indata.Pos * LightAttenuationRange + LightWorldPos.xyz;
-     outdata.Pos = mul(float4(wPos, 1), mVP);
+    float3 wPos = indata.Pos * LightAttenuationRange + LightWorldPos.xyz;
+    outdata.Pos = mul(float4(wPos, 1), mVP);
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -1212,13 +1107,13 @@ VS2PS_D3DXMesh vsDx9_BlitBackLightContribSpot(APP2VS_D3DXMesh indata)
     VS2PS_D3DXMesh outdata;
 
     float4 scaledPos = indata.Pos * float4(1.5, 1.5, 1, 1) + float4(0, 0, 0.5, 0);
-     outdata.Pos = mul(scaledPos, mWVP);
+    outdata.Pos = mul(scaledPos, mWVP);
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -1234,18 +1129,14 @@ VS2PS_D3DXMesh vsDx9_BlitBackLightContribSpotProjector(APP2VS_D3DXMesh indata)
     float vdist = far-near;
 
     float4 properPos = indata.Pos + float4(0, 0, 0.5, 0);
-    //properPos.z *= vdist;
-    //properPos.z += near;
-//properPos.z += 0.1;
-    //properPos.xy *= properPos.z;
 
-     outdata.Pos = mul(properPos, mWVP);
+    outdata.Pos = mul(properPos, mWVP);
 
-     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
-     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-     outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
-outdata.TexCoord0.x += 0.000625;
-outdata.TexCoord0.y += 0.000833;
+    outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
+    outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
+    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.x += 0.000625;
+    outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
     outdata.TexCoord0.zw = outdata.Pos.zw;
 
@@ -1263,8 +1154,8 @@ PS2FB_DiffSpec psDx9_BlitBackLightContrib(VS2PS_D3DXMesh indata)
 VS2PS_Quad vsDx9_Combine(APP2VS_Quad indata)
 {
     VS2PS_Quad outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-     outdata.TexCoord0 = indata.TexCoord0;
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 
@@ -1294,12 +1185,7 @@ PS2FB_Combine psDx9_CombineTransparent(VS2PS_Quad indata)
     float4 diff1 = tex2D(sampler2, indata.TexCoord0);
     float4 spec1 = tex2D(sampler3, indata.TexCoord0);
 
-    //float sunDot = saturate(dot(EyeDof, -LightDir.xyz));
-    //float expDot = sunDot*sunDot*sunDot*sunDot*sunDot*sunDot;
-    //expDot = clamp(expDot, 0, 0.25);
-
-    float4 diffTot = lightmap + diff1;// - expDot;
-
+    float4 diffTot = lightmap + diff1;
     float4 specTot = spec1;
 
     outdata.Col0 = diffTot * diffTex + specTot;
@@ -1326,6 +1212,7 @@ technique SunLight
         VertexShader = compile vs_2_a vsDx9_SunLightDynamicObjects();
         PixelShader = compile ps_2_a psDx9_SunLightDynamicObjects();
     }
+
     pass opaqueDynamicSkinObjects
     {
         ZEnable = FALSE;
@@ -1342,6 +1229,7 @@ technique SunLight
         VertexShader = compile vs_2_a vsDx9_SunLightDynamicObjects();
         PixelShader = compile ps_2_a psDx9_SunLightDynamicSkinObjects();
     }
+
     pass opaqueStaticObjects
     {
         ZEnable = FALSE;
@@ -1365,11 +1253,7 @@ technique SunLight
         AlphaBlendEnable = FALSE;
 
         StencilEnable = TRUE;
-//StencilFunc = EQUAL;
-//StencilRef = 3;
-StencilFunc = NEVER;
-//StencilRef = 223;
-//StencilMask = 0xFF;
+        StencilFunc = NEVER;
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilPass = KEEP;
@@ -1457,14 +1341,11 @@ technique SunLightShadowNV <
         ZFunc = GREATER;
         CullMode = NONE;
 
-//		ZEnable = FALSE;
         AlphaBlendEnable = FALSE;
 
         StencilEnable = TRUE;
-StencilFunc = EQUAL;
-StencilRef = 240;
-        //StencilFunc = NOTEQUAL;
-        //StencilRef = 1;
+        StencilFunc = EQUAL;
+        StencilRef = 240;
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilPass = KEEP;
@@ -1550,14 +1431,11 @@ technique SunLightShadow <
         ZFunc = GREATER;
         CullMode = NONE;
 
-//		ZEnable = FALSE;
         AlphaBlendEnable = FALSE;
 
         StencilEnable = TRUE;
-StencilFunc = EQUAL;
-StencilRef = 240;
-        //StencilFunc = NOTEQUAL;
-        //StencilRef = 1;
+        StencilFunc = EQUAL;
+        StencilRef = 240;
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilPass = KEEP;
@@ -1582,16 +1460,10 @@ technique PointLight <
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
         CullMode = NONE;
-//		ZFunc = LESSEQUAL;
-//		CullMode = NONE;
-//		ZFunc = GREATER;
-//		CullMode = CW;
 
         AlphaBlendEnable = FALSE;
 
         StencilEnable = TRUE;
-        //StencilFunc = (dwStencilFunc);//NOTEQUAL;
-        //StencilRef = (dwStencilRef);//1;
         StencilFunc = NOTEQUAL;
         StencilRef = 1;
         StencilFail = KEEP;
@@ -1608,14 +1480,10 @@ technique PointLight <
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
         CullMode = NONE;
-//		ZFunc = LESSEQUAL;
-//		CullMode = NONE;
-//		ZFunc = GREATER;
-//		CullMode = CW;
 
         AlphaBlendEnable = FALSE;
 
-        StencilFunc = (dwStencilFunc);//EQUAL;
+        StencilFunc = (dwStencilFunc);
 
         VertexShader = compile vs_2_a vsDx9_PointLight();
         PixelShader = compile ps_2_a psDx9_PointLight2();
@@ -1684,28 +1552,6 @@ technique PointLightNV40 <
         VertexShader = compile vs_2_a vsDx9_PointLight();
         PixelShader = compile ps_2_a ps_dummy();
     }
-
-    /*pass p1
-    {
-        ZEnable = TRUE;
-        ZWriteEnable = FALSE;
-        ZFunc = GREATER;
-        CullMode = NONE;
-//		ZFunc = LESSEQUAL;
-//		CullMode = NONE;
-//		ZFunc = GREATER;
-//		CullMode = CW;
-
-        AlphaBlendEnable = TRUE;
-        SrcBlend = ONE;
-        DestBlend = ONE;
-        BlendOp = MAX;
-
-        StencilFunc = (dwStencilFunc);//EQUAL;
-
-        VertexShader = compile vs_2_a vsDx9_PointLight();
-        PixelShader = compile ps_2_a psDx9_PointLight2();
-    }*/
 }
 
 technique PointLightShadowNV <
@@ -1986,12 +1832,8 @@ technique SpotProjector <
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
-//		CullMode = NONE;
-//ZFunc = LESSEQUAL;
-//CullMode = NONE;
 
         AlphaBlendEnable = FALSE;
-//		StencilEnable = FALSE;
 
         StencilEnable = TRUE;
         StencilFunc = NOTEQUAL;
@@ -2019,15 +1861,11 @@ technique SpotProjectorNV40 <
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
-//		CullMode = NONE;
-//ZFunc = LESSEQUAL;
-//CullMode = NONE;
 
         AlphaBlendEnable = TRUE;
         SrcBlend = ONE;
         DestBlend = ONE;
         BlendOp = MAX;
-//		StencilEnable = FALSE;
 
         StencilEnable = TRUE;
         StencilFunc = NOTEQUAL;
@@ -2056,11 +1894,8 @@ technique SpotProjectorShadowNV <
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
         CullMode = NONE;
-//ZFunc = LESSEQUAL;
-//CullMode = NONE;
 
         AlphaBlendEnable = FALSE;
-//		StencilEnable = FALSE;
 
         StencilEnable = TRUE;
         StencilFunc = NOTEQUAL;
@@ -2089,11 +1924,8 @@ technique SpotProjectorShadow <
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
         CullMode = NONE;
-//ZFunc = LESSEQUAL;
-//CullMode = NONE;
 
         AlphaBlendEnable = FALSE;
-//		StencilEnable = FALSE;
 
         StencilEnable = TRUE;
         StencilFunc = NOTEQUAL;
@@ -2122,8 +1954,6 @@ technique SpotProjectorShadowNV40 <
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
         CullMode = NONE;
-//ZFunc = LESSEQUAL;
-//CullMode = NONE;
 
         AlphaBlendEnable = TRUE;
         SrcBlend = ONE;
@@ -2185,8 +2015,6 @@ technique BlitBackLightContrib <
         ZWriteEnable = FALSE;
         ZFunc = GREATER;
         CullMode = NONE;
-//ZFunc = LESSEQUAL;
-//CullMode = NONE;
 
         AlphaBlendEnable = FALSE;
         StencilEnable = FALSE;
@@ -2215,7 +2043,6 @@ technique Combine
         ZWriteEnable = FALSE;
         AlphaBlendEnable = TRUE;
         SrcBlend = SRCALPHA;
-//		DestBlend = DESTALPHA;
         DestBlend = INVSRCALPHA;
 
         StencilEnable = TRUE;
