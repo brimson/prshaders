@@ -1,2 +1,5 @@
 # prshaders
-Proposed changes for Project Reality's shaders
+
+Credits to Project Reality authors for the overhual
+
+https://www.realitymod.com/
