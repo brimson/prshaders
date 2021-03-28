@@ -1,27 +1,27 @@
 #include "shaders/RaDefines.fx"
 
 #ifdef DISABLE_DIFFUSEMAP
-	#ifdef DISABLE_BUMPMAP
-		#ifndef DISABLE_SPECULAR
-			#define DRAW_ONLY_SPEC
-		#endif
-	#endif
+    #ifdef DISABLE_BUMPMAP
+        #ifndef DISABLE_SPECULAR
+            #define DRAW_ONLY_SPEC
+        #endif
+    #endif
 #endif
 
 #ifdef DRAW_ONLY_SPEC
-	#define DEFAULT_DIFFUSE_MAP_COLOR float4(0,0,0,1)
+    #define DEFAULT_DIFFUSE_MAP_COLOR float4(0,0,0,1)
 #else
-	#define DEFAULT_DIFFUSE_MAP_COLOR float4(1,1,1,1)
-#endif	
+    #define DEFAULT_DIFFUSE_MAP_COLOR float4(1,1,1,1)
+#endif
 
 // VARIABLES
 struct Light
 {
-	float3	pos;
-	float3	dir;
-	float4	color;
-	float4	specularColor;
-	float	attenuation;
+    float3	pos;
+    float3	dir;
+    float4	color;
+    float4	specularColor;
+    float	attenuation;
 };
 
 int			srcBlend = 5;
@@ -42,7 +42,7 @@ float4		Transparency = 1.0f;
 
 float4x4	World;
 float4x4	ViewProjection;
-float4x4	WorldViewProjection; 
+float4x4	WorldViewProjection;
 
 bool		AlphaTest	= false;
 
@@ -51,48 +51,48 @@ float4		FogColor : fogColor;
 
 float calcFog(float w)
 {
-	half2 fogVals = w*FogRange.xy + FogRange.zw;
-	half close = max(fogVals.y, FogColor.w);
-	half far = pow(fogVals.x,3);
-	return close-far;
+    half2 fogVals = w*FogRange.xy + FogRange.zw;
+    half close = max(fogVals.y, FogColor.w);
+    half far = pow(fogVals.x,3);
+    return close-far;
 }
 
 #define NO_VAL float3(1, 1, 0)
 
 float4 showChannel(
-	float3 diffuse = NO_VAL, 
-	float3 normal = NO_VAL, 
-	float specular = 0, 
-	float alpha = 0,
-	float3 shadow = 0,
-	float3 environment = NO_VAL)
+    float3 diffuse = NO_VAL,
+    float3 normal = NO_VAL,
+    float specular = 0,
+    float alpha = 0,
+    float3 shadow = 0,
+    float3 environment = NO_VAL)
 {
-	float4 returnVal = float4(0, 1, 1, 0);
+    float4 returnVal = float4(0, 1, 1, 0);
 #ifdef DIFFUSE_CHANNEL
-	returnVal = float4(diffuse, 1);
+    returnVal = float4(diffuse, 1);
 #endif
 
 #ifdef NORMAL_CHANNEL
-	returnVal = float4(normal, 1);
+    returnVal = float4(normal, 1);
 #endif
-	
+
 #ifdef SPECULAR_CHANNEL
-	returnVal = float4(specular, specular, specular, 1);
+    returnVal = float4(specular, specular, specular, 1);
 #endif
-	
+
 #ifdef ALPHA_CHANNEL
-	returnVal = float4(alpha, alpha, alpha, 1);
+    returnVal = float4(alpha, alpha, alpha, 1);
 #endif
-	
+
 #ifdef ENVIRONMENT_CHANNEL
-	returnVal = float4(environment, 1);
+    returnVal = float4(environment, 1);
 #endif
-	
+
 #ifdef SHADOW_CHANNEL
-	returnVal = float4(shadow, 1);
+    returnVal = float4(shadow, 1);
 #endif
-	
-	return returnVal;
+
+    return returnVal;
 }
 
 
@@ -103,74 +103,74 @@ float4x4 	ShadowOccProjMat : ShadowOccProjMatrix;
 float4x4 	ShadowTrapMat : ShadowTrapMatrix;
 
 texture ShadowMap : SHADOWMAP;
-sampler ShadowMapSampler 
+sampler ShadowMapSampler
 #ifdef _CUSTOMSHADOWSAMPLER_
 : register(_CUSTOMSHADOWSAMPLER_)
 #endif
 = sampler_state
 {
-	Texture = (ShadowMap);
+    Texture = (ShadowMap);
 #if NVIDIA
-	MinFilter = Linear;
-	MagFilter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
 #else
-	MinFilter = Point;
-	MagFilter = Point;
+    MinFilter = Point;
+    MagFilter = Point;
 #endif
-	MipFilter = None;
-	AddressU = Clamp;
-	AddressV = Clamp;
-	AddressW = Clamp;
+    MipFilter = None;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    AddressW = Clamp;
 };
 
 texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
-sampler ShadowOccluderMapSampler 
+sampler ShadowOccluderMapSampler
 = sampler_state
 {
-	Texture = (ShadowOccluderMap);
+    Texture = (ShadowOccluderMap);
 #if NVIDIA
-	MinFilter = Linear;
-	MagFilter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
 #else
-	MinFilter = Point;
-	MagFilter = Point;
+    MinFilter = Point;
+    MagFilter = Point;
 #endif
-	MipFilter = None;
-	AddressU = Clamp;
-	AddressV = Clamp;
-	AddressW = Clamp;
+    MipFilter = None;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    AddressW = Clamp;
 };
 
 //tl: Make _sure_ pos and matrices are in same space!
 float4 calcShadowProjection(float4 pos, uniform float BIAS = -0.003, uniform bool ISOCCLUDER = false)
 {
-	float4 texShadow1 =  mul(pos, ShadowTrapMat);
+    float4 texShadow1 =  mul(pos, ShadowTrapMat);
 
-	float2 texShadow2;
-	if(ISOCCLUDER)
-		texShadow2 = mul(pos, ShadowOccProjMat).zw;
-	else
-		texShadow2 = mul(pos, ShadowProjMat).zw;
-		
-	texShadow2.x += BIAS;
+    float2 texShadow2;
+    if(ISOCCLUDER)
+        texShadow2 = mul(pos, ShadowOccProjMat).zw;
+    else
+        texShadow2 = mul(pos, ShadowProjMat).zw;
+
+    texShadow2.x += BIAS;
 #if !NVIDIA
-	texShadow1.z = texShadow2.x;
+    texShadow1.z = texShadow2.x;
 #else
-	texShadow1.z = (texShadow2.x*texShadow1.w)/texShadow2.y; 	// (zL*wT)/wL == zL/wL post homo
+    texShadow1.z = (texShadow2.x*texShadow1.w)/texShadow2.y; 	// (zL*wT)/wL == zL/wL post homo
 #endif
 
-	return texShadow1;
+    return texShadow1;
 }
 
 //tl: Make _sure_ pos and matrices are in same space!
 float4 calcShadowProjectionExact(float4 pos, uniform float BIAS = -0.003)
 {
-	float4 texShadow1 =  mul(pos, ShadowTrapMat);
-	float2 texShadow2 = mul(pos, ShadowProjMat).zw;
-	texShadow2.x += BIAS;
-	texShadow1.z = texShadow2.x;
+    float4 texShadow1 =  mul(pos, ShadowTrapMat);
+    float2 texShadow2 = mul(pos, ShadowProjMat).zw;
+    texShadow2.x += BIAS;
+    texShadow1.z = texShadow2.x;
 
-	return texShadow1;
+    return texShadow1;
 }
 
 float4 getShadowFactorExactOther(sampler shadowSampler, float4 shadowCoords, uniform int NSAMPLES = 4)
@@ -188,35 +188,35 @@ float4 getShadowFactorExactOther(sampler shadowSampler, float4 shadowCoords, uni
 // Currently fixed to 3 or 4.
 float4 getShadowFactor(sampler shadowSampler, float4 shadowCoords, uniform int NSAMPLES = 4)
 {
-	return getShadowFactorExactOther(shadowSampler, shadowCoords, NSAMPLES);
+    return getShadowFactorExactOther(shadowSampler, shadowCoords, NSAMPLES);
 }
 
 float4 getShadowFactorExact(sampler shadowSampler, float4 shadowCoords, uniform int NSAMPLES = 4)
 {
-	return getShadowFactorExactOther(shadowSampler, shadowCoords, NSAMPLES);
+    return getShadowFactorExactOther(shadowSampler, shadowCoords, NSAMPLES);
 }
 
 texture SpecLUT64SpecularColor;
 sampler SpecLUT64Sampler = sampler_state
 {
-	Texture = (SpecLUT64SpecularColor);
-	MipFilter = NONE;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU  = CLAMP;
-	AddressV  = CLAMP;
+    Texture = (SpecLUT64SpecularColor);
+    MipFilter = NONE;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    AddressU  = CLAMP;
+    AddressV  = CLAMP;
 };
 
 texture NormalizationCube;
 sampler NormalizationCubeSampler = sampler_state
 {
-	Texture = (NormalizationCube);
-	MipFilter = POINT;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU  = WRAP;
-	AddressV  = WRAP;
-	AddressW  = WRAP;
+    Texture = (NormalizationCube);
+    MipFilter = POINT;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    AddressU  = WRAP;
+    AddressV  = WRAP;
+    AddressW  = WRAP;
 };
 
 #define NRMDONTCARE 0
@@ -225,5 +225,5 @@ sampler NormalizationCubeSampler = sampler_state
 #define NRMCHEAP	3
 float3 fastNormalize(float3 invec, uniform int preferMethod = NRMDONTCARE)
 {
-	return normalize(invec);
+    return normalize(invec);
 }

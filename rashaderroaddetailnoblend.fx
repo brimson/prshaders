@@ -1,5 +1,5 @@
 #include "shaders/RaCommon.fx"
- 
+
 #define LIGHT_MUL float3(0.8, 0.8, 0.4)
 #define LIGHT_ADD float3(0.4, 0.4, 0.4)
 
@@ -18,61 +18,61 @@ vector textureFactor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 
 struct VS_OUTPUT
 {
-	float4 Pos	: POSITION0;
+    float4 Pos	: POSITION0;
 //	float2 Tex0	: TEXCOORD0;
-	float3 Tex0	: TEXCOORD0;
-	float2 Tex1	: TEXCOORD1;
-	float4 lightTex : TEXCOORD2;
-	float ZFade : COLOR;
-	float Fog : FOG;
+    float3 Tex0	: TEXCOORD0;
+    float2 Tex1	: TEXCOORD1;
+    float4 lightTex : TEXCOORD2;
+    float ZFade : COLOR;
+    float Fog : FOG;
 };
 
 texture	LightMap;
 sampler LightMapSampler = sampler_state
 {
-	Texture = (LightMap);
-	MipFilter = LINEAR;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	AddressU  = WRAP;
-	AddressV  = WRAP;
+    Texture = (LightMap);
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    AddressU  = WRAP;
+    AddressV  = WRAP;
 };
 
 texture	DetailMap;
 sampler DetailMapSampler = sampler_state
 {
-	Texture = (DetailMap);
-	MipFilter = LINEAR;
-	MinFilter 		= FILTER_STM_DIFF_MIN;
-	MagFilter 		= FILTER_STM_DIFF_MAG;
+    Texture = (DetailMap);
+    MipFilter = LINEAR;
+    MinFilter 		= FILTER_STM_DIFF_MIN;
+    MagFilter 		= FILTER_STM_DIFF_MAG;
 #ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-	MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
+    MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
 #endif
-	AddressU  = WRAP;
-	AddressV  = WRAP;
+    AddressU  = WRAP;
+    AddressV  = WRAP;
 };
 
 texture	DiffuseMap;
 sampler DiffuseMapSampler = sampler_state
 {
-	Texture = (DiffuseMap);
-	MipFilter = LINEAR;
-	MinFilter 		= FILTER_STM_DIFF_MIN;
-	MagFilter 		= FILTER_STM_DIFF_MAG;
+    Texture = (DiffuseMap);
+    MipFilter = LINEAR;
+    MinFilter 		= FILTER_STM_DIFF_MIN;
+    MagFilter 		= FILTER_STM_DIFF_MAG;
 #ifdef FILTER_STM_DIFF_MAX_ANISOTROPY
-	MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
+    MaxAnisotropy 	= FILTER_STM_DIFF_MAX_ANISOTROPY;
 #endif
-	AddressU  = WRAP;
-	AddressV  = WRAP;
+    AddressU  = WRAP;
+    AddressV  = WRAP;
 };
 
 
 // INPUTS TO THE VERTEX SHADER FROM THE APP
-string reqVertexElement[] = 
+string reqVertexElement[] =
 {
- 	"PositionPacked",
- 	"TBasePacked2D",
- 	"TDetailPacked2D"
+     "PositionPacked",
+     "TBasePacked2D",
+     "TDetailPacked2D"
 };
 
 VS_OUTPUT basicVertexShader
@@ -82,50 +82,50 @@ float2 tex0	: TEXCOORD0,
 float2 tex1	: TEXCOORD1
 )
 {
-	VS_OUTPUT Out = (VS_OUTPUT)0;
+    VS_OUTPUT Out = (VS_OUTPUT)0;
 
-	float4 wPos = mul(inPos * PosUnpack, World);
-	wPos.y += .01;
-		
-	
- 	Out.Pos	= mul(wPos, ViewProjection);
-	Out.Tex0.xy = tex0 * TexUnpack;
-	Out.Tex1 = tex1 * TexUnpack;
+    float4 wPos = mul(inPos * PosUnpack, World);
+    wPos.y += .01;
 
-	Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
- 	Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
- 	Out.lightTex.y = 1-Out.lightTex.y;
- 	Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
-	Out.lightTex.zw = Out.Pos.zw;
 
-	float cameraDist = length(WorldSpaceCamPos - wPos);
-	Out.ZFade = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
-	Out.Fog = calcFog( Out.Pos.w );
-	return Out;
+     Out.Pos	= mul(wPos, ViewProjection);
+    Out.Tex0.xy = tex0 * TexUnpack;
+    Out.Tex1 = tex1 * TexUnpack;
+
+    Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
+     Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
+     Out.lightTex.y = 1-Out.lightTex.y;
+     Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
+    Out.lightTex.zw = Out.Pos.zw;
+
+    float cameraDist = length(WorldSpaceCamPos - wPos);
+    Out.ZFade = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
+    Out.Fog = calcFog( Out.Pos.w );
+    return Out;
 }
 
 string GlobalParameters[] = {
-	"FogRange", 
-	"FogColor", 
-	"ViewProjection",
-	"TerrainSunColor",
-	"RoadFadeOut",
-	"WorldSpaceCamPos",
+    "FogRange",
+    "FogColor",
+    "ViewProjection",
+    "TerrainSunColor",
+    "RoadFadeOut",
+    "WorldSpaceCamPos",
 //	"RoadDepthBias",
 //	"RoadSlopeScaleDepthBias"
 };
 
 string TemplateParameters[] = {
-	"DiffuseMap",
-	"DetailMap",
+    "DiffuseMap",
+    "DetailMap",
 };
 
 string InstanceParameters[] = {
-	"World",
-	"Transparency",
-	"LightMap",	
-	"PosUnpack",
-	"TexUnpack",
+    "World",
+    "Transparency",
+    "LightMap",
+    "PosUnpack",
+    "TexUnpack",
 };
 
 float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
@@ -147,36 +147,36 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
         light = ((accumlights.w * terrainColor*2) + accumlights)*2;
         color.rgb *= light.xyz;
     }
-	if (color.a <= 0.95f) color.a = 1.0f;
-	else color.a = VsOut.ZFade;
+    if (color.a <= 0.95f) color.a = 1.0f;
+    else color.a = VsOut.ZFade;
 
-	return color;
+    return color;
 };
 
 technique defaultTechnique
 {
-	pass P0
-	{
-		vertexShader	= compile vs_2_a basicVertexShader();
-		pixelShader	= compile ps_2_a basicPixelShader();
+    pass P0
+    {
+        vertexShader	= compile vs_2_a basicVertexShader();
+        pixelShader	= compile ps_2_a basicPixelShader();
 
 #ifdef ENABLE_WIREFRAME
-		FillMode		= WireFrame;
+        FillMode		= WireFrame;
 #endif
 
-		CullMode = CCW;
-		AlphaBlendEnable = true;
-		AlphaTestEnable = false;
+        CullMode = CCW;
+        AlphaBlendEnable = true;
+        AlphaTestEnable = false;
 
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
+        SrcBlend = SRCALPHA;
+        DestBlend = INVSRCALPHA;
 
-		ZEnable	= true;
-		ZWriteEnable = false;
-		
-		fogenable = true;
-		
+        ZEnable	= true;
+        ZWriteEnable = false;
+
+        fogenable = true;
+
 //		DepthBias = < RoadDepthBias >;
 //		SlopeScaleDepthBias = < RoadSlopeScaleDepthBias >;
-	}
+    }
 }

@@ -1,7 +1,7 @@
 #line 2 "TerrainShader.fx"
 #include "shaders/raCommon.fx"
 
-	
+
 //
 // -- Shared stuff
 //
@@ -110,8 +110,8 @@ samplerCUBE sampler6Cube = sampler_state { Texture = (texture6); AddressU = WRAP
 #include "shaders/commonVertexLight.fx"
 #include "shaders/TerrainShader_Shared.fx"
 #if HIGHTERRAIN || MIDTERRAIN
-	#include "shaders/TerrainShader_Hi.fx"
+    #include "shaders/TerrainShader_Hi.fx"
 #else
-	#include "shaders/TerrainShader_Low.fx"
+    #include "shaders/TerrainShader_Low.fx"
 #endif
 
