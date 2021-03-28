@@ -458,8 +458,8 @@ struct APPDATA_ShadowMap
 
 struct VS2PS_ShadowMap
 {
-    float4 Pos  : POSITION;
-    float2 osZW : TEXCOORD0;
+    float4 Pos   : POSITION;
+    float2 PosZW : TEXCOORD0;
 };
 
 struct VS2PS_ShadowMapAlpha
