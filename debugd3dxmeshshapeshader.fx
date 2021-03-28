@@ -89,7 +89,8 @@ VS2PS CM_VShader(APP2VS indata,
     Pos = mul(indata.Pos, world);
     outdata.Pos = mul(float4(Pos.xyz, 1.0f), wvp);
 
-    outdata.Diffuse.xyz = materialAmbient.xyz + 0.1f*Diffuse(indata.Normal,float4(-1.f,-1.f,1.f,0.f)) * materialDiffuse.xyz;
+    const float4 c = float4(-1.0f, -1.0f, 1.0f, 0.0f);
+    outdata.Diffuse.xyz = materialAmbient.xyz + 0.1f * Diffuse(indata.Normal, c) * materialDiffuse.xyz;
     outdata.Diffuse.w = 0.8f;
 
     return outdata;
