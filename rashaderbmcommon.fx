@@ -81,12 +81,13 @@ float	HeightOverTerrain = 0;
 float	Reflectivity;
 
 float4x3 GeomBones[26];
+
 struct
 {
-    float4x4 uvMatrix[7]	: UVMatrix;
+    float4x4 uvMatrix[7] : UVMatrix;
 } UserData;
 
 Light Lights[1];
-float4	PosUnpack;
-float	TexUnpack;
-float2	NormalUnpack;
+float4 PosUnpack;
+float  TexUnpack;
+float2 NormalUnpack;

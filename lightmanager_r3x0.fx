@@ -58,50 +58,49 @@ sampler sampler6bilin = sampler_state { Texture = (texture6); AddressU = CLAMP; 
 
 struct APP2VS_Quad
 {
-    float2	Pos : POSITION0;
-    float2	TexCoord0 : TEXCOORD0;
+    float2 Pos       : POSITION0;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct APP2VS_D3DXMesh
 {
-    float4	Pos : POSITION0;
-    //float2	TexCoord0 : TEXCOORD0;
+    float4 Pos : POSITION0;
 };
 
 struct VS2PS_Quad
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad_SunLightStatic
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TCLightmap	: TEXCOORD1;
+    float4 Pos        : POSITION;
+    float2 TexCoord0  : TEXCOORD0;
+    float2 TCLightmap : TEXCOORD1;
 };
 
 struct VS2PS_D3DXMesh
 {
-    float4	Pos 		: POSITION;
-    float4	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float4 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_D3DXMesh2
 {
-    float4	Pos 		: POSITION;
-    float4	wPos		: TEXCOORD0;
+    float4 Pos  : POSITION;
+    float4 wPos : TEXCOORD0;
 };
 
 struct PS2FB_DiffSpec
 {
-    float4	Col0 		: COLOR0;
-    float4	Col1 		: COLOR1;
+    float4 Col0 : COLOR0;
+    float4 Col1 : COLOR1;
 };
 
 struct PS2FB_Combine
 {
-    float4	Col0 		: COLOR0;
+    float4 Col0 : COLOR0;
 };
 
 VS2PS_Quad vsDx9_SunLightDynamicObjects(APP2VS_Quad indata)

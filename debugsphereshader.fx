@@ -22,24 +22,23 @@ sampler2D samplebase = sampler_state
     MagFilter = LINEAR;
 };
 
-
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float2	TexCoord0 : TEXCOORD0;
+    float4 Pos       : POSITION;
+    float3 Normal    : NORMAL;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4  Diffuse : COLOR;
-    float2	Tex0 : TEXCOORD0;
+    float4 Pos     : POSITION;
+    float4 Diffuse : COLOR;
+    float2 Tex0    : TEXCOORD0;
 };
 
 struct PS2FB
 {
-    float4	Col : COLOR;
+    float4 Col : COLOR;
 };
 
 float3 Diffuse(float3 Normal,uniform float4 lhtDir)

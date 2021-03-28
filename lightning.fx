@@ -16,16 +16,16 @@ sampler sampler0 = sampler_state
 
 struct VSINPUT
 {
-    float3 Pos: POSITION;
-    float2 TexCoords: TEXCOORD0;
-    float4 Color : COLOR;
+    float3 Pos       : POSITION;
+    float2 TexCoords : TEXCOORD0;
+    float4 Color     : COLOR;
 };
 
 struct VSOUT
 {
-    float4 Pos: POSITION;
-    float2 TexCoords: TEXCOORD0;
-    float4 Color : COLOR;
+    float4 Pos       : POSITION;
+    float2 TexCoords : TEXCOORD0;
+    float4 Color     : COLOR;
 };
 
 VSOUT vsLightning(VSINPUT input)

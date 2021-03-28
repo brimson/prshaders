@@ -26,16 +26,16 @@ sampler DiffuseMapSampler = sampler_state
 
 struct VS_OUTPUT
 {
-    float4 Pos	: POSITION0;
-    float2 Tex	: TEXCOORD0;
-    float  Fog	: FOG;
+    float4 Pos : POSITION0;
+    float2 Tex : TEXCOORD0;
+    float  Fog : FOG;
 };
 
 string reqVertexElement[] =
 {
-     "Position",
-     "TBase2D",
-     "Bone4Idcs"
+    "Position",
+    "TBase2D",
+    "Bone4Idcs"
 };
 
 VS_OUTPUT basicVertexShader

@@ -86,16 +86,16 @@ float4 projToLighting(float4 hPos)
 
 struct Shared_APP2VS_Default
 {
-    float4	Pos0 : POSITION0;
-    float4	Pos1 : POSITION1;
-    float4	MorphDelta : POSITION2;
-    float3	Normal : NORMAL;
+    float4 Pos0       : POSITION0;
+    float4 Pos1       : POSITION1;
+    float4 MorphDelta : POSITION2;
+    float3 Normal     : NORMAL;
 };
 
 struct Shared_VS2PS_ZFillLightmap
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
+    float4 Pos  : POSITION;
+    float2 Tex0 : TEXCOORD0;
 };
 
 
@@ -143,9 +143,9 @@ Shared_VS2PS_ZFillLightmap Shared_VS_ZFillLightmap(Shared_APP2VS_Default indata)
 
 struct Shared_VS2PS_PointLight
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
-    float4	Color : COLOR0;
+    float4 Pos   : POSITION;
+    float2 Tex0  : TEXCOORD0;
+    float4 Color : COLOR0;
 };
 
 float4 Shared_PS_PointLight(Shared_VS2PS_PointLight indata) : COLOR
@@ -179,17 +179,17 @@ Shared_VS2PS_PointLight Shared_VS_PointLight(Shared_APP2VS_Default indata)
 
 struct Shared_VS2PS_LowDetail
 {
-    float4	Pos : POSITION;
-    float2	Tex0a : TEXCOORD0;
-    float2	Tex0b : TEXCOORD3;
-    float4	Tex1 : TEXCOORD1;
-#if HIGHTERRAIN
-    float2	Tex2a : TEXCOORD2;
-    float2	Tex2b : TEXCOORD4;
-    float2	Tex3 : TEXCOORD5;
-#endif
-    float4	BlendValueAndWater : COLOR0;
-    float	Fog : FOG;
+    float4 Pos   : POSITION;
+    float2 Tex0a : TEXCOORD0;
+    float2 Tex0b : TEXCOORD3;
+    float4 Tex1  : TEXCOORD1;
+    #if HIGHTERRAIN
+        float2 Tex2a : TEXCOORD2;
+        float2 Tex2b : TEXCOORD4;
+        float2 Tex3  : TEXCOORD5;
+    #endif
+    float4 BlendValueAndWater : COLOR0;
+    float  Fog : FOG;
 };
 
 //#define LIGHTONLY 1
@@ -326,9 +326,9 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
 
 struct Shared_VS2PS_DynamicShadowmap
 {
-    float4	Pos : POSITION;
-    float4	ShadowTex : TEXCOORD1;
-    float2	Z : TEXCOORD2;
+    float4 Pos       : POSITION;
+    float4 ShadowTex : TEXCOORD1;
+    float2 Z         : TEXCOORD2;
 };
 
 
@@ -371,10 +371,10 @@ Shared_VS2PS_DynamicShadowmap Shared_VS_DynamicShadowmap(Shared_APP2VS_Default i
 
 struct Shared_VS2PS_DirectionalLightShadows
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
-    float4	ShadowTex : TEXCOORD1;
-    float2	Z : TEXCOORD2;
+    float4 Pos       : POSITION;
+    float2 Tex0      : TEXCOORD0;
+    float4 ShadowTex : TEXCOORD1;
+    float2 Z         : TEXCOORD2;
 };
 
 Shared_VS2PS_DirectionalLightShadows Shared_VS_DirectionalLightShadows(Shared_APP2VS_Default indata)
@@ -413,8 +413,8 @@ Shared_VS2PS_DirectionalLightShadows Shared_VS_DirectionalLightShadows(Shared_AP
 
 struct Shared_VS2PS_UnderWater
 {
-    float4	Pos : POSITION;
-    float4	WaterAndFog : COLOR0;
+    float4 Pos         : POSITION;
+    float4 WaterAndFog : COLOR0;
 };
 
 float4 Shared_PS_UnderWater(Shared_VS2PS_UnderWater indata) : COLOR
@@ -479,22 +479,22 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
 
 struct Shared_APP2VS_STNormal
 {
-    float2	Pos0 : POSITION0;
-    float2	TexCoord0 : TEXCOORD0;
-    float4	Pos1 : POSITION1;
-    float3	Normal : NORMAL;
+    float2 Pos0      : POSITION0;
+    float2 TexCoord0 : TEXCOORD0;
+    float4 Pos1      : POSITION1;
+    float3 Normal    : NORMAL;
 };
 
 struct Shared_VS2PS_STNormal
 {
-    float4	Pos : POSITION;
-    float2	ColorLightTex : TEXCOORD0;
-    float2	Tex1 : TEXCOORD1;
-    float2	Tex2 : TEXCOORD2;
-    float2	Tex3 : TEXCOORD3;
-    float2	LowDetailTex : TEXCOORD4;
-    float	Fog : Fog;
-    float3	BlendValue : TEXCOORD5;
+    float4 Pos           : POSITION;
+    float2 ColorLightTex : TEXCOORD0;
+    float2 Tex1          : TEXCOORD1;
+    float2 Tex2          : TEXCOORD2;
+    float2 Tex3          : TEXCOORD3;
+    float2 LowDetailTex  : TEXCOORD4;
+    float  Fog           : Fog;
+    float3 BlendValue    : TEXCOORD5;
 };
 
 Shared_VS2PS_STNormal Shared_VS_STNormal(Shared_APP2VS_STNormal indata)
@@ -560,70 +560,16 @@ float4 Shared_PS_STNormal(Shared_VS2PS_STNormal indata) : COLOR
 }
 
 
-/*
-struct Shared_APP2VS_STFast
-{
-    float2	Pos0 : POSITION0;
-    float2	TexCoord0 : TEXCOORD0;
-    float4	Pos1 : POSITION1;
-};
-
-struct Shared_VS2PS_STFast
-{
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
-    float	Fog : Fog;
-};
-
-Shared_VS2PS_STFast Shared_VS_STFast(Shared_APP2VS_STFast indata)
-{
-    Shared_VS2PS_STFast outdata;
-
-    outdata.Pos.xz = mul(float4(indata.Pos0.xy,0,1), vSTTransXZ).xy;
-    outdata.Pos.yw = (indata.Pos1.xw * vSTScaleTransY.xy) + vSTScaleTransY.zw;
-     outdata.Tex0 = indata.TexCoord0;
-     outdata.Pos = mul(outdata.Pos, mViewProj);
-     outdata.Fog = calcFog(outdata.Pos.w);
-
-    return outdata;
-}
-
-
-float4 Shared_PS_STFast(Shared_VS2PS_STFast indata) : COLOR
-{
-    float4 outColor;
-    if (FogColor.r < 0.01)
-    {
-        // If thermals assume gray terrain
-        colormap = 0.333;
-    }
-    else
-    {
-        outColor = tex2D(sampler0Clamp, indata.Tex0);
-    }
-    return outColor;
-}
-*/
-
-
-
-
-
-
-
-
 
 //
 // Surrounding Terrain
 //
-
 
 technique Shared_SurroundingTerrain
 {
     pass p0 // Normal
     {
         CullMode = CW;
-//		FillMode = WIREFRAME;
         ZEnable = TRUE;
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
@@ -632,26 +578,7 @@ technique Shared_SurroundingTerrain
         VertexShader = compile vs_2_a Shared_VS_STNormal();
         PixelShader = compile ps_2_a Shared_PS_STNormal();
     }
-/*
-    pass p1 // Fast
-    {
-        CullMode = CW;
-        ZEnable = TRUE;
-        ZWriteEnable = TRUE;
-        ZFunc = LESSEQUAL;
-        AlphaBlendEnable = FALSE;
-        FogEnable = true;
-        VertexShader = compile vs_2_a Shared_VS_STFast();
-        PixelShader = compile ps_2_a Shared_PS_STFast();
-    }
-*/
 }
-
-
-
-
-
-
 
 
 
@@ -663,14 +590,14 @@ float4x4 vpLightTrapezMat : vpLightTrapezMat;
 
 struct HI_APP2VS_OccluderShadow
 {
-    float4	Pos0 : POSITION0;
-    float4	Pos1 : POSITION1;
+    float4 Pos0 : POSITION0;
+    float4 Pos1 : POSITION1;
 };
 
 struct HI_VS2PS_OccluderShadow
 {
-    float4	Pos : POSITION;
-    float2	PosZX : TEXCOORD0;
+    float4 Pos   : POSITION;
+    float2 PosZX : TEXCOORD0;
 };
 
 float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)

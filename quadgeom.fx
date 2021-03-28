@@ -4,13 +4,13 @@ texture texture0: TEXLAYER0;
 
 struct APP2VS
 {
-    float2	Pos : POSITION;
+    float2 Pos : POSITION;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float2	Tex : TEXCOORD0;
+    float4 Pos : POSITION;
+    float2 Tex : TEXCOORD0;
 };
 
 VS2PS vsFFP(APP2VS indata)

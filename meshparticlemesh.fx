@@ -6,13 +6,14 @@ float4x4 viewProjMatrix : WorldViewProjection;
 float4 globalScale : GlobalScale;
 
 
-struct appdata {
-       float4	Pos		: POSITION;
-       float3	Normal		: NORMAL;
-       float4  BlendIndices	: BLENDINDICES;
-       float2	TexCoord	: TEXCOORD0;
-       float3 	Tan		: TANGENT;
-       float3 	Binorm		: BINORMAL;
+struct appdata
+{
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord     : TEXCOORD0;
+    float3 Tan          : TANGENT;
+    float3 Binorm       : BINORMAL;
 };
 
 // once per system instance
@@ -27,14 +28,15 @@ float lightmapIntensityOffset : LightmapIntensityOffset;
 float4x3 mOneBoneSkinning[26]: matONEBONESKINNING;/* : register(c50) < bool sparseArray = true; int arrayStart = 50; >;*/
 
 
-struct OUT_vsDiffuse {
-    float4 HPos		: POSITION;
-    float2 DiffuseMap	: TEXCOORD0;
-    float2 GroundUV		: TEXCOORD1;
-    float3 LerpAndLMapIntOffset: TEXCOORD2;
-    float4 color 		: COLOR0;
-    float4 lightFactor 	: COLOR1;
-    float Fog		: FOG;
+struct OUT_vsDiffuse
+{
+    float4 HPos                 : POSITION;
+    float2 DiffuseMap           : TEXCOORD0;
+    float2 GroundUV             : TEXCOORD1;
+    float3 LerpAndLMapIntOffset : TEXCOORD2;
+    float4 color                : COLOR0;
+    float4 lightFactor          : COLOR1;
+    float  Fog                  : FOG;
 };
 
 OUT_vsDiffuse vsDiffuse

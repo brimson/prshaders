@@ -135,22 +135,24 @@ sampler LightMapSampler = sampler_state
 
 struct VS_OUTPUT_WATER
 {
-    float4 Pos		: POSITION;
-//	float4 Color		: COLOR;
-    float  Fog		: FOG;
-#ifdef USE_3DTEXTURE
-    float3 Tex		: TEXCOORD0;
-#else
-    float2 Tex		: TEXCOORD0;
-#endif
-#ifndef NO_LIGHTMAP
-    float2 lmtex		: TEXCOORD1;
-#endif
-    float3 Position	: TEXCOORD2;
-#ifdef USE_SHADOWS
-    float4 TexShadow	: TEXCOORD3;
-#endif
+    float4 Pos : POSITION;
+    float  Fog : FOG;
 
+    #ifdef USE_3DTEXTURE
+        float3 Tex : TEXCOORD0;
+    #else
+        float2 Tex : TEXCOORD0;
+    #endif
+
+    #ifndef NO_LIGHTMAP
+        float2 lmtex : TEXCOORD1;
+    #endif
+
+    float3 Position : TEXCOORD2;
+
+    #ifdef USE_SHADOWS
+        float4 TexShadow : TEXCOORD3;
+    #endif
 };
 
 string reqVertexElement[] =

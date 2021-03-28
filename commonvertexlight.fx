@@ -1,18 +1,18 @@
 struct PointLightData
 {
-    float3	pos;
-    float	attSqrInv;
-    float3	col;
+    float3 pos;
+    float  attSqrInv;
+    float3 col;
 };
 
 struct SpotLightData
 {
-    float3	pos;
-    float	attSqrInv;
-    float3	col;
-    float	coneAngle;
-    float3	dir;
-    float	oneminusconeAngle;
+    float3 pos;
+    float  attSqrInv;
+    float3 col;
+    float  coneAngle;
+    float3 dir;
+    float  oneminusconeAngle;
 };
 
 PointLightData pointLight : POINTLIGHT;

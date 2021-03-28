@@ -28,21 +28,20 @@ sampler sampler0 = sampler_state
 
 struct VSINPUT
 {
-    float3 Pos: POSITION;
-    float4 Data : COLOR0;
-    float2 TexCoord: TEXCOORD0;
+    float3 Pos      : POSITION;
+    float4 Data     : COLOR0;
+    float2 TexCoord : TEXCOORD0;
 };
 
-/////////////////////////////////////////////
+
 // Point Technique
-/////////////////////////////////////////////
 
 struct POINT_VSOUT
 {
-    float4 Pos: POSITION;
-    float2 TexCoord : TEXCOORD0;
-    float4 Color : COLOR0;
-    float pointSize : PSIZE;
+    float4 Pos       : POSITION;
+    float2 TexCoord  : TEXCOORD0;
+    float4 Color     : COLOR0;
+    float  pointSize : PSIZE;
 };
 
 POINT_VSOUT vsPoint(VSINPUT input)
@@ -101,9 +100,9 @@ technique Point
 
 struct LINE_VSOUT
 {
-    float4 Pos: POSITION;
+    float4 Pos      : POSITION;
     float2 TexCoord : TEXCOORD0;
-    float4 Color : COLOR0;
+    float4 Color    : COLOR0;
 };
 
 LINE_VSOUT vsLine(VSINPUT input)
@@ -155,9 +154,9 @@ technique Line
 
 struct CELL_VSOUT
 {
-    float4 Pos: POSITION;
+    float4 Pos      : POSITION;
     float2 TexCoord : TEXCOORD0;
-    float4 Color : COLOR0;
+    float4 Color    : COLOR0;
 };
 
 CELL_VSOUT vsCells(VSINPUT input)

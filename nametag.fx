@@ -75,26 +75,26 @@ sampler sampler1_bilin = sampler_state
 
 struct APP2VS
 {
-    float4 Pos	: POSITION;
-    float2 Tex0	: TEXCOORD0;
-    int4 Indices	: BLENDINDICES0;
+    float4 Pos     : POSITION;
+    float2 Tex0    : TEXCOORD0;
+    int4   Indices : BLENDINDICES0;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
-    float2	Tex1 : TEXCOORD1;
-    float4	Col : COLOR;
+    float4 Pos  : POSITION;
+    float2 Tex0 : TEXCOORD0;
+    float2 Tex1 : TEXCOORD1;
+    float4 Col  : COLOR;
 };
 
 struct VS2PS2TEXT
 {
-    float4  Pos : POSITION;
-    float2  Tex0 : TEXCOORD0;
-    float2  Tex1 : TEXCOORD1;
-    float4  Col0 : COLOR0;
-    float4  Col1 : COLOR1;
+    float4 Pos  : POSITION;
+    float2 Tex0 : TEXCOORD0;
+    float2 Tex1 : TEXCOORD1;
+    float4 Col0 : COLOR0;
+    float4 Col1 : COLOR1;
 };
 
 VS2PS vsNametag(APP2VS input)

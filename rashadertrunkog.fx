@@ -5,10 +5,10 @@ float4 	OverGrowthAmbient;
 
 struct VS_OUTPUT
 {
-    float4 Pos	: POSITION0;
-    float2 Tex0	: TEXCOORD0;
+    float4 Pos   : POSITION0;
+    float2 Tex0  : TEXCOORD0;
     float4 Color : TEXCOORD1;
-    float Fog	: FOG;
+    float  Fog   : FOG;
 };
 
 texture	DiffuseMap;

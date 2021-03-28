@@ -4,15 +4,14 @@ float2 viewportSize : VIEWPORTSIZE;
 
 struct APP2VS
 {
-    float2	scrPos : POSITION;
-    float4	col : COLOR;
+    float2 scrPos : POSITION;
+    float4 col    : COLOR;
 };
-
 
 struct VS2PS
 {
-    float4	hPos : POSITION;
-    float4	col : COLOR;
+    float4 hPos : POSITION;
+    float4 col  : COLOR;
 };
 
 VS2PS vs(APP2VS indata)

@@ -32,18 +32,17 @@ string InstanceParameters[] = {
 
 struct VS_IN
 {
-    float4 Pos			: POSITION;
-//	float3 Normal			: NORMAL;
-    float4 BlendIndices	: BLENDINDICES;
-    float4 Tex			: TEXCOORD0;
+    float4 Pos          : POSITION;
+    float4 BlendIndices : BLENDINDICES;
+    float4 Tex          : TEXCOORD0;
 };
 
 
 struct VS_OUT
 {
-    float4 Pos				: POSITION0;
-    float4 Tex				: TEXCOORD0;
-    float Fog				: FOG;
+    float4 Pos : POSITION0;
+    float4 Tex : TEXCOORD0;
+    float Fog  : FOG;
 };
 
 VS_OUT vs(VS_IN indata)

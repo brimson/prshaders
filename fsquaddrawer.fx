@@ -44,40 +44,40 @@ float2 texelSize : TEXELSIZE;
 
 struct APP2VS_blit
 {
-    float2	Pos : POSITION0;
-    float2	TexCoord0 : TEXCOORD0;
+    float2 Pos       : POSITION0;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_4TapFilter
 {
-    float4	Pos 		 : POSITION;
-    float2	FilterCoords[4] : TEXCOORD0;
+    float4 Pos             : POSITION;
+    float2 FilterCoords[4] : TEXCOORD0;
 };
 
 struct VS2PS_5SampleFilter
 {
-    float4	Pos 		    : POSITION;
-    float2	TexCoord0		: TEXCOORD0;
-    float4	FilterCoords[2] : TEXCOORD1;
+    float4 Pos             : POSITION;
+    float2 TexCoord0       : TEXCOORD0;
+    float4 FilterCoords[2] : TEXCOORD1;
 };
 
 struct VS2PS_blit_
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 
 struct VS2PS_blit
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_5SampleFilter14
 {
-    float4	Pos 		    : POSITION;
-    float2	FilterCoords[5] : TEXCOORD0;
+    float4 Pos             : POSITION;
+    float2 FilterCoords[5] : TEXCOORD0;
 };
 
 VS2PS_blit vsDx9_blit(APP2VS_blit indata)
@@ -98,8 +98,8 @@ VS2PS_blit vsDx9_blitCustom(APP2VS_blit indata)
 
 struct VS2PS_tr_blit
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 VS2PS_tr_blit vsDx9_tr_blit(APP2VS_blit indata) // TODO: implement support for old shader versions. TODO: try to use fakeHDRWeights as variables
@@ -236,11 +236,11 @@ VS2PS_5SampleFilter14 vsDx9_5SampleFilter14(APP2VS_blit indata, uniform float of
 
 struct VS2PS_Down4x4Filter14
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TexCoord1	: TEXCOORD1;
-    float2	TexCoord2	: TEXCOORD2;
-    float2	TexCoord3	: TEXCOORD3;
+    float4 Pos      : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
+    float2 TexCoord2 : TEXCOORD2;
+    float2 TexCoord3 : TEXCOORD3;
 };
 
 VS2PS_Down4x4Filter14 vsDx9_Down4x4Filter14(APP2VS_blit indata)

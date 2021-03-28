@@ -30,8 +30,8 @@ float4 worldEyePos : WorldEyePos;
 float4 objectEyePos : ObjectEyePos;
 
 float4x4 mLightVP : LIGHTVIEWPROJ;
-    float4x4 mLightVP2 : LIGHTVIEWPROJ2;
-    float4x4 mLightVP3 : LIGHTVIEWPROJ3;
+float4x4 mLightVP2 : LIGHTVIEWPROJ2;
+float4x4 mLightVP3 : LIGHTVIEWPROJ3;
 float4 vViewportMap : VIEWPORTMAP;
 
 dword dwStencilRef : STENCILREF = 0;
@@ -67,11 +67,11 @@ sampler sampler4point = sampler_state { Texture = (texture4); MinFilter = POINT;
 
 struct APP2VS
 {
-    float4	Pos 		: POSITION;
-    float3	Normal 		: NORMAL;
-    float	BlendWeights	: BLENDWEIGHT;
-    float4	BlendIndices 	: BLENDINDICES;
-    float2	TexCoord0 	: TEXCOORD0;
+    float4 Pos          : POSITION;
+    float3 Normal 		: NORMAL;
+    float  BlendWeights : BLENDWEIGHT;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord0    : TEXCOORD0;
 };
 
 // object based lighting
@@ -207,12 +207,12 @@ void skinSoldierForSpotPP(uniform int NumBones, in APP2VS indata, in float3 ligh
 
 struct APP2VStangent
 {
-    float4	Pos 		: POSITION;
-    float3	Normal 		: NORMAL;
-    float	BlendWeights	: BLENDWEIGHT;
-    float4	BlendIndices 	: BLENDINDICES;
-    float2	TexCoord0 	: TEXCOORD0;
-    float3  Tan : TANGENT;
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float  BlendWeights : BLENDWEIGHT;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord0    : TEXCOORD0;
+    float3 Tan          : TANGENT;
 };
 
 void skinSoldierForPPtangent(uniform int NumBones, in APP2VStangent indata, in float3 lightVec, out float3 Pos, out float3 Normal, out float3 SkinnedLVec, out float4 wPos, out float3 HalfVec)
@@ -433,11 +433,11 @@ void skinSoldierForPV(uniform int NumBones, in APP2VS indata, out float3 Pos, ou
 
 struct VS2PS_PP
 {
-    float4	Pos		: POSITION;
-    float2	Tex0		: TEXCOORD0;
-    float3	GroundUVAndLerp	: TEXCOORD1;
-    float3	SkinnedLVec		: TEXCOORD2;
-    float3	HalfVec		: TEXCOORD3;
+    float4 Pos             : POSITION;
+    float2 Tex0            : TEXCOORD0;
+    float3 GroundUVAndLerp : TEXCOORD1;
+    float3 SkinnedLVec     : TEXCOORD2;
+    float3 HalfVec         : TEXCOORD3;
 };
 
 //----------- pp object based lighting
@@ -454,7 +454,7 @@ VS2PS_PP VShader_HemiAndSunPP(APP2VS indata, uniform int NumBones)
 
      // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-     outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
     outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
     outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
@@ -471,12 +471,12 @@ VS2PS_PP VShader_HemiAndSunPP(APP2VS indata, uniform int NumBones)
 
 struct VS2PS_PP_Shadow
 {
-    float4	Pos		: POSITION;
-    float2	Tex0		: TEXCOORD0;
-    float3	GroundUVAndLerp	: TEXCOORD1;
-    float3	SkinnedLVec		: TEXCOORD2;
-    float3	HalfVec		: TEXCOORD3;
-    float4	ShadowTex		: TEXCOORD4;
+    float4 Pos             : POSITION;
+    float2 Tex0            : TEXCOORD0;
+    float3 GroundUVAndLerp : TEXCOORD1;
+    float3 SkinnedLVec     : TEXCOORD2;
+    float3 HalfVec         : TEXCOORD3;
+    float4 ShadowTex       : TEXCOORD4;
 };
 
 VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPP(APP2VS indata, uniform int NumBones)
@@ -815,10 +815,10 @@ technique t0_HemiAndSunAndColorPPtangent
 
 struct VS2PS_PV
 {
-    float4	Pos		: POSITION;
-    float2	GroundUV	: TEXCOORD0;
-    float4	DiffAndSpec	: COLOR0;
-    float  Lerp : COLOR1;
+    float4 Pos         : POSITION;
+    float2 GroundUV    : TEXCOORD0;
+    float4 DiffAndSpec : COLOR0;
+    float  Lerp        : COLOR1;
 };
 
 VS2PS_PV VShader_HemiAndSunPV(APP2VS indata, uniform int NumBones)
@@ -892,10 +892,10 @@ technique t0_HemiAndSunPV
 
 struct VS2PS_PVCOLOR
 {
-    float4	Pos		: POSITION;
-    float2	Tex0		: TEXCOORD0;
-    float3	GroundUVAndLerp	: TEXCOORD1;
-    float4	DiffAndSpec	: COLOR;
+    float4 Pos             : POSITION;
+    float2 Tex0            : TEXCOORD0;
+    float3 GroundUVAndLerp : TEXCOORD1;
+    float4 DiffAndSpec     : COLOR;
 };
 
 VS2PS_PVCOLOR VShader_HemiAndSunAndColorPV(APP2VS indata, uniform int NumBones)
@@ -945,11 +945,11 @@ float4 PShader_HemiAndSunAndColorPV(VS2PS_PVCOLOR indata) : COLOR
 
 struct VS2PS_PVCOLOR_SHADOW
 {
-    float4	Pos		: POSITION;
-    float2	Tex0		: TEXCOORD0;
-    float3	GroundUVAndLerp	: TEXCOORD1;
-    float4	ShadowTex		: TEXCOORD2;
-    float4	DiffAndSpec	: COLOR;
+    float4 Pos             : POSITION;
+    float2 Tex0            : TEXCOORD0;
+    float3 GroundUVAndLerp : TEXCOORD1;
+    float4 ShadowTex       : TEXCOORD2;
+    float4 DiffAndSpec     : COLOR;
 };
 
 
@@ -1066,9 +1066,9 @@ technique t0_HemiAndSunAndColorPV
 
 struct VS2PS_PointLight_PV
 {
-    float4	Pos		: POSITION;
-    float3	Diffuse	 	: COLOR;
-    float2	Tex0		: TEXCOORD0;
+    float4 Pos     : POSITION;
+    float3 Diffuse : COLOR;
+    float2 Tex0    : TEXCOORD0;
 };
 
 VS2PS_PointLight_PV VShader_PointLightPV(APP2VS indata, uniform int NumBones)
@@ -1128,10 +1128,10 @@ technique t0_PointLightPV
 
 struct VS2PS_PointLight_PP
 {
-    float4	Pos		: POSITION;
-    float2	Tex0		: TEXCOORD0;
-    float4	SkinnedLVec		: TEXCOORD1;
-    float3	HalfVec			: TEXCOORD2;
+    float4 Pos         : POSITION;
+    float2 Tex0        : TEXCOORD0;
+    float4 SkinnedLVec : TEXCOORD1;
+    float3 HalfVec     : TEXCOORD2;
 };
 
 VS2PS_PointLight_PP VShader_PointLightPP(APP2VS indata, uniform int NumBones)
@@ -1245,9 +1245,9 @@ technique t0_PointLightPPtangent
 
 struct VS2PS_SpotLight_PV
 {
-    float4	Pos		: POSITION;
-    float3	Diffuse	 	: COLOR;
-    float2	Tex0		: TEXCOORD0;
+    float4 Pos     : POSITION;
+    float3 Diffuse : COLOR;
+    float2 Tex0    : TEXCOORD0;
 };
 
 VS2PS_SpotLight_PV VShader_SpotLightPV(APP2VS indata, uniform int NumBones)
@@ -1306,11 +1306,10 @@ technique t0_SpotLightPV
 
 struct VS2PS_SpotLight_PP
 {
-    float4	Pos				: POSITION;
-    float2	Tex0			: TEXCOORD0;
-    float4	SkinnedLVec		: TEXCOORD1;
-    //float3	SkinnedLDir	: TEXCOORD2;
-    float3	HalfVec			: TEXCOORD3;
+    float4 Pos         : POSITION;
+    float2 Tex0        : TEXCOORD0;
+    float4 SkinnedLVec : TEXCOORD1;
+    float3 HalfVec     : TEXCOORD3;
 };
 
 VS2PS_SpotLight_PP VShader_SpotLightPP(APP2VS indata, uniform int NumBones)
@@ -1438,8 +1437,8 @@ technique t0_SpotLightPPtangent
 
 struct VS2PS_MulDiffuse
 {
-    float4	Pos		: POSITION;
-    float2	Tex0		: TEXCOORD0;
+    float4 Pos  : POSITION;
+    float2 Tex0 : TEXCOORD0;
 };
 
 VS2PS_MulDiffuse VShader_MulDiffuse(APP2VS indata, uniform int NumBones)
@@ -1493,11 +1492,11 @@ technique t0_MulDiffuse
 
 struct VS2PS_Skinpre
 {
-    float4	Pos				: POSITION;
-    float2	Tex0			: TEXCOORD0;
-    float3	SkinnedLVec		: TEXCOORD1;
-    float3	ObjEyeVec		: TEXCOORD2;
-    float3	GroundUVAndLerp : TEXCOORD3;
+    float4 Pos             : POSITION;
+    float2 Tex0            : TEXCOORD0;
+    float3 SkinnedLVec     : TEXCOORD1;
+    float3 ObjEyeVec       : TEXCOORD2;
+    float3 GroundUVAndLerp : TEXCOORD3;
 };
 
 VS2PS_Skinpre vsSkinpre(APP2VS indata, uniform int NumBones)
@@ -1546,11 +1545,11 @@ float4 psSkinpre(VS2PS_Skinpre indata) : COLOR
 
 struct VS2PS_Skinpreshadowed
 {
-    float4	Pos				: POSITION;
-    float4	Tex0AndHZW		: TEXCOORD0;
-    float3	SkinnedLVec		: TEXCOORD1;
-    float4	ShadowTex		: TEXCOORD2;
-    float3	ObjEyeVec		: TEXCOORD3;
+    float4 Pos         : POSITION;
+    float4 Tex0AndHZW  : TEXCOORD0;
+    float3 SkinnedLVec : TEXCOORD1;
+    float4 ShadowTex   : TEXCOORD2;
+    float3 ObjEyeVec   : TEXCOORD3;
 };
 
 VS2PS_Skinpreshadowed vsSkinpreshadowed(APP2VS indata, uniform int NumBones)
@@ -1783,8 +1782,8 @@ technique humanskin
 
 struct VS2PS_ShadowMap
 {
-    float4	Pos		: POSITION;
-    float2	PosZW	: TEXCOORD0;
+    float4 Pos   : POSITION;
+    float2 PosZW : TEXCOORD0;
 };
 
 VS2PS_ShadowMap vsShadowMap(APP2VS indata)
@@ -1830,8 +1829,8 @@ float4 psShadowMap(VS2PS_ShadowMap indata) : COLOR
 
 struct VS2PS_ShadowMapAlpha
 {
-    float4	Pos		: POSITION;
-    float4	Tex0PosZW	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float4 Tex0PosZW : TEXCOORD0;
 };
 
 VS2PS_ShadowMapAlpha vsShadowMapAlpha(APP2VS indata)

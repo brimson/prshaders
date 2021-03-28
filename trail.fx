@@ -31,7 +31,8 @@ sampler trailDiffuseSampler2 = sampler_state
 
 
 // constant array
-struct TemplateParameters {
+struct TemplateParameters
+{
     float4 m_uvRangeLMapIntensiyAndParticleMaxSize;
     float4 m_fadeInOutTileFactorAndUVOffsetVelocity;
     float4 m_color1AndLightFactor;
@@ -46,27 +47,25 @@ TemplateParameters tParameters : TemplateParameters;
 
 struct appdata
 {
-    float3	pos : POSITION;
-    float3	localCoords : NORMAL0;
-    float3	tangent : NORMAL1;
-    float4	intensityAgeAnimBlendFactorAndAlpha : TEXCOORD0;
-    float4	uvOffsets : TEXCOORD1;
-    float2	texCoords : TEXCOORD2;
+    float3 pos         : POSITION;
+    float3 localCoords : NORMAL0;
+    float3 tangent     : NORMAL1;
+    float4 intensityAgeAnimBlendFactorAndAlpha : TEXCOORD0;
+    float4 uvOffsets   : TEXCOORD1;
+    float2 texCoords   : TEXCOORD2;
 };
 
 
-struct VS_TRAIL_OUTPUT {
-    float4 HPos			: POSITION;
-    float4 color			: TEXCOORD3;
+struct VS_TRAIL_OUTPUT
+{
+    float4 HPos : POSITION;
+    float4 color : TEXCOORD3;
     float3 animBFactorAndLMapIntOffset : COLOR0;
-    float4 lightFactorAndAlpha	: COLOR1;
-    float2 texCoords0			: TEXCOORD0;
-    float2 texCoords1			: TEXCOORD1;
-    float2 texCoords2			: TEXCOORD2;
-    //float3 animBFactorAndLMapIntOffset : TEXCOORD3;
-
-    float Fog			: FOG;
-
+    float4 lightFactorAndAlpha         : COLOR1;
+    float2 texCoords0 : TEXCOORD0;
+    float2 texCoords1 : TEXCOORD1;
+    float2 texCoords2 : TEXCOORD2;
+    float Fog : FOG;
 };
 
 VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 myWP)
@@ -113,40 +112,14 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
     float3 color = colorBlendFactor * tParameters.m_color2.rgb;
     color += (1 - colorBlendFactor) * tParameters.m_color1AndLightFactor.rgb;
 
-    //lighting??
-
-    //color.rgb *=   + ((1.0f + input.localCoords.y*input.texCoords.y)/2);
-    //float3 lightVec = float3(.46f,0.57f,0.68f);
-    //float3 lightVec = float3(0.7,0.7,0);
-    //color.rgb *= 2*saturate(dot(input.localCoords*input.texCoords.y, lightVec));
-    //float3 norm2 = cross(input.tangent, input.localCoords*input.texCoords.y)*input.texCoords.y;
-
-    //if (dot(norm2, eyeVec) >= 0)
-     //	color.rgb = SUNCOLOR;
-    //else
-    //	color.rgb = GROUNDCOLOR;
-    //color.rgb *= 2*saturate(dot(norm2, lightVec));
-    //color.rgb = norm2;
-
-    //color.rgb *= lerp(GROUNDCOLOR, SUNCOLOR, (1.0f + input.localCoords.y*input.texCoords.y)*0.5f);
-    //input.localCoords.y*input.texCoords.y
-    //color.rgb += lerp(0, SUNCOLOR, clamp(input.localCoords.y*input.texCoords.y, 0, 1));
-    //color.rgb += lerp(0, GROUNDCOLOR, clamp(-input.localCoords.y*input.texCoords.y, 0, 1));
-
-
     float alphaBlendFactor = min(dot(tParameters.m_transparencyGraph, pc), 1) * input.intensityAgeAnimBlendFactorAndAlpha[3];
     alphaBlendFactor *= fadeFactor;
 
     Out.color.rgb = color/2;
     Out.lightFactorAndAlpha.b = alphaBlendFactor;
-
-    //Out.color.a = alphaBlendFactor * input.randomSizeAlphaAndIntensityBlendFactor[1];
-    //Out.color.rgb = (color * input.intensityAndRandomIntensity[0]) + input.intensityAndRandomIntensity[1];
-
     Out.animBFactorAndLMapIntOffset.x = input.intensityAgeAnimBlendFactorAndAlpha[2];
 
     float lightMapIntensity = saturate(clamp((input.pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
-    //Out.animBFactorAndLMapIntOffset.y = tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z;
     Out.animBFactorAndLMapIntOffset.yz = lightMapIntensity;
 
     // compute texcoords for trail
@@ -223,18 +196,6 @@ float4 psTrailShowFill(VS_TRAIL_OUTPUT input) : COLOR
 //
 // Ordinary technique
 //
-/*	int Declaration[] =
-    {
-        // StreamNo, DataType, Usage, UsageIdx
-        { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
-        { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 0 },
-        { 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_NORMAL, 1 },
-        { 0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_TEXCOORD, 0 },
-        { 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_TEXCOORD, 1 },
-        { 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },
-        DECLARATION_END	// End macro
-    };
-*/
 technique TrailLow
 <
 >

@@ -44,10 +44,10 @@
 
 struct VS_IN
 {
-    float4 Pos					: POSITION;
-    float3 Normal					: NORMAL;
-    float3 Tan					: TANGENT;
-    float4 TexSets[NUM_TEXSETS]			: TEXCOORD0;
+    float4 Pos                  : POSITION;
+    float3 Normal               : NORMAL;
+    float3 Tan                  : TANGENT;
+    float4 TexSets[NUM_TEXSETS] : TEXCOORD0;
 };
 
 //
@@ -94,12 +94,11 @@ struct VS_IN
 
 struct VS_OUT
 {
-    float4 Pos					: POSITION0;
-    float4 InvDotAndLightAtt				: COLOR0;
-    float4 ColorOrPointLightFog			: COLOR1;
-    float4 Interpolated[MAX_INTERPS]			: TEXCOORD0;
-
-    float Fog					: FOG;
+    float4 Pos                       : POSITION0;
+    float4 InvDotAndLightAtt         : COLOR0;
+    float4 ColorOrPointLightFog      : COLOR1;
+    float4 Interpolated[MAX_INTERPS] : TEXCOORD0;
+    float  Fog                       : FOG;
 };
 
 // common vars

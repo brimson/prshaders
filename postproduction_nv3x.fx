@@ -55,51 +55,51 @@ float Cutoff : cutoff = 0.8;
 
 struct APP2VS_Quad
 {
-    float2	Pos : POSITION0;
-    float2	TexCoord0 : TEXCOORD0;
+    float2 Pos       : POSITION0;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad2
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TexCoord1	: TEXCOORD1;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
 };
 
 struct VS2PS_Quad3
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TexCoord1	: TEXCOORD1;
-    float2	TexCoord2	: TEXCOORD2;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
+    float2 TexCoord2 : TEXCOORD2;
 };
 
 struct VS2PS_Quad4
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TexCoord1	: TEXCOORD1;
-    float2	TexCoord2	: TEXCOORD2;
-    float2	TexCoord3	: TEXCOORD3;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
+    float2 TexCoord2 : TEXCOORD2;
+    float2 TexCoord3 : TEXCOORD3;
 };
 
 struct VS2PS_Quad5
 {
-    float4	Pos 		: POSITION;
-    float2	Color0		: COLOR0;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TexCoord1	: TEXCOORD1;
+    float4 Pos       : POSITION;
+    float2 Color0    : COLOR0;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
 };
 
 struct PS2FB_Combine
 {
-    float4	Col0 		: COLOR0;
+    float4 Col0 : COLOR0;
 };
 
 VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
@@ -110,15 +110,16 @@ VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
     return outdata;
 }
 
-const float4 filterkernel[8] = {
--1.0, 1.0, 0, 0.125,
-0.0, 1.0, 0, 0.125,
-1.0, 1.0, 0, 0.125,
--1.0, 0.0, 0, 0.125,
-1.0, 0.0, 0, 0.125,
--1.0, -1.0, 0, 0.125,
-0.0, -1.0, 0, 0.125,
-1.0, -1.0, 0, 0.125,
+const float4 filterkernel[8] =
+{
+    -1.0,  1.0, 0.0, 0.125,
+     0.0,  1.0, 0.0, 0.125,
+     1.0,  1.0, 0.0, 0.125,
+    -1.0,  0.0, 0.0, 0.125,
+     1.0,  0.0, 0.0, 0.125,
+    -1.0, -1.0, 0.0, 0.125,
+     0.0, -1.0, 0.0, 0.125,
+     1.0, -1.0, 0.0, 0.125,
 };
 
 VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)

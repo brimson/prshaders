@@ -629,10 +629,10 @@ technique alpha
 
 struct VS_OUTPUT_AlphaScope
 {
-    float4 HPos	: POSITION;
+    float4 HPos         : POSITION;
     float3 Tex0AndTrans	: TEXCOORD0;
-    float2 Tex1	: TEXCOORD1;
-    float Fog   : FOG;
+    float2 Tex1         : TEXCOORD1;
+    float  Fog          : FOG;
 };
 
 float4 psAlphaScope(VS_OUTPUT_AlphaScope input) : COLOR
@@ -703,16 +703,16 @@ float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 
 struct VS2PS_ShadowMap
 {
-    float4 HPos		: POSITION;
-    float2 PosZW	: TEXCOORD0;
+    float4 HPos  : POSITION;
+    float2 PosZW : TEXCOORD0;
 };
 
 struct VS2PS_ShadowMapAlpha
 {
-    float4 HPos				: POSITION;
-    float4 Tex0PosZW		: TEXCOORD0;
+    float4 HPos        : POSITION;
+    float4 Tex0PosZW   : TEXCOORD0;
     // SHADOWS
-    float4 Attenuation	: COLOR0;
+    float4 Attenuation : COLOR0;
     // SHADOWS
 };
 

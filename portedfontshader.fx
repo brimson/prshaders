@@ -5,16 +5,16 @@ sampler sampler0 = sampler_state { Texture = (texture0); AddressU = CLAMP; Addre
 
 struct APP2VS
 {
-    float4	HPos : POSITION;
-    float3	Col : COLOR;
-    float2	TexCoord0 : TEXCOORD0;
+    float4 HPos      : POSITION;
+    float3 Col       : COLOR;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4	HPos : POSITION;
-    float3	Col : COLOR;
-    float2	Tex0 : TEXCOORD0;
+    float4 HPos : POSITION;
+    float3 Col  : COLOR;
+    float2 Tex0 : TEXCOORD0;
 };
 
 VS2PS HPosVS(APP2VS indata)

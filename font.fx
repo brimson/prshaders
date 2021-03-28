@@ -28,15 +28,15 @@ sampler TexMapSamplerClampLinear = sampler_state
 
 struct appData
 {
-    float4	Position	: POSITION;
-       float4	Color		: COLOR;
-       float2	TexCoord	: TEXCOORD0;
+    float4 Position : POSITION;
+    float4 Color    : COLOR;
+    float2 TexCoord : TEXCOORD0;
 };
 
 struct VS_REGULAR
 {
     float4 Position : POSITION;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
     float2 TexCoord : TEXCOORD0;
 };
 
@@ -63,7 +63,7 @@ float4 PSRegularScaled(VS_REGULAR input) : COLOR
 struct VS_SELECTIONQUAD
 {
     float4 Position : POSITION;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
 };
 
 VS_SELECTIONQUAD VSSelectionQuad(float3 Position : POSITION)

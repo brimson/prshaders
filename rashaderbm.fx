@@ -107,28 +107,28 @@
 
 struct BMVariableVSInput
 {
-       float4	Pos				: POSITION;
-    float3	Normal			: NORMAL;
-    float4  	BlendIndices	: BLENDINDICES;
-    float2	TexDiffuse		: TEXCOORD0;
-    float2	TexUVRotCenter	: TEXCOORD1;
-    float3 	Tan				: TANGENT;
+    float4 Pos            : POSITION;
+    float3 Normal         : NORMAL;
+    float4 BlendIndices   : BLENDINDICES;
+    float2 TexDiffuse     : TEXCOORD0;
+    float2 TexUVRotCenter : TEXCOORD1;
+    float3 Tan            : TANGENT;
 };
 
 struct BMVariableVSOutput
 {
-    float4	HPos						: POSITION;
-#if _POINTLIGHT_ || !_HASPERPIXELLIGHTING_
-    float4	SpecularLightOrPointFog	: COLOR1;
-#endif
-#if !_HASPERPIXELLIGHTING_
-    float4	DiffuseLight				: COLOR0;
-#endif
-    float2	TexDiffuse					: TEXCOORD0;
-#if MAX_INTERPS
-    float4	Interpolated[MAX_INTERPS]			: TEXCOORD1;
-#endif
-    float	Fog						: FOG;
+    float4 HPos : POSITION;
+    #if _POINTLIGHT_ || !_HASPERPIXELLIGHTING_
+        float4 SpecularLightOrPointFog : COLOR1;
+    #endif
+    #if !_HASPERPIXELLIGHTING_
+        float4 DiffuseLight : COLOR0;
+    #endif
+        float2 TexDiffuse : TEXCOORD0;
+    #if MAX_INTERPS
+        float4 Interpolated[MAX_INTERPS] : TEXCOORD1;
+    #endif
+    float Fog : FOG;
 };
 
 float4x3 getSkinnedWorldMatrix(BMVariableVSInput input)

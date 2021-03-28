@@ -16,7 +16,7 @@ sampler TexMapSampler = sampler_state
 struct VS_OUT
 {
     float4 Position : POSITION;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
     float2 TexCoord : TEXCOORD0;
 };
 

@@ -2,10 +2,10 @@
 
 struct VS_OUTPUT
 {
-    float4 Pos	: POSITION0;
-    float2 Tex0	: TEXCOORD0;
-    float2 Tex1	: TEXCOORD1;
-    float  Fog	: FOG;
+    float4 Pos  : POSITION0;
+    float2 Tex0 : TEXCOORD0;
+    float2 Tex1 : TEXCOORD1;
+    float  Fog  : FOG;
 };
 
 texture	DiffuseMap;

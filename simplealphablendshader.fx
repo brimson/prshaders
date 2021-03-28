@@ -8,14 +8,14 @@ texture basetex: TEXLAYER0
 
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
+    float4 Pos  : POSITION;
+    float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4	HPos : POSITION;
-    float2  Tex0 : TEXCOORD0;
+    float4 HPos : POSITION;
+    float2 Tex0 : TEXCOORD0;
 };
 
 sampler diffuseSampler = sampler_state

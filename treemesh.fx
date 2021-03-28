@@ -100,35 +100,39 @@ sampler diffuseAlphaSampler = sampler_state
 };
 
 
-struct appdata {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float2	TexCoord1 : TEXCOORD1;
-    float4 Tan		: TANGENT;
+struct appdata
+{
+    float4 Pos       : POSITION;
+    float3 Normal    : NORMAL;
+    float2 TexCoord  : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
+    float4 Tan       : TANGENT;
 };
 
-struct appdata2 {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float2	Width_height : TEXCOORD1;
-    float4  Tan		: TANGENT;
+struct appdata2
+{
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float2 TexCoord     : TEXCOORD0;
+    float2 Width_height : TEXCOORD1;
+    float4 Tan          : TANGENT;
 };
 
-struct VS_OUTPUT {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float2 TexCoord2: TEXCOORD1;
-    float4 LightVec	: TEXCOORD2;
-    float4 HalfVec	: TEXCOORD3;
-    float4 Diffuse 	: COLOR;
+struct VS_OUTPUT
+{
+    float4 HPos      : POSITION;
+    float2 TexCoord  : TEXCOORD0;
+    float2 TexCoord2 : TEXCOORD1;
+    float4 LightVec  : TEXCOORD2;
+    float4 HalfVec   : TEXCOORD3;
+    float4 Diffuse   : COLOR;
 };
 
-struct VS_OUTPUT2 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float4 Diffuse 	: COLOR;
+struct VS_OUTPUT2
+{
+    float4 HPos     : POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Diffuse  : COLOR;
 };
 
 float4 bumpSpecularPixedShaderBlinn1(VS_OUTPUT indata) : COLOR
@@ -149,7 +153,7 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
-     Out.HPos = mul(input.Pos, WorldViewProj);
+    Out.HPos = mul(input.Pos, WorldViewProj);
 
     // Cross product to create BiNormal
     float3 binormal = cross(input.Tan, input.Normal);
@@ -167,8 +171,8 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
     // TANGENT SPACE LIGHT
     // This way of geting the tangent space data changes the coordinate system
     float3 tanLightVec = float3(dot(-normalizedLightVec, input.Tan),
-                    dot(-normalizedLightVec, binormal),
-                    dot(-normalizedLightVec, input.Normal));
+                                dot(-normalizedLightVec, binormal),
+                                dot(-normalizedLightVec, input.Normal));
 
     // Compress L' in tex2... don't compress, autoclamp >0
     float3 normalizedTanLightVec = normalize(tanLightVec);
@@ -232,13 +236,14 @@ VS_OUTPUT2 spriteVertexShader
     return Out;
 }
 
-struct OUT_vsBumpSpecularHemiAndSunPV {
-    float4 HPos		: POSITION;
-    float2 NormalMap	: TEXCOORD0;
-    float3 LightVec		: TEXCOORD1;
-    float3 HalfVec		: TEXCOORD2;
-    float3 GroundUVAndLerp	: TEXCOORD3;
-    float2 DiffuseAlpha : TEXCOORD4;
+struct OUT_vsBumpSpecularHemiAndSunPV
+{
+    float4 HPos            : POSITION;
+    float2 NormalMap       : TEXCOORD0;
+    float3 LightVec        : TEXCOORD1;
+    float3 HalfVec         : TEXCOORD2;
+    float3 GroundUVAndLerp : TEXCOORD3;
+    float2 DiffuseAlpha    : TEXCOORD4;
 };
 
 OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
@@ -372,12 +377,13 @@ technique HemiAndSun
     }
 }
 
-struct OUT_vsBumpSpecularPointLight {
-    float4 HPos		: POSITION;
-    float2 NormalMap	: TEXCOORD0;
-    float3 LightVec		: TEXCOORD1;
-    float3 HalfVec		: TEXCOORD2;
-    float3 ObjectLightVec		: TEXCOORD3;
+struct OUT_vsBumpSpecularPointLight
+{
+    float4 HPos           : POSITION;
+    float2 NormalMap      : TEXCOORD0;
+    float3 LightVec       : TEXCOORD1;
+    float3 HalfVec        : TEXCOORD2;
+    float3 ObjectLightVec : TEXCOORD3;
 };
 
 OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight
@@ -485,12 +491,13 @@ technique PointLight
     }
 }
 
-struct OUT_vsBumpSpecularSpotLight {
-    float4 HPos		: POSITION;
-    float2 NormalMap	: TEXCOORD0;
-    float3 LightVec		: TEXCOORD1;
-    float3 HalfVec		: TEXCOORD2;
-    float3 LightDir		: TEXCOORD3;
+struct OUT_vsBumpSpecularSpotLight
+{
+    float4 HPos      : POSITION;
+    float2 NormalMap : TEXCOORD0;
+    float3 LightVec  : TEXCOORD1;
+    float3 HalfVec   : TEXCOORD2;
+    float3 LightDir  : TEXCOORD3;
 };
 
 OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
@@ -597,9 +604,10 @@ technique SpotLight
     }
 }
 
-struct OUT_vsBumpSpecularMulDiffuse {
-    float4 HPos		: POSITION;
-    float2 DiffuseMap	: TEXCOORD0;
+struct OUT_vsBumpSpecularMulDiffuse
+{
+    float4 HPos       : POSITION;
+    float2 DiffuseMap : TEXCOORD0;
 };
 
 OUT_vsBumpSpecularMulDiffuse vsBumpSpecularMulDiffuse

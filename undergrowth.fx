@@ -49,6 +49,7 @@ sampler2D sampler1 = sampler_state
     AddressU = CLAMP;
     AddressV = CLAMP;
 };
+
 sampler2D sampler2 = sampler_state
 {
     Texture = <texture2>;
@@ -61,45 +62,45 @@ sampler2D sampler2 = sampler_state
 
 struct APP2VS
 {
-    float4 Pos : POSITION;
+    float4 Pos      : POSITION;
     float2 TexCoord : TEXCOORD0;
-    float4 Packed : COLOR;
+    float4 Packed   : COLOR;
 };
 
 struct APP2VS_Simple
 {
-    float4 Pos : POSITION;
-    float2 TexCoord : TEXCOORD0;
-    float4 Packed : COLOR;
+    float4 Pos             : POSITION;
+    float2 TexCoord        : TEXCOORD0;
+    float4 Packed          : COLOR;
     float4 TerrainColormap : COLOR1;
     float4 TerrainLightmap : COLOR2;
 };
 
 struct VS2PS
 {
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    float2 Tex2 : TEXCOORD2;
-    float4 TexShadow : TEXCOORD3;
-    float  Fog	: FOG;
+    float4 Pos           : POSITION;
+    float2 Tex0          : TEXCOORD0;
+    float2 Tex1          : TEXCOORD1;
+    float2 Tex2          : TEXCOORD2;
+    float4 TexShadow     : TEXCOORD3;
+    float  Fog           : FOG;
     float4 LightAndScale : COLOR0;
 };
 
 struct VS2PS_Simple
 {
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float4 TexShadow : TEXCOORD3;
-    float  Fog	: FOG;
+    float4 Pos           : POSITION;
+    float2 Tex0          : TEXCOORD0;
+    float4 TexShadow     : TEXCOORD3;
+    float  Fog           : FOG;
     float4 LightAndScale : COLOR1;
-    float3 SunLight : TEXCOORD1;
-    float3 TerrainColor : COLOR0;
+    float3 SunLight      : TEXCOORD1;
+    float3 TerrainColor  : COLOR0;
 };
 
 struct VS2PS_ZOnly
 {
-    float4 Pos : POSITION;
+    float4 Pos  : POSITION;
     float2 Tex0 : TEXCOORD0;
 };
 

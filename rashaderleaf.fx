@@ -20,13 +20,13 @@ float	ObjRadius = 2;
 
 struct VS_OUTPUT
 {
-    float4 Pos	: POSITION0;
-    float2 Tex0	: TEXCOORD0;
-#if _HASSHADOW_
-    float4 TexShadow	: TEXCOORD1;
-#endif
-    float4 Color  : COLOR0;
-    float Fog	: FOG;
+    float4 Pos  : POSITION0;
+    float2 Tex0 : TEXCOORD0;
+    #if _HASSHADOW_
+        float4 TexShadow : TEXCOORD1;
+    #endif
+    float4 Color : COLOR0;
+    float  Fog   : FOG;
 };
 
 texture	DiffuseMap;

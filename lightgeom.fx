@@ -13,11 +13,12 @@ float spotConeAngle : ConeAngle;
 
 struct appdata
 {
-    float4	Pos : POSITION;
+    float4 Pos : POSITION;
 };
 
-struct VS_OUTPUT {
-    float4 HPos		: POSITION;
+struct VS_OUTPUT
+{
+    float4 HPos : POSITION;
 };
 
 VS_OUTPUT vsPointLight(appdata input, uniform float4x4 myWVP)
@@ -58,12 +59,12 @@ technique Pointlight
     }
 }
 
-///
 
-struct VS_SPOT_OUTPUT {
-    float4 HPos		: POSITION;
-    float3 lightDir		: TEXCOORD0;
-    float3 lightVec		: TEXCOORD1;
+struct VS_SPOT_OUTPUT
+{
+    float4 HPos     : POSITION;
+    float3 lightDir : TEXCOORD0;
+    float3 lightVec : TEXCOORD1;
 };
 
 VS_SPOT_OUTPUT vsSpotLight(appdata input, uniform float4x4 myWVP, uniform float4x4 myWV, uniform float3 lightDir)

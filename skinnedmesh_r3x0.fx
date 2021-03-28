@@ -2,38 +2,38 @@
 
 struct APP2VS_fullMRT
 {
-    float4	Pos 		: POSITION;
-    float3	Normal 		: NORMAL;
-    float	BlendWeights	: BLENDWEIGHT;
-    float4	BlendIndices 	: BLENDINDICES;
-    float2	TexCoord0 	: TEXCOORD0;
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float  BlendWeights : BLENDWEIGHT;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord0    : TEXCOORD0;
 };
 
 struct VS2PS_ZAndDiffuse
 {
-    float4	Pos				: POSITION;
-    float2	Tex0			: TEXCOORD0;
+    float4 Pos  : POSITION;
+    float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS_fullMRT
 {
-    float4	Pos				: POSITION;
-    float2	Tex0			: TEXCOORD0;
-    float3	GroundUVAndLerp	: COLOR0;
-        float4	wPos			: TEXCOORD1;
-    float4 Mat1				: TEXCOORD2;
-    float3 Mat2				: TEXCOORD3;
-    float3 Mat3				: TEXCOORD4;
-    float4 Mat1_			: TEXCOORD5;
-    float3 Mat2_			: TEXCOORD6;
-    float3 Mat3_			: TEXCOORD7;
+    float4 Pos             : POSITION;
+    float2 Tex0            : TEXCOORD0;
+    float3 GroundUVAndLerp : COLOR0;
+    float4 wPos            : TEXCOORD1;
+    float4 Mat1            : TEXCOORD2;
+    float3 Mat2            : TEXCOORD3;
+    float3 Mat3            : TEXCOORD4;
+    float4 Mat1_           : TEXCOORD5;
+    float3 Mat2_           : TEXCOORD6;
+    float3 Mat3_           : TEXCOORD7;
 };
 
 struct PS2FB_fullMRT
 {
-    float4	Col0 		: COLOR0;
-    float4	Col1 		: COLOR1;
-    float4	Col2 		: COLOR2;
+    float4 Col0 : COLOR0;
+    float4 Col1 : COLOR1;
+    float4 Col2 : COLOR2;
 };
 
 VS2PS_ZAndDiffuse vsZAndDiffuse(APP2VS_fullMRT indata, uniform int NumBones)
@@ -209,12 +209,12 @@ technique fullMRT
 
 struct APP2VS_fullMRTtangent
 {
-    float4	Pos 		: POSITION;
-    float3	Normal 		: NORMAL;
-    float	BlendWeights	: BLENDWEIGHT;
-    float4	BlendIndices 	: BLENDINDICES;
-    float2	TexCoord0 	: TEXCOORD0;
-    float3  Tan : TANGENT;
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float  BlendWeights : BLENDWEIGHT;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord0    : TEXCOORD0;
+    float3 Tan          : TANGENT;
 };
 
 
@@ -328,15 +328,15 @@ technique fullMRTtangent
 
 struct VS2PS_fullMRTskinpre
 {
-    float4	Pos				: POSITION;
-    float2	Tex0			: TEXCOORD0;
-    float4 Mat1				: TEXCOORD1;
-    float3 Mat2				: TEXCOORD2;
-    float3 Mat3				: TEXCOORD3;
-    float4 Mat1_			: TEXCOORD4;
-    float3 Mat2_			: TEXCOORD5;
-    float3 Mat3_			: TEXCOORD6;
-    float3 ObjEyeVec		: TEXCOORD7;
+    float4 Pos       : POSITION;
+    float2 Tex0      : TEXCOORD0;
+    float4 Mat1      : TEXCOORD1;
+    float3 Mat2      : TEXCOORD2;
+    float3 Mat3      : TEXCOORD3;
+    float4 Mat1_     : TEXCOORD4;
+    float3 Mat2_     : TEXCOORD5;
+    float3 Mat3_     : TEXCOORD6;
+    float3 ObjEyeVec : TEXCOORD7;
 };
 
 VS2PS_fullMRTskinpre vsFullMRTskinpre(APP2VS_fullMRT indata, uniform int NumBones)
@@ -395,16 +395,16 @@ float4 psFullMRTskinpre(VS2PS_fullMRTskinpre indata) : COLOR
 
 struct VS2PS_fullMRTskinpreshadowed
 {
-    float4	Pos				: POSITION;
-    float4 Tex0AndHZW		: TEXCOORD0;
-    float4 Mat1				: TEXCOORD1;
-    float3 Mat2				: TEXCOORD2;
-    float3 Mat3				: TEXCOORD3;
-    float4 Mat1_			: TEXCOORD4;
-    float3 Mat2_			: TEXCOORD5;
-    float3 Mat3_			: TEXCOORD6;
-    float4 ShadowTex		: TEXCOORD7;
-    float3 ObjEyeVec		: COLOR;
+    float4 Pos        : POSITION;
+    float4 Tex0AndHZW : TEXCOORD0;
+    float4 Mat1       : TEXCOORD1;
+    float3 Mat2       : TEXCOORD2;
+    float3 Mat3       : TEXCOORD3;
+    float4 Mat1_      : TEXCOORD4;
+    float3 Mat2_      : TEXCOORD5;
+    float3 Mat3_      : TEXCOORD6;
+    float4 ShadowTex  : TEXCOORD7;
+    float3 ObjEyeVec  : COLOR;
 };
 
 VS2PS_fullMRTskinpreshadowed vsFullMRTskinpreshadowed(APP2VS_fullMRT indata, uniform int NumBones)

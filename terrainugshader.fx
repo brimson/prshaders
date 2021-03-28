@@ -14,19 +14,18 @@ sampler sampler2Point = sampler_state { Texture = (texture2); MinFilter = POINT;
 
 struct APP2VS_BM_Dx9
 {
-    float4	Pos0 : POSITION0;
-    float4	Pos1 : POSITION1;
-    float4	MorphDelta : POSITION2;
-    float2	TexCoord0 : TEXCOORD0;
-    float3	Normal : NORMAL;
+    float4 Pos0       : POSITION0;
+    float4 Pos1       : POSITION1;
+    float4 MorphDelta : POSITION2;
+    float2 TexCoord0  : TEXCOORD0;
+    float3 Normal     : NORMAL;
 };
 
 struct VS2PS_DynamicShadowmap
 {
-    float4	Pos : POSITION;
-    float4	ShadowTex : TEXCOORD1;
+    float4 Pos       : POSITION;
+    float4 ShadowTex : TEXCOORD1;
 };
-
 
 float4 psDynamicShadowmap(VS2PS_DynamicShadowmap indata) : COLOR
 {

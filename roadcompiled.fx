@@ -50,23 +50,23 @@ sampler sampler2 = sampler_state
     MagFilter = POINT;
     MipFilter = NONE;
 };
+
 struct APP2VS
 {
-    float4 Pos	: POSITION;
-    float2 Tex0	: TEXCOORD0;
-    float2 Tex1	: TEXCOORD1;
-//	float4 MorphDelta: POSITION1;
-    float  Alpha    : TEXCOORD2;
+    float4 Pos   : POSITION;
+    float2 Tex0  : TEXCOORD0;
+    float2 Tex1  : TEXCOORD1;
+    float  Alpha : TEXCOORD2;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
-    float2	Tex1 : TEXCOORD1;
-    float4	PosTex : TEXCOORD2;
-    float  ZFade : COLOR;
-    float  Fog  : FOG;
+    float4 Pos    : POSITION;
+    float2 Tex0   : TEXCOORD0;
+    float2 Tex1   : TEXCOORD1;
+    float4 PosTex : TEXCOORD2;
+    float  ZFade  : COLOR;
+    float  Fog    : FOG;
 };
 
 float4 projToLighting(float4 hPos)
@@ -147,11 +147,11 @@ float4 RoadCompiledPS(VS2PS indata) : COLOR0
 
 struct VS2PSDx9
 {
-    float4	Pos : POSITION;
-    float2	Tex0 : TEXCOORD0;
-    float2	Tex1 : TEXCOORD1;
-    float    ZFade : COLOR;
-    float Fog : FOG;
+    float4 Pos   : POSITION;
+    float2 Tex0  : TEXCOORD0;
+    float2 Tex1  : TEXCOORD1;
+    float  ZFade : COLOR;
+    float  Fog   : FOG;
 };
 
 VS2PSDx9 RoadCompiledVSDx9(APP2VS input)

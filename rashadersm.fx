@@ -39,38 +39,40 @@
 
 struct SMVariableVSInput
 {
-    float4	Pos 			: POSITION;
-    float3	Normal 			: NORMAL;
-    float	BlendWeights		: BLENDWEIGHT;
-    float4	BlendIndices 		: BLENDINDICES;
-    float2	TexCoord0		: TEXCOORD0;
-        float3	Tan			: TANGENT;
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float  BlendWeights : BLENDWEIGHT;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord0    : TEXCOORD0;
+    float3 Tan          : TANGENT;
 };
 
 struct SMVariableVSOutput
 {
-    float4	Pos					: POSITION;
-    float4	DiffuseAndHemiLerp	: COLOR0;
-    float3	Specular			: COLOR1;
-    float2	Tex0				: TEXCOORD0;
-    float3	GroundUVOrWPos		: TEXCOORD1;
-#if _HASNORMALMAP_
-    float3	LightVec			: TEXCOORD2;
-    #if _HASSHADOW_ || _HASSHADOWOCCLUSION_
-        float4	ShadowMat		: TEXCOORD4;
-    #endif
-#elif _HASSHADOW_ || _HASSHADOWOCCLUSION_
-    float4	ShadowMat			: TEXCOORD2;
-#endif
-    float4	HalfVecAndOccShadow	: TEXCOORD3;
-    float	Fog					: FOG;
+    float4 Pos                : POSITION;
+    float4 DiffuseAndHemiLerp : COLOR0;
+    float3 Specular           : COLOR1;
+    float2 Tex0               : TEXCOORD0;
+    float3 GroundUVOrWPos     : TEXCOORD1;
 
-#if _USEPERPIXELHEMIMAP_
-    // Used only for per-pixel hemi
-    float3	TexToWorld0			: TEXCOORD5;
-    float3	TexToWorld1			: TEXCOORD6;
-    float3	TexToWorld2			: TEXCOORD7;
-#endif
+    #if _HASNORMALMAP_
+        float3 LightVec : TEXCOORD2;
+        #if _HASSHADOW_ || _HASSHADOWOCCLUSION_
+            float4 ShadowMat : TEXCOORD4;
+        #endif
+    #elif _HASSHADOW_ || _HASSHADOWOCCLUSION_
+        float4 ShadowMat : TEXCOORD2;
+    #endif
+
+    float4 HalfVecAndOccShadow : TEXCOORD3;
+    float  Fog                 : FOG;
+
+    #if _USEPERPIXELHEMIMAP_
+        // Used only for per-pixel hemi
+        float3 TexToWorld0 : TEXCOORD5;
+        float3 TexToWorld1 : TEXCOORD6;
+        float3 TexToWorld2 : TEXCOORD7;
+    #endif
 };
 
 float getBlendWeight(SMVariableVSInput input, uniform int bone)

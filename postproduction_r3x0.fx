@@ -34,33 +34,33 @@ float Cutoff : cutoff = 0.8;
 
 struct APP2VS_Quad
 {
-    float2	Pos : POSITION0;
-    float2	TexCoord0 : TEXCOORD0;
+    float2 Pos       : POSITION0;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_Quad2
 {
-    float4	Pos 		: POSITION;
-    float2	TexCoord0	: TEXCOORD0;
-    float2	TexCoord1	: TEXCOORD1;
+    float4 Pos       : POSITION;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
 };
 
 struct PS2FB_Combine
 {
-    float4	Col0 		: COLOR0;
+    float4 Col0 : COLOR0;
 };
 
 VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
 {
     VS2PS_Quad outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-     outdata.TexCoord0 = indata.TexCoord0;
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 

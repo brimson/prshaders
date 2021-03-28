@@ -17,11 +17,11 @@
 // VARIABLES
 struct Light
 {
-    float3	pos;
-    float3	dir;
-    float4	color;
-    float4	specularColor;
-    float	attenuation;
+    float3 pos;
+    float3 dir;
+    float4 color;
+    float4 specularColor;
+    float  attenuation;
 };
 
 int			srcBlend = 5;

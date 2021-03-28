@@ -3,7 +3,8 @@
 
 // UNIFORM INPUTS
 // constant array
-struct TemplateParameters {
+struct TemplateParameters
+{
     float4 m_uvRangeLMapIntensiyAndParticleMaxSize;
     float4 m_lightColorAndRandomIntensity;
     float4 m_color1AndLightFactor;
@@ -19,27 +20,27 @@ TemplateParameters tParameters[10] : TemplateParameters;
 
 struct appdata
 {
-    float3	pos : POSITION;
-    float2	ageFactorAndGraphIndex : TEXCOORD0;
-    float3 	randomSizeAlphaAndIntensityBlendFactor : TEXCOORD1;
-    float2	displaceCoords : TEXCOORD2;
-    float2 	intensityAndRandomIntensity : TEXCOORD3;
-    float2	rotation : TEXCOORD4;
-    float4	uvOffsets : TEXCOORD5;
-    float2	texCoords : TEXCOORD6;
+    float3 pos                                    : POSITION;
+    float2 ageFactorAndGraphIndex                 : TEXCOORD0;
+    float3 randomSizeAlphaAndIntensityBlendFactor : TEXCOORD1;
+    float2 displaceCoords                         : TEXCOORD2;
+    float2 intensityAndRandomIntensity            : TEXCOORD3;
+    float2 rotation                               : TEXCOORD4;
+    float4 uvOffsets                              : TEXCOORD5;
+    float2 texCoords                              : TEXCOORD6;
 };
 
 
-struct VS_PARTICLE_OUTPUT {
-    float4 HPos		: POSITION;
-    float4 color		: TEXCOORD0;
-    float2 texCoords0	: TEXCOORD1;
-    float2 texCoords1	: TEXCOORD2;
-    float2 texCoords2	: TEXCOORD3;
-    float4 lightFactorAndAlphaBlend	: COLOR0;
+struct VS_PARTICLE_OUTPUT
+{
+    float4 HPos                        : POSITION;
+    float4 color                       : TEXCOORD0;
+    float2 texCoords0                  : TEXCOORD1;
+    float2 texCoords1                  : TEXCOORD2;
+    float2 texCoords2                  : TEXCOORD3;
+    float4 lightFactorAndAlphaBlend    : COLOR0;
     float4 animBFactorAndLMapIntOffset : COLOR1;
-    float Fog		: FOG;
-
+    float  Fog                         : FOG;
 };
 
 VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform float4x4 myWP,  uniform TemplateParameters templ[10])

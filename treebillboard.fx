@@ -39,20 +39,20 @@ sampler sampler1 = sampler_state {
 
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
-    float4	Col2 : COLOR;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+    float4 Pos  : POSITION;
+    float4 Col  : COLOR;
+    float4 Col2 : COLOR;
+    float2 Tex  : TEXCOORD0;
+    float2 Tex2 : TEXCOORD1;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR0;
-    float4	Col2 : COLOR1;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+    float4 Pos  : POSITION;
+    float4 Col  : COLOR0;
+    float4 Col2 : COLOR1;
+    float2 Tex  : TEXCOORD0;
+    float2 Tex2 : TEXCOORD1;
 };
 
 
@@ -60,7 +60,6 @@ float4 psFFP(VS2PS indata) : COLOR
 {
     float4 col0 = tex2D(sampler0, indata.Tex);
     float4 col1 = tex2D(sampler1, indata.Tex2);
-
     return lerp(col1, col0, indata.Col2.a);
 }
 

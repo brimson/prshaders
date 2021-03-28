@@ -5,24 +5,23 @@ bool zbuffer : ZBUFFER;
 
 struct APP2VS
 {
-    float4	Pos		: POSITION;
-    float4	Diffuse	: COLOR;
+    float4 Pos     : POSITION;
+    float4 Diffuse : COLOR;
 };
 
 struct VS2PS
 {
-    float4	Pos	: POSITION;
-    float4  Diffuse : COLOR;
+    float4 Pos     : POSITION;
+    float4 Diffuse : COLOR;
 };
 
 struct PS2FB
 {
-    float4	Col : COLOR;
+    float4 Col : COLOR;
 };
 
 
-VS2PS VShader(APP2VS indata,
-    uniform float4x4 wvp)
+VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
 {
     VS2PS outdata;
 

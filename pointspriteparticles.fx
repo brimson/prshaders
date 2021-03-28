@@ -37,7 +37,8 @@ sampler lutSampler = sampler_state
 
 
 // constant array
-struct TemplateParameters {
+struct TemplateParameters
+{
     float4 m_uvRangeLMapIntensiyAndParticleMaxSize;
     float4 m_lightColorAndRandomIntensity;
     float4 m_color1;
@@ -52,21 +53,22 @@ TemplateParameters tParameters[10] : TemplateParameters;
 
 struct appdata
 {
-    float4	pos : POSITION;
-    float1	ageFactor : TEXCOORD0;
-    float1 	graphIndex : TEXCOORD1;
-    float2 	randomSizeAndAlpha : TEXCOORD2;
-    float2 	intensityAndRandomIntensity : TEXCOORD3;
+    float4 pos                         : POSITION;
+    float  ageFactor                   : TEXCOORD0;
+    float  graphIndex                  : TEXCOORD1;
+    float2 randomSizeAndAlpha          : TEXCOORD2;
+    float2 intensityAndRandomIntensity : TEXCOORD3;
 };
 
 
-struct VS_POINTSPRITE_OUTPUT {
-    float4 HPos		: POSITION;
-    float4 color		: COLOR;
-    float2 texCoords	: TEXCOORD0;
-    float2 texCoords1	: TEXCOORD1;
+struct VS_POINTSPRITE_OUTPUT
+{
+    float4 HPos                   : POSITION;
+    float4 color                  : COLOR;
+    float2 texCoords              : TEXCOORD0;
+    float2 texCoords1             : TEXCOORD1;
     float lightMapIntensityOffset : TEXCOORD2;
-    float  pointSize	: PSIZE0;
+    float  pointSize              : PSIZE0;
 };
 
 VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input, uniform float4x4 myWVP, uniform TemplateParameters templ[10], uniform float scale, uniform float myHeightmapSize)

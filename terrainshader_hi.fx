@@ -43,14 +43,14 @@ sampler dsampler6Wrap = sampler_state {
 
 struct Hi_VS2PS_FullDetail
 {
-    float4	Pos : POSITION;
-    float4	Tex0 : TEXCOORD0;
-    float4	Tex1 : TEXCOORD1;
-    float4	BlendValueAndFade : TEXCOORD2; //tl: texcoord because we don't want clamping
-    float4	Tex3 : TEXCOORD3;
-    float2	Tex5 : TEXCOORD4;
-    float2	Tex6 : TEXCOORD5;
-    float4	FogAndFade2 : COLOR0;
+    float4 Pos               : POSITION;
+    float4 Tex0              : TEXCOORD0;
+    float4 Tex1              : TEXCOORD1;
+    float4 BlendValueAndFade : TEXCOORD2; //tl: texcoord because we don't want clamping
+    float4 Tex3              : TEXCOORD3;
+    float2 Tex5              : TEXCOORD4;
+    float2 Tex6              : TEXCOORD5;
+    float4 FogAndFade2       : COLOR0;
 };
 
 //#define LIGHTONLY 1
@@ -212,17 +212,17 @@ Hi_VS2PS_FullDetail Hi_VS_FullDetail(Shared_APP2VS_Default indata)
 
 struct Hi_VS2PS_FullDetailMounten
 {
-    float4         Pos : POSITION;
-    float4         Tex0 : TEXCOORD0;
-    float4         Tex1 : TEXCOORD1;
-    float4         BlendValueAndFade : TEXCOORD2; //tl: texcoord because we don't want clamping
-#if HIGHTERRAIN
-    float4         Tex3 : TEXCOORD6;
-#endif
-    float2         Tex5 : TEXCOORD5;
-    float4         Tex6 : TEXCOORD3;
-    float2         Tex7 : TEXCOORD4;
-    float4         FogAndFade2 : COLOR0;
+    float4 Pos  : POSITION;
+    float4 Tex0 : TEXCOORD0;
+    float4 Tex1 : TEXCOORD1;
+    float4 BlendValueAndFade : TEXCOORD2; //tl: texcoord because we don't want clamping
+    #if HIGHTERRAIN
+        float4 Tex3 : TEXCOORD6;
+    #endif
+    float2 Tex5 : TEXCOORD5;
+    float4 Tex6 : TEXCOORD3;
+    float2 Tex7 : TEXCOORD4;
+    float4 FogAndFade2 : COLOR0;
 };
 
 float4 Hi_PS_FullDetailMounten(Hi_VS2PS_FullDetailMounten indata) : COLOR
@@ -388,15 +388,15 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
 
 struct Hi_VS2PS_FullDetailWithEnvMap
 {
-    float4	Pos : POSITION;
-    float4	Tex0 : TEXCOORD0;
-    float4	Tex1 : TEXCOORD1;
-    float4	Tex3 : TEXCOORD3;
-    float4	BlendValueAndFade : COLOR0;
-    float3	Tex5 : TEXCOORD2;
-    float2	Tex6 : TEXCOORD5;
-    float3	EnvMap : TEXCOORD4;
-    float4	FogAndFade2 : COLOR1;
+    float4 Pos  : POSITION;
+    float4 Tex0 : TEXCOORD0;
+    float4 Tex1 : TEXCOORD1;
+    float4 Tex3 : TEXCOORD3;
+    float4 BlendValueAndFade : COLOR0;
+    float3 Tex5   : TEXCOORD2;
+    float2 Tex6   : TEXCOORD5;
+    float3 EnvMap : TEXCOORD4;
+    float4 FogAndFade2 : COLOR1;
 };
 
 float4 Hi_PS_FullDetailWithEnvMap(Hi_VS2PS_FullDetailWithEnvMap indata) : COLOR
@@ -572,14 +572,14 @@ Hi_VS2PS_FullDetailWithEnvMap Hi_VS_FullDetailWithEnvMap(Shared_APP2VS_Default i
 
 struct Hi_VS2PS_PerPixelPointLight
 {
-    float4	Pos : POSITION;
-    float3	wPos : TEXCOORD0;
-    float3	Normal : TEXCOORD1;
+    float4 Pos    : POSITION;
+    float3 wPos   : TEXCOORD0;
+    float3 Normal : TEXCOORD1;
 };
 
 float4 Hi_PS_PerPixelPointLight(Hi_VS2PS_PerPixelPointLight indata) : COLOR
 {
-     return float4(calcPVPointTerrain(indata.wPos, indata.Normal), 0) * 0.5;
+    return float4(calcPVPointTerrain(indata.wPos, indata.Normal), 0) * 0.5;
 }
 
 Hi_VS2PS_PerPixelPointLight Hi_VS_PerPixelPointLight(Shared_APP2VS_Default indata)

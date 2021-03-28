@@ -28,27 +28,27 @@ float4 ConeSkinValues : CONESKINVALUES;
 
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float4	Color : COLOR;
+    float4 Pos    : POSITION;
+    float3 Normal : NORMAL;
+    float4 Color  : COLOR;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4  Diffuse : COLOR;
+    float4 Pos     : POSITION;
+    float4 Diffuse : COLOR;
 };
 
 struct VS2PS_Grid
 {
-    float4	Pos : POSITION;
-    float4  Diffuse : COLOR;
-    float2  Tex : TEXCOORD0;
+    float4 Pos     : POSITION;
+    float4 Diffuse : COLOR;
+    float2 Tex     : TEXCOORD0;
 };
 
 struct PS2FB
 {
-    float4	Col : COLOR;
+    float4 Col : COLOR;
 };
 
 float3 Diffuse(float3 Normal,uniform float4 lhtDir)
@@ -595,14 +595,14 @@ technique pivot
 
 struct APP2VS_F
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
+    float4 Pos : POSITION;
+    float4 Col : COLOR;
 };
 
 struct VS2PS_F
 {
-    float4	Pos : POSITION;
-    float4  Col : COLOR;
+    float4 Pos : POSITION;
+    float4 Col : COLOR;
 };
 
 VS2PS_F vsFrustum(APP2VS_F indata)

@@ -43,7 +43,7 @@ sampler TexMapSamplerWrap = sampler_state
 struct VS_SHAPE
 {
     float4 Position : POSITION;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
 };
 
 struct VS_TS0
@@ -57,13 +57,13 @@ struct VS_TS3
 {
     float4 Position : POSITION;
     float2 TexCoord : TEXCOORD0;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
 };
 
 struct VS_SHAPETEXTURE
 {
     float4 Position : POSITION;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
     float4 Selector : COLOR1;
     float2 TexCoord : TEXCOORD0;
 };
@@ -71,7 +71,7 @@ struct VS_SHAPETEXTURE
 struct VS_TEXTURE
 {
     float4 Position : POSITION;
-    float4 Diffuse : COLOR0;
+    float4 Diffuse  : COLOR0;
     float2 TexCoord : TEXCOORD0;
 };
 

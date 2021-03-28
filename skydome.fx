@@ -48,37 +48,42 @@ sampler samplerWrap2 = sampler_state
     AddressV = WRAP;
 };
 
-struct appdata {
-    float4	Pos : POSITION;
-    float4  BlendIndices : BLENDINDICES;
-    float2	TexCoord : TEXCOORD0;
-    float2	TexCoord1 : TEXCOORD1;
+struct appdata
+{
+    float4 Pos          : POSITION;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord     : TEXCOORD0;
+    float2 TexCoord1    : TEXCOORD1;
 };
 
-struct appdataNoClouds {
-    float4	Pos : POSITION;
-    float4  BlendIndices : BLENDINDICES;
-    float2	TexCoord : TEXCOORD0;
+struct appdataNoClouds
+{
+    float4 Pos          : POSITION;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord     : TEXCOORD0;
 };
 
-struct VS_OUTPUT {
+struct VS_OUTPUT
+{
+    float4 HPos    : POSITION;
+    float2 Tex0    : TEXCOORD0;
+    float2 Tex1    : TEXCOORD1;
+    float4 FadeOut : COLOR0;
+};
+
+struct VS_OUTPUTNoClouds
+{
     float4 HPos	: POSITION;
     float2 Tex0	: TEXCOORD0;
-    float2 Tex1	: TEXCOORD1;
-    float4 FadeOut: COLOR0;
 };
 
-struct VS_OUTPUTNoClouds {
-    float4 HPos	: POSITION;
-    float2 Tex0	: TEXCOORD0;
-};
-
-struct VS_OUTPUTDualClouds {
-    float4 HPos	: POSITION;
-    float2 Tex0	: TEXCOORD0;
-    float2 Tex1	: TEXCOORD1;
-    float2 Tex2	: TEXCOORD2;
-    float4 FadeOut: COLOR0;
+struct VS_OUTPUTDualClouds
+{
+    float4 HPos    : POSITION;
+    float2 Tex0    : TEXCOORD0;
+    float2 Tex1    : TEXCOORD1;
+    float2 Tex2    : TEXCOORD2;
+    float4 FadeOut : COLOR0;
 };
 
 VS_OUTPUT vsSkyDome(appdata input)

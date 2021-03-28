@@ -13,14 +13,14 @@ float	TexUnpack;
 
 struct VS_OUTPUT
 {
-    float4 Pos	: POSITION0;
-    float2 Tex0	: TEXCOORD0;
-    float2 Tex1	: TEXCOORD1;
-#if _HASSHADOW_
-    float4 TexShadow	: TEXCOORD2;
-#endif
-    float4 Color  : COLOR0;
-    float Fog	: FOG;
+    float4 Pos  : POSITION0;
+    float2 Tex0 : TEXCOORD0;
+    float2 Tex1 : TEXCOORD1;
+    #if _HASSHADOW_
+        float4 TexShadow : TEXCOORD2;
+    #endif
+    float4 Color : COLOR0;
+    float  Fog   : FOG;
 };
 
 texture	DetailMap;

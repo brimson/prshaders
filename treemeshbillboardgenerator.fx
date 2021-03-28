@@ -52,36 +52,39 @@ float4 lightPos : LightPosition
 
 
 
-struct appdata {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float2	TexCoord1 : TEXCOORD1;
-    float4 Tan		: TANGENT;
+struct appdata
+{
+    float4 Pos       : POSITION;
+    float3 Normal    : NORMAL;
+    float2 TexCoord  : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
+    float4 Tan       : TANGENT;
 };
 
-struct appdata2 {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float2	Width_height : TEXCOORD1;
-    float4  Tan		: TANGENT;
+struct appdata2
+{
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float2 TexCoord     : TEXCOORD0;
+    float2 Width_height : TEXCOORD1;
+    float4 Tan          : TANGENT;
 };
 
-
-struct VS_OUTPUT {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float2 TexCoord2: TEXCOORD1;
-    float4 LightVec	: TEXCOORD2;
-    float4 HalfVec	: TEXCOORD3;
-    float4 Diffuse 	: COLOR;
+struct VS_OUTPUT
+{
+    float4 HPos      : POSITION;
+    float2 TexCoord  : TEXCOORD0;
+    float2 TexCoord2 : TEXCOORD1;
+    float4 LightVec  : TEXCOORD2;
+    float4 HalfVec   : TEXCOORD3;
+    float4 Diffuse   : COLOR;
 };
 
-struct VS_OUTPUT2 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float4 Diffuse 	: COLOR;
+struct VS_OUTPUT2
+{
+    float4 HPos     : POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Diffuse  : COLOR;
 };
 
 sampler diffuseSampler = sampler_state

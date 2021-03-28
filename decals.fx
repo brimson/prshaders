@@ -29,22 +29,23 @@ sampler sampler1 = sampler_state { Texture = (texture1); AddressU = CLAMP; Addre
 //sampler ShadowMapSampler = sampler_state { Texture = (shadowMapTex); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
 //sampler sampler3 = sampler_state { Texture = (shadowMapOccluderTex); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
 
-struct appdata {
-       float4	Pos				: POSITION;
-       float4	Normal				: NORMAL;
-       float4	Color				: COLOR;
-       float4	TexCoordsInstanceIndexAndAlpha	: TEXCOORD0;
+struct appdata
+{
+    float4 Pos    : POSITION;
+    float4 Normal : NORMAL;
+    float4 Color  : COLOR;
+    float4 TexCoordsInstanceIndexAndAlpha : TEXCOORD0;
 };
 
 
-struct OUT_vsDecal {
-    float4 HPos		: POSITION;
-    float2 Texture0		: TEXCOORD0;
-    float3 Color 		: TEXCOORD1;
-    float3 Diffuse		: TEXCOORD2;
-    float4 Alpha		: COLOR0;
-
-    float Fog		: FOG;
+struct OUT_vsDecal
+{
+    float4 HPos     : POSITION;
+    float2 Texture0 : TEXCOORD0;
+    float3 Color    : TEXCOORD1;
+    float3 Diffuse  : TEXCOORD2;
+    float4 Alpha    : COLOR0;
+    float  Fog      : FOG;
 };
 
 OUT_vsDecal vsDecal(appdata input)
@@ -86,16 +87,16 @@ float4 psDecal(	OUT_vsDecal indata) : COLOR
 
 
 
-struct OUT_vsDecalShadowed {
-    float4 HPos		: POSITION;
-    float2 Texture0		: TEXCOORD0;
-    float4 TexShadow		: TEXCOORD1;
-    float4 ViewPortMap 	: TEXCOORD2;
-    float3 Color 		: TEXCOORD3;
-    float3 Diffuse		: TEXCOORD4;
-    float4 Alpha		: COLOR0;
-    float Fog		: FOG;
-
+struct OUT_vsDecalShadowed
+{
+    float4 HPos        : POSITION;
+    float2 Texture0    : TEXCOORD0;
+    float4 TexShadow   : TEXCOORD1;
+    float4 ViewPortMap : TEXCOORD2;
+    float3 Color       : TEXCOORD3;
+    float3 Diffuse     : TEXCOORD4;
+    float4 Alpha       : COLOR0;
+    float  Fog         : FOG;
 };
 
 OUT_vsDecalShadowed vsDecalShadowed(appdata input)

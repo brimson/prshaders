@@ -25,18 +25,18 @@ sampler sampler1Wrap = sampler_state { Texture = (texture1); AddressU = WRAP; Ad
 
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+    float4 Pos  : POSITION;
+    float4 Col  : COLOR;
+    float2 Tex  : TEXCOORD0;
+    float2 Tex2 : TEXCOORD1;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+    float4 Pos  : POSITION;
+    float4 Col  : COLOR;
+    float2 Tex  : TEXCOORD0;
+    float2 Tex2 : TEXCOORD1;
 };
 
 VS2PS vsFFP(APP2VS indata)

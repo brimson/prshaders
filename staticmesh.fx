@@ -370,41 +370,46 @@ float4 sunColor : SunColor;
 float4 eyePos : EyePos;
 float4 eyePosObjectSpace : EyePosObjectSpace;
 
-struct appdata {
-    float4	Pos : POSITION;
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float3	Tan		: TANGENT;
-    float3	Binorm	: BINORMAL;
+struct appdata
+{
+    float4 Pos      : POSITION;
+    float3 Normal   : NORMAL;
+    float2 TexCoord : TEXCOORD0;
+    float3 Tan      : TANGENT;
+    float3 Binorm   : BINORMAL;
 };
 
-struct VS_OUTPUT {
-    float4 HPos		: POSITION;
-    float2 NormalMap	: TEXCOORD0;
-    float3 LightVec	: TEXCOORD1;
-    float3 HalfVec	: TEXCOORD2;
-    float2 DiffMap	: TEXCOORD3;
+struct VS_OUTPUT
+{
+    float4 HPos      : POSITION;
+    float2 NormalMap : TEXCOORD0;
+    float3 LightVec  : TEXCOORD1;
+    float3 HalfVec   : TEXCOORD2;
+    float2 DiffMap   : TEXCOORD3;
 };
 
-struct VS_OUTPUTSS {
-    float4 HPos		: POSITION;
-    float4 TanNormal	: COLOR0;
-    float4 TanLight	: COLOR1;
-    float2 NormalMap	: TEXCOORD0;
-    float3 LightVec	: TEXCOORD1;
-    float3 HalfVec	: TEXCOORD2;
-    float2 DiffMap	: TEXCOORD3;
+struct VS_OUTPUTSS
+{
+    float4 HPos      : POSITION;
+    float4 TanNormal : COLOR0;
+    float4 TanLight  : COLOR1;
+    float2 NormalMap : TEXCOORD0;
+    float3 LightVec  : TEXCOORD1;
+    float3 HalfVec   : TEXCOORD2;
+    float2 DiffMap   : TEXCOORD3;
 };
 
-struct VS_OUTPUT2 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float4 Diffuse 	: COLOR;
+struct VS_OUTPUT2
+{
+    float4 HPos     : POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Diffuse  : COLOR;
 };
 
-struct VS_OUTPUT3 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
+struct VS_OUTPUT3
+{
+    float4 HPos     : POSITION;
+    float2 TexCoord : TEXCOORD0;
 };
 
 
@@ -450,22 +455,23 @@ technique alpha_one
     }
 }
 
-struct APPDATA_ShadowMap {
+struct APPDATA_ShadowMap
+{
     float4 Pos : POSITION;
     float2 Tex : TEXCOORD0;
 };
 
 struct VS2PS_ShadowMap
 {
-    float4	Pos	: POSITION;
-    float2	PosZW	: TEXCOORD0;
+    float4 Pos  : POSITION;
+    float2 osZW : TEXCOORD0;
 };
 
 struct VS2PS_ShadowMapAlpha
 {
-    float4	Pos	: POSITION;
-    float2	Tex	: TEXCOORD0;
-    float2	PosZW	: TEXCOORD1;
+    float4 Pos   : POSITION;
+    float2 Tex   : TEXCOORD0;
+    float2 PosZW : TEXCOORD1;
 };
 
 float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)

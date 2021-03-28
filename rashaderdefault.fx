@@ -21,7 +21,7 @@ float4 shader() : COLOR
 
 struct VS_OUTPUT
 {
-    float4 Pos	: POSITION0;
+    float4 Pos : POSITION0;
 };
 
 string InstanceParameters[] =
