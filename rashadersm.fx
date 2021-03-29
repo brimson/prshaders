@@ -19,6 +19,7 @@
 #else
     #define _USEPERPIXELHEMIMAP_ 0
 #endif
+
 #define _USEPERPIXELNORMALIZE_ 1
 #define _USERENORMALIZEDTEXTURES_ 1
 
@@ -83,7 +84,7 @@ float getBinormalFlipping(SMVariableVSInput input)
 {
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
     int IndexArray[4] = (int[4])IndexVector;
-    return 1.f + IndexArray[2] * -2.f;
+    return 1.0f + IndexArray[2] * -2.0f;
 }
 
 float3x3 getTangentBasis(SMVariableVSInput input)
@@ -146,7 +147,7 @@ float3 skinVecToTan(SMVariableVSInput input, float3 Vec, uniform int numBones = 
 
 float4 skinPosition(SMVariableVSInput input)
 {
-    return float4(skinPos(input, input.Pos), 1);
+    return float4(skinPos(input, input.Pos), 1.0);
 }
 
 float3 skinNormal(SMVariableVSInput input, uniform int numBones = NUMBONES)
@@ -174,37 +175,37 @@ float4 calcGroundUVAndLerp(float3 wPos, float3 wNormal)
 {
     // HemiMapConstants: offset x/y heightmapsize z / hemilerpbias w
 
-    float4 GroundUVAndLerp = 0;
-    GroundUVAndLerp.xy	= ((wPos + (HemiMapConstants.z/2) + wNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
-    GroundUVAndLerp.y	= 1 - GroundUVAndLerp.y;
+    float4 GroundUVAndLerp = 0.0;
+    GroundUVAndLerp.xy = ((wPos + (HemiMapConstants.z/2) + wNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
+    GroundUVAndLerp.y = 1.0 - GroundUVAndLerp.y;
 
     // localHeight scale, 1 for top and 0 for bottom
     float localHeight = (wPos.y - (World[3][1] - 0.5)) * 0.5;
 
-    float offset		= (localHeight * 2 - 1) + HeightOverTerrain;
-    offset				= clamp(offset, -2 * (1 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
-    GroundUVAndLerp.z	= clamp((wNormal.y + offset) * 0.5 + 0.5, 0, 0.9);
+    float offset = (localHeight * 2.0 - 1.0) + HeightOverTerrain;
+    offset       = clamp(offset, -2.0 * (1.0 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
+    GroundUVAndLerp.z = clamp((wNormal.y + offset) * 0.5 + 0.5, 0.0, 0.9);
 
     return GroundUVAndLerp;
 }
 
 float3 skinLightVec(SMVariableVSInput input, float3 lVec)
 {
-#if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_
-    return skinVecToObj(input, lVec, 1);
-#else
-    return skinVecToTan(input, lVec, 1);
-#endif
+    #if _OBJSPACENORMALMAP_ || !_HASNORMALMAP_
+        return skinVecToObj(input, lVec, 1);
+    #else
+        return skinVecToTan(input, lVec, 1);
+    #endif
 }
 
 // NOTE: This returns un-normalized for point, because point needs to be attenuated.
 float3 getLightVec(SMVariableVSInput input)
 {
-#if _POINTLIGHT_
-    return (Lights[0].pos - skinPosition(input).xyz);
-#else
-    return -Lights[0].dir;
-#endif
+    #if _POINTLIGHT_
+        return (Lights[0].pos - skinPosition(input).xyz);
+    #else
+        return -Lights[0].dir;
+    #endif
 }
 
 SMVariableVSOutput vs(SMVariableVSInput input)
@@ -270,20 +271,20 @@ float4 ps(SMVariableVSOutput input) : COLOR
 {
     #if _HASNORMALMAP_
         float4 normal = tex2D(NormalMapSampler, input.Tex0);
-        normal.xyz = normal.xyz * 2 - 1;
+        normal.xyz = normal.xyz * 2.0 - 1.0;
         #if _USERENORMALIZEDTEXTURES_
             normal.xyz = normalize(normal.xyz);
         #endif
 
     #ifdef NORMAL_CHANNEL
-        return float4(normal.xyz*0.5+0.5, 1);
+        return float4(normal.xyz * 0.5 + 0.5, 1.0);
     #endif
 
         float gloss = normal.a;
 
         float3 lightVec = input.LightVec;
         #if _POINTLIGHT_
-            float attenuation = 1 - saturate(length(lightVec) * Lights[0].attenuation);
+            float attenuation = 1.0 - saturate(length(lightVec) * Lights[0].attenuation);
             lightVec = normalize(lightVec);
         #else
             const float attenuation = 1.0;
@@ -324,8 +325,8 @@ float4 ps(SMVariableVSOutput input) : COLOR
         float4 groundcolor = tex2D(HemiMapSampler, GroundUVAndLerp.xy);
         float3 hemicolor = lerp(groundcolor, HemiMapSkyColor, GroundUVAndLerp.z);
     #else
-        const float3 hemicolor = float3(0.425,0.425,0.4); //"old"  -- expose a per-level "static hemi" value (ambient mod)
-        float4 groundcolor = 1;
+        const float3 hemicolor = float3(0.425, 0.425, 0.4); // "old"  -- expose a per-level "static hemi" value (ambient mod)
+        float4 groundcolor = 1.0;
     #endif
 
     #if _HASHEMIOCCLUSION_
@@ -360,12 +361,12 @@ float4 ps(SMVariableVSOutput input) : COLOR
         #endif
     #else
         #if _POINTLIGHT_
-            outColor.rgb = input.DiffuseAndHemiLerp * 2;
+            outColor.rgb = input.DiffuseAndHemiLerp * 2.0;
         #else
-            outColor.rgb = (input.DiffuseAndHemiLerp * 2) * dirShadow + hemicolor;
+            outColor.rgb = (input.DiffuseAndHemiLerp * 2.0) * dirShadow + hemicolor;
         #endif
         outColor.rgb *= diffuseTex;
-        outColor.rgb += (input.Specular * 2) * dirShadow;
+        outColor.rgb += (input.Specular * 2.0) * dirShadow;
     #endif
 
     outColor.a = diffuseTex.a*Transparency.a;
@@ -374,10 +375,10 @@ float4 ps(SMVariableVSOutput input) : COLOR
     {
         #if _HASENVMAP_
             // If EnvMap enabled, then should be hot on thermals
-            outColor.rgb = float3(lerp(0.6,0.3,diffuseTex.b),1,0); // M //0.61,0.25
+            outColor.rgb = float3(lerp(0.6, 0.3, diffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
         #else
             // Else cold
-            outColor.rgb = float3(lerp(0.43,0.17,diffuseTex.b),1,0);
+            outColor.rgb = float3(lerp(0.43, 0.17, diffuseTex.b), 1.0, 0.0);
         #endif
     }
 

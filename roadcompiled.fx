@@ -106,7 +106,6 @@ VS2PS RoadCompiledVS(APP2VS input)
     return outdata;
 }
 
-
 float4 RoadCompiledPS(VS2PS indata) : COLOR0
 {
     float4 t0 = tex2D(sampler0, indata.Tex0);
@@ -154,7 +153,7 @@ VS2PSDx9 RoadCompiledVSDx9(APP2VS input)
     float3 dist = (vLocalEyePos - input.Pos);
     outdata.ZFade = dot(dist, dist);
     outdata.ZFade = (outdata.ZFade - vFadeoutValues.x) * vFadeoutValues.y;
-    outdata.ZFade = 1 - saturate(outdata.ZFade);
+    outdata.ZFade = 1.0 - saturate(outdata.ZFade);
 
     outdata.Fog = calcFog(outdata.Pos.w);
 

@@ -56,31 +56,25 @@ string reqVertexElement[] =
     "TBasePacked2D",
 };
 
-VS_OUTPUT basicVertexShader
-(
-    float4 inPos: POSITION0,
-    float2 tex0	: TEXCOORD0
-)
+VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
+                            float2 tex0 : TEXCOORD0)
 {
-    VS_OUTPUT Out = (VS_OUTPUT)0;
+    VS_OUTPUT Out;
 
     float4 wPos = mul(inPos * PosUnpack, World);
-    wPos.y += .01;
+    wPos.y += 0.01;
 
     Out.Pos	= mul(wPos, ViewProjection);
     Out.Tex0.xy = tex0 * TexUnpack;
 
-    Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
-    Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
-    Out.lightTex.y = 1-Out.lightTex.y;
+    Out.lightTex.xy = (Out.Pos.xy / Out.Pos.ww) * 0.5 + 0.5;
+    Out.lightTex.y  = 1.0 - Out.lightTex.y;
     Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
     Out.lightTex.zw = Out.Pos.zw;
 
     float cameraDist = length(WorldSpaceCamPos - wPos);
-    Out.ZFade = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
-
+    Out.ZFade = 1.0 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
     Out.Fog = calcFog(Out.Pos.w);
-
     return Out;
 }
 
@@ -110,22 +104,21 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
     float4 color = tex2D(DiffuseMapSampler, VsOut.Tex0.xy);
     float4 light;
     float4 accumlights = tex2Dproj(LightMapSampler, VsOut.lightTex);
-    float4 terrainColor = float4(TerrainSunColor,1);
+    float4 terrainColor = float4(TerrainSunColor, 1.0);
     if (FogColor.r < 0.01)
     {
         // On thermals no shadows
-        light = (terrainColor * 2 + accumlights) * 2;
+        light = (terrainColor * 2.0 + accumlights) * 2.0;
         color.rgb *= light.xyz;
-        color.g = clamp(color.g, 0, 0.5);
+        color.g = clamp(color.g, 0.0, 0.5);
     }
     else
     {
-        light = ((accumlights.w * terrainColor * 2) + accumlights) * 2;
+        light = ((accumlights.w * terrainColor * 2.0) + accumlights) * 2.0;
         color.rgb *= light.xyz;
     }
 
     color.a *= VsOut.ZFade;
-
     return color;
 };
 

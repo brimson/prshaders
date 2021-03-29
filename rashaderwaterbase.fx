@@ -47,7 +47,7 @@ texture	CubeMap;
 sampler CubeMapSampler = sampler_state
 {
     Texture = (CubeMap);
-    MipFilter = LINEAR; //Rasterizing speedup
+    MipFilter = LINEAR; // Rasterizing speedup
     MinFilter = LINEAR;
     MagFilter = LINEAR;
     AddressU  = WRAP;
@@ -61,7 +61,7 @@ sampler CubeMapSampler = sampler_state
     sampler WaterMapSampler = sampler_state
     {
         Texture = (WaterMap);
-        MipFilter = LINEAR; //Rasterizing speedup
+        MipFilter = LINEAR; // Rasterizing speedup
         MinFilter = LINEAR;
         MagFilter = LINEAR;
         AddressU  = WRAP;
@@ -107,6 +107,12 @@ sampler LightMapSampler = sampler_state
     MipMapLodBias = 0;
 };
 
+string reqVertexElement[] =
+{
+    "Position",
+    "TLightMap2D"
+};
+
 struct VS_OUTPUT_WATER
 {
     float4 Pos : POSITION;
@@ -129,12 +135,42 @@ struct VS_OUTPUT_WATER
     #endif
 };
 
-string reqVertexElement[] =
+VS_OUTPUT_WATER waterVertexShader (float4 inPos : POSITION0, float2 lmtex : TEXCOORD1)
 {
-    "Position",
-    "TLightMap2D"
-};
+    VS_OUTPUT_WATER Out;
 
+    float4 wPos = mul(inPos, World);
+    Out.Pos = mul(wPos, ViewProjection);
+
+    #ifdef PIXEL_CAMSPACE
+        Out.Position = wPos;
+    #else
+        Out.Position = -(WorldSpaceCamPos - wPos) * 0.02;
+    #endif
+
+    #ifdef USE_3DTEXTURE
+        float3 tex;
+        tex.xy = (wPos.xz / float2(29.13, 31.81));
+        tex.xy += (WaterScroll.xy * WaterCycleTime);
+        tex.z = WaterCycleTime * 10.0 + dot(tex.xy, float2(0.7, 1.13));
+    #else
+        float2 tex;
+        tex.xy = wPos.xz / float2(99.13, 71.81);
+    #endif
+
+    Out.Tex = tex;
+
+    #ifndef NO_LIGHTMAP
+        Out.lmtex.xy = lmtex.xy * LightMapOffset.xy + LightMapOffset.zw;
+    #endif
+        Out.Fog = calcFog(Out.Pos.w);
+
+    #ifdef USE_SHADOWS
+        Out.TexShadow = calcShadowProjection(wPos);
+    #endif
+
+    return Out;
+}
 
 string GlobalParameters[] =
 {
@@ -174,56 +210,12 @@ string InstanceParameters[] =
     "World"
 };
 
-
-VS_OUTPUT_WATER waterVertexShader
-(
-    float4 inPos : POSITION0,
-    float2 lmtex : TEXCOORD1
-)
-{
-    VS_OUTPUT_WATER Out;
-
-    float4 wPos = mul(inPos, World);
-    Out.Pos = mul(wPos, ViewProjection);
-
-    #ifdef PIXEL_CAMSPACE
-        Out.Position = wPos;
-    #else
-        Out.Position = -(WorldSpaceCamPos - wPos) * 0.02;
-    #endif
-
-    #ifdef USE_3DTEXTURE
-        float3 tex;
-        tex.xy = (wPos.xz / float2(29.13, 31.81));
-        tex.xy += (WaterScroll.xy * WaterCycleTime);
-        tex.z = WaterCycleTime*10 + (tex.x*0.7 + tex.y*1.13);
-    #else
-        float2 tex;
-        tex.xy = (wPos.xz / float2(99.13, 71.81));
-    #endif
-
-    Out.Tex = tex;
-
-    #ifndef NO_LIGHTMAP
-        Out.lmtex.xy = lmtex.xy * LightMapOffset.xy + LightMapOffset.zw;
-    #endif
-        Out.Fog = calcFog(Out.Pos.w);
-
-    #ifdef USE_SHADOWS
-        Out.TexShadow = calcShadowProjection(wPos);
-    #endif
-
-    return Out;
-}
-
-#define INV_LIGHTDIR float3(0.4,0.5,0.6)
-
 float4 Water (in VS_OUTPUT_WATER VsData) : COLOR
 {
     float4 finalColor;
 
     #ifdef NO_LIGHTMAP // F85BD0
-        float4 lightmap = PointColor; //float4(1, StaticGloss, 0.8, 1);
+        float4 lightmap = PointColor;
     #else
         float4 lightmap = tex2D(LightMapSampler, VsData.lmtex);
     #endif
@@ -235,16 +227,16 @@ float4 Water (in VS_OUTPUT_WATER VsData) : COLOR
     #endif
 
     #ifdef TANGENTSPACE_NORMALS
-        TN.rbg = normalize((TN.rgb * 2) - 1);
+        TN.rbg = normalize((TN.rgb * 2.0) - 1.0);
     #else
-        TN.rgb = (TN.rgb * 2)-1;
+        TN.rgb = (TN.rgb * 2.0) - 1.0;
     #endif
 
     #ifdef USE_FRESNEL
         #ifdef FRESNEL_NORMALMAP
-            float4 TN2 = float4(TN, 1);
+            float4 TN2 = float4(TN, 1.0);
         #else
-            float4 TN2 = float4(0,1,0,0);
+            float4 TN2 = float4(0.0, 1.0, 0.0,0.0);
         #endif
     #endif
 
@@ -272,7 +264,7 @@ float4 Water (in VS_OUTPUT_WATER VsData) : COLOR
         shadFac *= getShadowFactor(ShadowMapSampler, VsData.TexShadow);
     #endif
 
-    float lerpMod = -(1 - saturate(shadFac+SHADOW_FACTOR));
+    float lerpMod = -(1.0 - saturate(shadFac+SHADOW_FACTOR));
 
     #ifdef USE_SPECULAR
         finalColor.rgb = (specular * SpecularColor * shadFac) + lerp(_WaterColor, envcol, COLOR_ENVMAP_RATIO + lerpMod);
@@ -288,13 +280,11 @@ float4 Water (in VS_OUTPUT_WATER VsData) : COLOR
 
     if (FogColor.r < 0.01)
     {
-        finalColor.rgb = float3(lerp(0.3,0.1,TN.r),1,0);
+        finalColor.rgb = float3(lerp(0.3, 0.1, TN.r), 1.0, 0.0);
     }
 
     return finalColor;
 }
-
-
 
 technique defaultShader
 {

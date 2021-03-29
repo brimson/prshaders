@@ -15,7 +15,7 @@ Light  Lights[1];
 float4 PosUnpack;
 float2 NormalUnpack;
 float  TexUnpack;
-float  ObjRadius = 2;
+float  ObjRadius = 2.0;
 
 struct VS_OUTPUT
 {
@@ -43,7 +43,7 @@ sampler DiffuseMapSampler = sampler_state
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {
-    #ifdef OVERGROWTH	//tl: TODO - Compress overgrowth patches as well.
+    #ifdef OVERGROWTH // tl: TODO - Compress overgrowth patches as well.
         "Position",
         "Normal",
         "TBase2D"
@@ -54,24 +54,21 @@ string reqVertexElement[] =
     #endif
 };
 
-VS_OUTPUT basicVertexShader
-(
-    float4 inPos: POSITION0,
-    float3 normal: NORMAL,
-    float2 tex0	: TEXCOORD0
-)
+VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
+                            float3 normal: NORMAL,
+                            float2 tex0	: TEXCOORD0)
 {
-    VS_OUTPUT Out = (VS_OUTPUT)0;
+    VS_OUTPUT Out;
 
     #ifndef OVERGROWTH
         inPos *= PosUnpack;
         WindSpeed += WIND_ADD;
-        inPos.xyz +=  sin((GlobalTime / (ObjRadius + inPos.y)) * WindSpeed) * (ObjRadius + inPos.y) * (ObjRadius + inPos.y) / LEAF_MOVEMENT;// *  WindSpeed / 16384;//clamp(abs(inPos.z * inPos.x), 0, WindSpeed);
+        inPos.xyz +=  sin((GlobalTime / (ObjRadius + inPos.y)) * WindSpeed) * (ObjRadius + inPos.y) * (ObjRadius + inPos.y) / LEAF_MOVEMENT; // *  WindSpeed / 16384;//clamp(abs(inPos.z * inPos.x), 0, WindSpeed);
     #endif
 
-    Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
-    Out.Fog		= calcFog(Out.Pos.w);
-    Out.Tex0	= tex0;
+    Out.Pos  = mul(float4(inPos.xyz, 1.0), WorldViewProjection);
+    Out.Fog  = calcFog(Out.Pos.w);
+    Out.Tex0 = tex0;
 
     #ifdef OVERGROWTH
         Out.Tex0 /= 32767.0f;
@@ -83,7 +80,7 @@ VS_OUTPUT basicVertexShader
 
     #ifdef _POINTLIGHT_
         float3 lightVec = float3(Lights[0].pos.xyz - inPos);
-        float LdotN	= 0.125;//saturate( (dot(normal, -normalize(lightVec))));
+        float LdotN	= 0.125;
     #else
         float LdotN	= saturate((dot(normal, -Lights[0].dir) + 0.6) / 1.4);
     #endif
@@ -102,59 +99,13 @@ VS_OUTPUT basicVertexShader
     #endif
 
     #ifdef _POINTLIGHT_
-        Out.Color.rgb *= 1 - saturate(dot(lightVec, lightVec) * Lights[0].attenuation * 0.1);
+        Out.Color.rgb *= 1.0 - saturate(dot(lightVec, lightVec) * Lights[0].attenuation * 0.1);
         Out.Color.rgb *= calcFog(Out.Pos.w);
     #endif
 
     Out.Color.a = Transparency;
     Out.Color = Out.Color * 0.5;
-
     return Out;
-}
-
-float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
-{
-    float4 vertexColor = float4(VsOut.Color.rgb, VsOut.Color.a*2);
-    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
-
-    #if _HASSHADOW_
-        vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
-        vertexColor.rgb += OverGrowthAmbient/2;
-    #endif
-
-    float4 outCol;
-
-    #ifdef _POINTLIGHT_
-        outCol = diffuseMap * vertexColor;
-        outCol.a *= 2;
-    #else
-        //tl: use compressed color register to avoid this being compiled as a 2.0 shader.
-        outCol = (diffuseMap * vertexColor) * 2;
-    #endif
-
-    #if defined(OVERGROWTH) && HASALPHA2MASK
-        outCol.a *= 2 * diffuseMap.a;
-    #endif
-
-    return outCol;
-};
-
-float4 basicPixelShaderNoShadow(VS_OUTPUT VsOut) : COLOR
-{
-    float4 vertexColor = float4(VsOut.Color.rgb, VsOut.Color.a*2);
-    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
-    float4 outCol;
-    #ifdef _POINTLIGHT_
-        outCol = diffuseMap * vertexColor;
-        outCol.a *= 2;
-    #else
-        outCol = (diffuseMap * vertexColor) * 2;
-    #endif
-
-    #if defined(OVERGROWTH) && HASALPHA2MASK
-        outCol.a *= 2 * diffuseMap.a;
-    #endif
-    return outCol;
 }
 
 string GlobalParameters[] =
@@ -192,6 +143,51 @@ string TemplateParameters[] =
     "TexUnpack"
 };
 
+float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
+{
+    float4 vertexColor = float4(VsOut.Color.rgb, VsOut.Color.a * 2.0);
+    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
+
+    #if _HASSHADOW_
+        vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
+        vertexColor.rgb += OverGrowthAmbient/2;
+    #endif
+
+    float4 outCol;
+
+    #ifdef _POINTLIGHT_
+        outCol = diffuseMap * vertexColor;
+        outCol.a *= 2.0;
+    #else
+        //tl: use compressed color register to avoid this being compiled as a 2.0 shader.
+        outCol = (diffuseMap * vertexColor) * 2.0;
+    #endif
+
+    #if defined(OVERGROWTH) && HASALPHA2MASK
+        outCol.a *= 2.0 * diffuseMap.a;
+    #endif
+
+    return outCol;
+};
+
+float4 basicPixelShaderNoShadow(VS_OUTPUT VsOut) : COLOR
+{
+    float4 vertexColor = float4(VsOut.Color.rgb, VsOut.Color.a * 2.0);
+    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
+    float4 outCol;
+    #ifdef _POINTLIGHT_
+        outCol = diffuseMap * vertexColor;
+        outCol.a *= 2.0;
+    #else
+        outCol = (diffuseMap * vertexColor) * 2.0;
+    #endif
+
+    #if defined(OVERGROWTH) && HASALPHA2MASK
+        outCol.a *= 2.0 * diffuseMap.a;
+    #endif
+    return outCol;
+}
+
 technique defaultTechnique
 {
     pass P0
@@ -226,6 +222,6 @@ technique defaultTechnique
             FogEnable        = true;
         #endif
 
-        CullMode			= NONE;
+        CullMode = NONE;
     }
 }
