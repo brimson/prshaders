@@ -17,11 +17,36 @@ dword dwZFunc      : ZFUNC        = D3DCMP_LESSEQUAL;
 bool bZWriteEnable : ZWRITEENABLE = true;
 
 texture texture0: TEXLAYER0;
-texture texture1: TEXLAYER1;
+sampler sampler0Clamp = sampler_state
+{
+    Texture = (texture0);
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+};
 
-sampler sampler0Clamp = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1Clamp = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1Wrap = sampler_state { Texture = (texture1); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
+texture texture1: TEXLAYER1;
+sampler sampler1Clamp = sampler_state
+{
+    Texture = (texture1);
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+};
+
+sampler sampler1Wrap = sampler_state
+{
+    Texture = (texture1);
+    AddressU = WRAP;
+    AddressV = WRAP;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+};
 
 struct APP2VS
 {
@@ -67,7 +92,8 @@ float4 psQuadWTexOneTexMasked(VS2PS indata) : COLOR
     return outcol;
 }
 
-technique Menu{ pass{ } }
+technique Menu { pass{ } }
+
 technique Menu_States <bool Restore = true;>
 {
     pass BeginStates { }

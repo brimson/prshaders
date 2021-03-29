@@ -3,7 +3,7 @@ float4x4 world : World;
 
 string Category = "Effects\\Lighting";
 
-float4 LhtDir = {1.0f, 0.0f, 0.0f, 1.0f};    // light Direction
+float4 LhtDir = {1.0f, 0.0f, 0.0f, 1.0f}; // light Direction
 float4 lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f}; // Light Diffuse
 float4 MaterialAmbient : MATERIALAMBIENT = {0.5f, 0.5f, 0.5f, 1.0f};
 float4 MaterialDiffuse : MATERIALDIFFUSE = {1.0f, 1.0f, 1.0f, 1.0f};

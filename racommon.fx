@@ -29,7 +29,7 @@ int  destBlend = 6;
 bool alphaBlendEnable = true;
 
 int alphaRef = 20;
-int CullMode = 3;	//D3DCULL_CCW
+int CullMode = 3; // D3DCULL_CCW
 #define FH2_HARDCODED_PARALLAX_BIAS 0.0025
 
 float GlobalTime;
@@ -37,7 +37,7 @@ float WindSpeed = 0;
 
 float4 HemiMapConstants;
 
-//tl: This is a float replicated to a float4 to make 1.3 shaders more efficient (they can't access .rg directly)
+// tl: This is a float replicated to a float4 to make 1.3 shaders more efficient (they can't access .rg directly)
 float4 Transparency = 1.0f;
 
 float4x4 World;
@@ -165,24 +165,23 @@ float4 calcShadowProjection(float4 pos, uniform float BIAS = -0.003, uniform boo
 //tl: Make _sure_ pos and matrices are in same space!
 float4 calcShadowProjectionExact(float4 pos, uniform float BIAS = -0.003)
 {
-    float4 texShadow1 =  mul(pos, ShadowTrapMat);
+    float4 texShadow1 = mul(pos, ShadowTrapMat);
     float2 texShadow2 = mul(pos, ShadowProjMat).zw;
     texShadow2.x += BIAS;
     texShadow1.z = texShadow2.x;
-
     return texShadow1;
 }
 
 float4 getShadowFactorExactOther(sampler shadowSampler, float4 shadowCoords, uniform int NSAMPLES = 4)
 {
     float4 texel = float4(0.5 / 1024.0, 0.5 / 1024.0, 0, 0);
-    float4 samples = 0;
+    float4 samples = 0.0;
     samples.x = tex2Dproj(shadowSampler, shadowCoords);
-    samples.y = tex2Dproj(shadowSampler, shadowCoords + float4(texel.x, 0, 0, 0));
-    samples.z = tex2Dproj(shadowSampler, shadowCoords + float4(0, texel.y, 0, 0));
+    samples.y = tex2Dproj(shadowSampler, shadowCoords + float4(texel.x, 0.0, 0.0, 0.0));
+    samples.z = tex2Dproj(shadowSampler, shadowCoords + float4(0.0, texel.y, 0.0, 0.0));
     samples.w = tex2Dproj(shadowSampler, shadowCoords + texel);
     float4 cmpbits = samples >= saturate(shadowCoords.z);
-    return dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
+    return dot(cmpbits, 0.25);
 }
 
 // Currently fixed to 3 or 4.
