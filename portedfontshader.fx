@@ -1,7 +1,16 @@
 
 float4 alpha : BLENDALPHA;
+
 texture texture0: TEXLAYER0;
-sampler sampler0 = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
+sampler sampler0 = sampler_state
+{
+    Texture = (texture0);
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+};
 
 struct APP2VS
 {
@@ -20,18 +29,16 @@ struct VS2PS
 VS2PS HPosVS(APP2VS indata)
 {
     VS2PS outdata;
-
     outdata.HPos = indata.HPos;
     outdata.Col = indata.Col;
-     outdata.Tex0 = indata.TexCoord0;
-
+    outdata.Tex0 = indata.TexCoord0;
     return outdata;
 }
 
 float4 HPosPS(VS2PS indata) : COLOR
 {
     float4 outCol = tex2D(sampler0, indata.Tex0);
-    float4 noAlpha = float4(1,1,1,0);
+    const float4 noAlpha = float4(1.0, 1.0, 1.0, 0.0);
     outCol = dot(outCol, noAlpha);
     outCol.rgb = outCol * indata.Col;
     return outCol;
@@ -68,8 +75,10 @@ technique Text <
     }
 }
 
-technique Overlay_States <bool Restore = true;> {
-    pass BeginStates {
+technique Overlay_States <bool Restore = true;>
+{
+    pass BeginStates
+    {
         CullMode = NONE;
         ZEnable = FALSE;
 

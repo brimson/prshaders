@@ -6,6 +6,7 @@
     and get the common members of that array. And will then complement
     that array for each permutation based on the requirements of each individual LITERAL
 */
+
 string GenerateStructs[] =
 {
     "reqVertexElement",
@@ -52,7 +53,6 @@ string InstanceParametersBase[] =
     "AlphaTest"
 };
 
-
 /*
     Literals, and their requirements
 
@@ -65,6 +65,7 @@ string InstanceParametersBase[] =
     TLightMap2D
     TangentSpace
 */
+
 const dword _base_ : LITERAL
 <
 >;
@@ -199,6 +200,7 @@ const dword _pointlight_ : LITERAL;
     the resulting shadername is the name of this file + the permutationname - "_"
     ie. RaShaderSTMBaseDetail etc
 */
+
 string GenerateShaderPermutations[] =
 {
     "_base_",

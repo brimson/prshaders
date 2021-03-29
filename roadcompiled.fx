@@ -93,7 +93,7 @@ VS2PS RoadCompiledVS(APP2VS input)
 
     float cameraDist = length(vLocalEyePos - input.Pos);
     float interpVal = saturate(cameraDist * vFadeoutValues.x - vFadeoutValues.y);
-    // wPos.y += 0.01 * (1-interpVal);
+    // wPos.y += 0.01 * (1.0 - interpVal);
     wPos.y += 0.01;
 
     outdata.Pos = mul(wPos, mWorldViewProj);
@@ -105,7 +105,6 @@ VS2PS RoadCompiledVS(APP2VS input)
     outdata.Fog = calcFog(outdata.Pos.w);
     return outdata;
 }
-
 
 float4 RoadCompiledPS(VS2PS indata) : COLOR0
 {
@@ -154,7 +153,7 @@ VS2PSDx9 RoadCompiledVSDx9(APP2VS input)
     float3 dist = (vLocalEyePos - input.Pos);
     outdata.ZFade = dot(dist, dist);
     outdata.ZFade = (outdata.ZFade - vFadeoutValues.x) * vFadeoutValues.y;
-    outdata.ZFade = 1 - saturate(outdata.ZFade);
+    outdata.ZFade = 1.0 - saturate(outdata.ZFade);
 
     outdata.Fog = calcFog(outdata.Pos.w);
 

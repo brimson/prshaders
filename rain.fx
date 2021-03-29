@@ -1,3 +1,4 @@
+
 float4x4 wvp : WORLDVIEWPROJ;
 
 float4 cellPositions[32] : CELLPOSITIONS;
@@ -33,7 +34,6 @@ struct VSINPUT
     float2 TexCoord : TEXCOORD0;
 };
 
-
 // Point Technique
 
 struct POINT_VSOUT
@@ -53,20 +53,17 @@ POINT_VSOUT vsPoint(VSINPUT input)
 
     float3 particlePos = input.Pos + cellPos + deviation;
 
-    float3 camDelta = abs(cameraPos.xyz-particlePos);
+    float3 camDelta = abs(cameraPos.xyz - particlePos);
     float camDist = length(camDelta);
 
     camDelta -= fadeOutRange;
     camDelta /= fadeOutDelta;
-    float alpha = 1.f-length(saturate(camDelta));
+    float alpha = 1.0f - length(saturate(camDelta));
 
-    output.Color = float4(particleColor.rgb,particleColor.a*alpha);
-
-    output.Pos = mul(float4(particlePos,1), wvp);
+    output.Color = float4(particleColor.rgb, particleColor.a * alpha);
+    output.Pos = mul(float4(particlePos, 1.0), wvp);
     output.TexCoord = input.TexCoord;
-
-    output.pointSize = min(particleSize * sqrt(1/(pointScale[0]+pointScale[1]*camDist)), maxParticleSize);
-
+    output.pointSize = min(particleSize * rsqrt(pointScale[0] + pointScale[1] * camDist), maxParticleSize);
     return output;
 }
 
@@ -94,7 +91,6 @@ technique Point
     }
 }
 
-
 // Line Technique
 
 struct LINE_VSOUT
@@ -114,13 +110,11 @@ LINE_VSOUT vsLine(VSINPUT input)
     float3 camDelta = abs(cameraPos.xyz-particlePos);
     camDelta -= fadeOutRange;
     camDelta /= fadeOutDelta;
-    float alpha = 1.f-length(saturate(camDelta));
+    float alpha = 1.0f - length(saturate(camDelta));
 
     output.Color = float4(particleColor.rgb,particleColor.a*alpha);
-
-    output.Pos = mul(float4(particlePos,1), wvp);
+    output.Pos = mul(float4(particlePos, 1.0), wvp);
     output.TexCoord = input.TexCoord;
-
     return output;
 }
 

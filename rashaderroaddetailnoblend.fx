@@ -90,7 +90,7 @@ VS_OUTPUT basicVertexShader
 
     Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
     Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
-    Out.lightTex.y = 1-Out.lightTex.y;
+    Out.lightTex.y = 1.0 - Out.lightTex.y;
     Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
     Out.lightTex.zw = Out.Pos.zw;
 

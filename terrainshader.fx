@@ -1,7 +1,7 @@
 #line 2 "TerrainShader.fx"
 #include "shaders/raCommon.fx"
 
-// -- Shared stuff
+// Shared stuff
 
 float4x4 mViewProj: matVIEWPROJ;
 float4x4 mView: matVIEW;

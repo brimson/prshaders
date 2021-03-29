@@ -25,7 +25,7 @@ VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
     VS2PS outdata;
     outdata.Pos = mul(float4(indata.Pos.xyz, 1.0f), wvp);
     outdata.Diffuse.xyz = indata.Diffuse.xyz;
-    outdata.Diffuse.w = 0.8f; // indata.Diffuse.w;
+    outdata.Diffuse.w = 0.8f;
     return outdata;
 }
 
@@ -92,6 +92,3 @@ technique t0_usezbuffer
         PixelShader = compile ps_2_a PShader();
     }
 }
-
-
-

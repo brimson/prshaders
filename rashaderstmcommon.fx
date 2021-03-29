@@ -1,6 +1,20 @@
 #define nbase 0x1
 #define ndetail 0x10
 
+float4 ObjectSpaceCamPos;
+float4 PosUnpack;
+float  TexUnpack;
+float2 NormalUnpack;
+float4 LightMapOffset;
+bool   AlphaBlendEnable;
+float4 StaticSkyColor;
+float4 StaticSpecularColor;
+float4 PointColor;
+float4 StaticSunColor;
+float4 SinglePointColor;
+float4 ParallaxScaleBias;
+float  StaticGloss;
+
 // common staticMesh samplers
 texture	LightMap;
 sampler LightMapSampler = sampler_state
@@ -85,17 +99,3 @@ sampler NormalMapSampler = sampler_state
     AddressU = WRAP;
     AddressV = WRAP;
 };
-
-float4 ObjectSpaceCamPos;
-float4 PosUnpack;
-float  TexUnpack;
-float2 NormalUnpack;
-float4 LightMapOffset;
-bool   AlphaBlendEnable;
-float4 StaticSkyColor;
-float4 StaticSpecularColor;
-float4 PointColor;
-float4 StaticSunColor;
-float4 SinglePointColor;
-float4 ParallaxScaleBias;
-float  StaticGloss;

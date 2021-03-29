@@ -49,296 +49,6 @@ sampler samplerShadowAlpha = sampler_state
     AddressV = Wrap;
 };
 
-sampler samplerWrap0 = sampler_state
-{
-    Texture = <texture0>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap1 = sampler_state
-{
-    Texture = <texture1>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap2 = sampler_state
-{
-    Texture = <texture2>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap3 = sampler_state
-{
-    Texture = <texture3>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap4 = sampler_state
-{
-    Texture = <texture4>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap5 = sampler_state
-{
-    Texture = <texture5>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap6 = sampler_state
-{
-    Texture = <texture6>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrap7 = sampler_state
-{
-    Texture = <texture7>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrapAniso0 = sampler_state
-{
-    Texture = <texture0>;
-    MinFilter = Anisotropic;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-
-sampler samplerWrapAniso1 = sampler_state
-{
-    Texture = <texture1>;
-    MinFilter = Anisotropic;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso2 = sampler_state
-{
-    Texture = <texture2>;
-    MinFilter = Anisotropic;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-sampler samplerWrapAniso3 = sampler_state
-{
-    Texture = <texture3>;
-    MinFilter = Anisotropic;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso4 = sampler_state
-{
-    Texture = <texture4>;
-    MinFilter = Anisotropic;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso5 = sampler_state
-{
-    Texture = <texture5>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso6 = sampler_state
-{
-    Texture = <texture6>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso7 = sampler_state
-{
-    Texture = <texture7>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Wrap;
-    AddressV = Wrap;
-    MaxAnisotropy = 8;
-};
-
-
-sampler samplerClamp0 = sampler_state
-{
-    Texture = <texture0>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp1 = sampler_state
-{
-    Texture = <texture1>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp2 = sampler_state
-{
-    Texture = <texture2>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp3 = sampler_state
-{
-    Texture = <texture3>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp4 = sampler_state
-{
-    Texture = <texture4>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp5 = sampler_state
-{
-    Texture = <texture5>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp6 = sampler_state
-{
-    Texture = <texture6>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler samplerClamp7 = sampler_state
-{
-    Texture = <texture7>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Linear;
-    MipMapLodBias = 0;
-    AddressU = Clamp;
-    AddressV = Clamp;
-};
-
-sampler sampler0clamppoint = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler1clamppoint = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler2clamppoint = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler3clamppoint = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler4clamppoint = sampler_state { Texture = (texture4); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler5clamppoint = sampler_state { Texture = (texture5); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler6clamppoint = sampler_state { Texture = (texture6); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-
-sampler sampler0wrappoint = sampler_state { Texture = (texture0); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler1wrappoint = sampler_state { Texture = (texture1); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler2wrappoint = sampler_state { Texture = (texture2); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler3wrappoint = sampler_state { Texture = (texture3); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler4wrappoint = sampler_state { Texture = (texture4); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler5wrappoint = sampler_state { Texture = (texture5); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler6wrappoint = sampler_state { Texture = (texture6); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-
-
 sampler colorLUTSampler = sampler_state
 {
     Texture = <texture2>;
@@ -350,11 +60,59 @@ sampler colorLUTSampler = sampler_state
 
 sampler dummySampler = sampler_state
 {
-    MinFilter = Linear;
-    MagFilter = Linear;
-    AddressU = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear;
+    AddressU = Clamp; AddressV = Clamp;
 };
+
+#define dWrap MinFilter = Linear; MagFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap
+sampler samplerWrap0 = sampler_state { Texture = <texture0>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap1 = sampler_state { Texture = <texture1>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap2 = sampler_state { Texture = <texture2>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap3 = sampler_state { Texture = <texture3>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap4 = sampler_state { Texture = <texture4>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap5 = sampler_state { Texture = <texture5>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap6 = sampler_state { Texture = <texture6>; dWrap; MipMapLodBias = 0; };
+sampler samplerWrap7 = sampler_state { Texture = <texture7>; dWrap; MipMapLodBias = 0; };
+
+#define dWrapAniso MinFilter = Anisotropic; MagFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap
+sampler samplerWrapAniso0 = sampler_state { Texture = <texture0>; dWrapAniso; MipMapLodBias = 0; MaxAnisotropy = 8; };
+sampler samplerWrapAniso1 = sampler_state { Texture = <texture1>; dWrapAniso; MipMapLodBias = 0; MaxAnisotropy = 8; };
+sampler samplerWrapAniso2 = sampler_state { Texture = <texture2>; dWrapAniso; MipMapLodBias = 0; };
+sampler samplerWrapAniso3 = sampler_state { Texture = <texture3>; dWrapAniso; MipMapLodBias = 0; MaxAnisotropy = 8; };
+sampler samplerWrapAniso4 = sampler_state { Texture = <texture4>; dWrapAniso; MipMapLodBias = 0; MaxAnisotropy = 8; };
+
+#define dWrapAnisoAlt MinFilter = Linear; MagFilter = Linear; MipFilter = Linear; AddressU = Wrap; AddressV = Wrap
+sampler samplerWrapAniso5 = sampler_state { Texture = <texture5>; dWrapAnisoAlt; MipMapLodBias = 0; MaxAnisotropy = 8; };
+sampler samplerWrapAniso6 = sampler_state { Texture = <texture6>; dWrapAnisoAlt; MipMapLodBias = 0; MaxAnisotropy = 8; };
+sampler samplerWrapAniso7 = sampler_state { Texture = <texture7>; dWrapAnisoAlt; MipMapLodBias = 0; MaxAnisotropy = 8; };
+
+#define dClamp MinFilter = Linear; MagFilter = Linear; MipFilter = Linear; AddressU = Clamp; AddressV = Clamp
+sampler samplerClamp0 = sampler_state { Texture = <texture0>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp1 = sampler_state { Texture = <texture1>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp2 = sampler_state { Texture = <texture2>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp3 = sampler_state { Texture = <texture3>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp4 = sampler_state { Texture = <texture4>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp5 = sampler_state { Texture = <texture5>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp6 = sampler_state { Texture = <texture6>; dClamp; MipMapLodBias = 0; };
+sampler samplerClamp7 = sampler_state { Texture = <texture7>; dClamp; MipMapLodBias = 0; };
+
+#define dClampPoint AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE
+sampler sampler0clamppoint = sampler_state { Texture = (texture0); dClampPoint; };
+sampler sampler1clamppoint = sampler_state { Texture = (texture1); dClampPoint; };
+sampler sampler2clamppoint = sampler_state { Texture = (texture2); dClampPoint; };
+sampler sampler3clamppoint = sampler_state { Texture = (texture3); dClampPoint; };
+sampler sampler4clamppoint = sampler_state { Texture = (texture4); dClampPoint; };
+sampler sampler5clamppoint = sampler_state { Texture = (texture5); dClampPoint; };
+sampler sampler6clamppoint = sampler_state { Texture = (texture6); dClampPoint; };
+
+#define dWrapPoint AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE
+sampler sampler0wrappoint = sampler_state { Texture = (texture0); dWrapPoint; };
+sampler sampler1wrappoint = sampler_state { Texture = (texture1); dWrapPoint; };
+sampler sampler2wrappoint = sampler_state { Texture = (texture2); dWrapPoint; };
+sampler sampler3wrappoint = sampler_state { Texture = (texture3); dWrapPoint; };
+sampler sampler4wrappoint = sampler_state { Texture = (texture4); dWrapPoint; };
+sampler sampler5wrappoint = sampler_state { Texture = (texture5); dWrapPoint; };
+sampler sampler6wrappoint = sampler_state { Texture = (texture6); dWrapPoint; };
 
 float4 lightPos : LightPosition  : register(vs_1_1, c12)
 <
@@ -410,23 +168,19 @@ struct VS_OUTPUT3
 };
 
 
-VS_OUTPUT3 VSimpleShader(appdata input,
-    uniform float4x4 wvp)
+VS_OUTPUT3 VSimpleShader(appdata input, uniform float4x4 wvp)
 {
     VS_OUTPUT3 outdata;
-
     outdata.HPos = mul(float4(input.Pos.xyz, 1.0), wvp);
     outdata.TexCoord = input.TexCoord;
-
     return outdata;
 }
 
 float4 PSSimpleShader(VS_OUTPUT3 input) : COLOR
 {
-    float4 ambient = float4(1, 1, 1, 0.8);
+    const float4 ambient = float4(1.0, 1.0, 1.0, 0.8);
     float4 normalMap = tex2D(samplerWrap0, input.TexCoord);
-    float4 outCol = normalMap * ambient;
-    return outCol;
+    return normalMap * ambient;
 }
 
 technique alpha_one

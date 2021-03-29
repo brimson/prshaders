@@ -3,14 +3,6 @@
 Light Lights[1];
 float4 	OverGrowthAmbient;
 
-struct VS_OUTPUT
-{
-    float4 Pos   : POSITION0;
-    float2 Tex0  : TEXCOORD0;
-    float4 Color : TEXCOORD1;
-    float  Fog   : FOG;
-};
-
 texture	DiffuseMap;
 sampler DiffuseMapSampler = sampler_state
 {
@@ -31,12 +23,17 @@ string reqVertexElement[] =
     "TBase2D"
 };
 
-VS_OUTPUT basicVertexShader
-(
-float4 inPos: POSITION0,
-float3 normal: NORMAL,
-float2 tex0	: TEXCOORD0
-)
+struct VS_OUTPUT
+{
+    float4 Pos   : POSITION0;
+    float2 Tex0  : TEXCOORD0;
+    float4 Color : TEXCOORD1;
+    float  Fog   : FOG;
+};
+
+VS_OUTPUT basicVertexShader(float4 inPos : POSITION0,
+                            float3 normal: NORMAL,
+                            float2 tex0  : TEXCOORD0)
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
@@ -59,12 +56,6 @@ float2 tex0	: TEXCOORD0
     not enough to worry about, ambient is added here and lerped in the static mesh, etc
     NOTE: could be an issue at some point.
 */
-float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
-{
-    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * 2;
-    float3 color = diffuseMap.rgb * VsOut.Color.rgb;
-    return float4(color, Transparency.a);
-};
 
 string GlobalParameters[] =
 {
@@ -84,6 +75,13 @@ string InstanceParameters[] =
     "Lights",
     "OverGrowthAmbient",
     "Transparency"
+};
+
+float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
+{
+    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * 2.0;
+    float3 color = diffuseMap.rgb * VsOut.Color.rgb;
+    return float4(color, Transparency.a);
 };
 
 technique defaultTechnique

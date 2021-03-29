@@ -10,25 +10,26 @@ string reqVertexElement[] =
 {
     "Position"
 };
-float4 vertexShader(float3 inPos: POSITION0) : POSITION0
-{
-    return mul(float4(inPos, 1), mul(World, ViewProjection));
-}
-
-float4 shader() : COLOR
-{
-    return float4(0.9,0.4,0.8,1);
-};
-
-struct VS_OUTPUT
-{
-    float4 Pos : POSITION0;
-};
 
 string InstanceParameters[] =
 {
     "World",
     "ViewProjection"
+};
+
+struct a2f
+{
+    float4 pos : POSITION0;
+};
+
+float4 vertexShader(a2f input) : POSITION0
+{
+    return mul(float4(input.pos, 1.0), mul(World, ViewProjection));
+}
+
+float4 shader() : COLOR
+{
+    return float4(0.9, 0.4, 0.8, 1.0);
 };
 
 technique defaultShader

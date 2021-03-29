@@ -1,6 +1,14 @@
 
 // ZOnlyShader
 
+#define NUM_LIGHTS 1
+#define NUM_TEXSETS 1
+#define TexBasePackedInd 0
+
+#include "shaders/RaCommon.fx"
+#include "shaders/RaDefines.fx"
+#include "shaders/RaShaderBMCommon.fx"
+
 string reqVertexElement[] =
 {
     "PositionPacked",
@@ -28,14 +36,6 @@ string InstanceParameters[] =
     "NormalUnpack"
 };
 
-#define NUM_LIGHTS 1
-#define NUM_TEXSETS 1
-#define TexBasePackedInd 0
-
-#include "shaders/RaCommon.fx"
-#include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fx"
-
 struct BMVariableVSInput
 {
     float4 Pos            : POSITION;
@@ -61,12 +61,12 @@ float4x3 getSkinnedWorldMatrix(BMVariableVSInput input)
 float4 getWorldPos(BMVariableVSInput input)
 {
     float4 unpackedPos = input.Pos * PosUnpack;
-    return float4(mul(unpackedPos, getSkinnedWorldMatrix(input)), 1);
+    return float4(mul(unpackedPos, getSkinnedWorldMatrix(input)), 1.0);
 }
 
 BMVariableVSOutput vs(BMVariableVSInput input)
 {
-    BMVariableVSOutput Out = (BMVariableVSOutput)0;
+    BMVariableVSOutput Out;
     Out.HPos = mul(getWorldPos(input), ViewProjection);	// output HPOS
     return Out;
 }

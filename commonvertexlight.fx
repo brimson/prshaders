@@ -18,14 +18,13 @@ struct SpotLightData
 PointLightData pointLight : POINTLIGHT;
 SpotLightData spotLight : SPOTLIGHT;
 
-
 float4 lightPosAndAttSqrInv : LightPositionAndAttSqrInv;
 float4 lightColor : LightColor;
 
 float3 calcPVPoint(PointLightData indata, float3 wPos, float3 normal)
 {
     float3 lvec = lightPosAndAttSqrInv.xyz - wPos;
-    float radialAtt = saturate(1 - dot(lvec, lvec)*lightPosAndAttSqrInv.w);
+    float radialAtt = saturate(1.0 - dot(lvec, lvec) * lightPosAndAttSqrInv.w);
     lvec = normalize(lvec);
     float intensity = dot(lvec, normal) * radialAtt;
     return intensity * lightColor.xyz;
@@ -34,7 +33,7 @@ float3 calcPVPoint(PointLightData indata, float3 wPos, float3 normal)
 float3 calcPVPointTerrain(float3 wPos, float3 normal)
 {
     float3 lvec = pointLight.pos - wPos;
-    float radialAtt = saturate(1 - (dot(lvec, lvec))*pointLight.attSqrInv);
+    float radialAtt = saturate(1.0 - dot(lvec, lvec) * pointLight.attSqrInv);
     lvec = normalize(lvec);
     float intensity = dot(lvec, normal) * radialAtt;
     return intensity * pointLight.col;
@@ -43,9 +42,9 @@ float3 calcPVPointTerrain(float3 wPos, float3 normal)
 float3 calcPVSpot(SpotLightData indata, float3 wPos, float3 normal)
 {
     float3 lvec = indata.pos - wPos;
-    float radialAtt = saturate(1 - dot(lvec, lvec)*indata.attSqrInv);
+    float radialAtt = saturate(1.0 - dot(lvec, lvec) * indata.attSqrInv);
     lvec = normalize(lvec);
-    float conicalAtt =	saturate(dot(lvec, indata.dir)-indata.oneminusconeAngle) / indata.coneAngle;
+    float conicalAtt =	saturate(dot(lvec, indata.dir) - indata.oneminusconeAngle) / indata.coneAngle;
     float intensity = dot(lvec, normal) * radialAtt * conicalAtt;
     return intensity * indata.col;
 }

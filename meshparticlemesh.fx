@@ -1,20 +1,10 @@
+
 #line 2 "MeshParticleMesh.fx"
 #include "shaders/FXCommon.fx"
 
 // UNIFORM INPUTS
 float4x4 viewProjMatrix : WorldViewProjection;
 float4 globalScale : GlobalScale;
-
-
-struct appdata
-{
-    float4 Pos          : POSITION;
-    float3 Normal       : NORMAL;
-    float4 BlendIndices : BLENDINDICES;
-    float2 TexCoord     : TEXCOORD0;
-    float3 Tan          : TANGENT;
-    float3 Binorm       : BINORMAL;
-};
 
 // once per system instance
 // TemplateParameters
@@ -27,6 +17,15 @@ float4 ageAndAlphaArray[26] : AgeAndAlphaArray;
 float lightmapIntensityOffset : LightmapIntensityOffset;
 float4x3 mOneBoneSkinning[26]: matONEBONESKINNING;
 
+struct appdata
+{
+    float4 Pos          : POSITION;
+    float3 Normal       : NORMAL;
+    float4 BlendIndices : BLENDINDICES;
+    float2 TexCoord     : TEXCOORD0;
+    float3 Tan          : TANGENT;
+    float3 Binorm       : BINORMAL;
+};
 
 struct OUT_vsDiffuse
 {
@@ -39,13 +38,9 @@ struct OUT_vsDiffuse
     float  Fog                  : FOG;
 };
 
-OUT_vsDiffuse vsDiffuse
-(
-    appdata input,
-    uniform float4x4 ViewProj
-)
+OUT_vsDiffuse vsDiffuse(appdata input, uniform float4x4 ViewProj)
 {
-    OUT_vsDiffuse Out = (OUT_vsDiffuse)0;
+    OUT_vsDiffuse Out;
 
     // Compensate for lack of UBYTE4 on Geforce3
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
@@ -56,11 +51,11 @@ OUT_vsDiffuse vsDiffuse
 
     // Compute Cubic polynomial factors.
     float age = ageAndAlphaArray[IndexArray[0]][0];
-    float4 pc = {age*age*age, age*age, age, 1.f};
+    float4 pc = { pow(age, 3.0), pow(age, 2.0), age, 1.0f};
 
-    float colorBlendFactor = min(dot(m_colorBlendGraph, pc), 1);
+    float colorBlendFactor = min(dot(m_colorBlendGraph, pc), 1.0);
     float3 color = colorBlendFactor * m_color2.rgb;
-    color += (1 - colorBlendFactor) * m_color1AndLightFactor.rgb;
+    color += (1.0 - colorBlendFactor) * m_color1AndLightFactor.rgb;
 
     Out.lightFactor = m_color1AndLightFactor.a;
     Out.color.rgb = color;
@@ -69,11 +64,9 @@ OUT_vsDiffuse vsDiffuse
     // Pass-through texcoords
     Out.DiffuseMap = input.TexCoord;
     // hemi lookup coords
-    Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    Out.LerpAndLMapIntOffset = saturate(clamp((Pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + lightmapIntensityOffset);
-
+    Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z * 0.5)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    Out.LerpAndLMapIntOffset = saturate(saturate((Pos.y - hemiShadowAltitude) * 0.1) + lightmapIntensityOffset);
     Out.Fog = calcFog(Out.HPos.w);
-
     return Out;
 }
 
@@ -88,16 +81,10 @@ float4 psDiffuse(OUT_vsDiffuse indata) : COLOR
 float4 psAdditive(OUT_vsDiffuse indata) : COLOR
 {
     float4 outColor = tex2D(diffuseSampler, indata.DiffuseMap) * indata.color;
-
-    if (effectSunColor.b < -0.1)
-    {
-        outColor.rgb = float3(1,0,0);
-    }
+    if (effectSunColor.b < -0.1) { outColor.rgb = float3(1.0, 0.0, 0.0); }
     outColor.rgb *= outColor.a; // mask with alpha since were doing an add
-
     return outColor;
 }
-
 
 technique Diffuse
 {
@@ -113,7 +100,6 @@ technique Diffuse
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
-
 
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();
@@ -135,7 +121,6 @@ technique Additive
         DestBlend = ONE;
         FogEnable = FALSE;
 
-
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psAdditive();
     }
@@ -155,7 +140,6 @@ technique DiffuseWithZWrite
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
-
 
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();

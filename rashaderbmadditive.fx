@@ -34,39 +34,37 @@ string InstanceParameters[] =
     "Transparency"
 };
 
-struct VS_IN
+struct a2v
 {
     float4 Pos          : POSITION;
     float4 BlendIndices : BLENDINDICES;
     float4 Tex          : TEXCOORD0;
 };
 
-
-struct VS_OUT
+struct v2p
 {
     float4 Pos : POSITION0;
     float4 Tex : TEXCOORD0;
     float Fog  : FOG;
 };
 
-VS_OUT vs(VS_IN indata)
+v2p vs(a2v input)
 {
-    VS_OUT Out = (VS_OUT)0;
+    v2f Out;
 
-    int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
+    int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
     int IndexArray[4] = (int[4])IndexVector;
 
-    Out.Pos	= float4(mul(indata.Pos, GeomBones[IndexArray[0]]), 1);
+    Out.Pos	= float4(mul(input.Pos, GeomBones[IndexArray[0]]), 1.0);
     Out.Pos	= mul(Out.Pos, ViewProjection);
     Out.Fog = calcFog(Out.Pos.w);
-    Out.Tex = indata.Tex;
+    Out.Tex = input.Tex;
     return Out;
 }
 
-
-float4 ps(VS_OUT indata) : COLOR
+float4 ps(v2f input) : COLOR
 {
-    float4 outCol = tex2D(DiffuseMapSampler, indata.Tex);
+    float4 outCol = tex2D(DiffuseMapSampler, input.Tex);
     outCol.rgb *= Transparency;
     return outCol;
 }
@@ -86,8 +84,8 @@ technique defaultTechnique
         AlphaRef         = 0;
         AlphaFunc        = GREATER;
         AlphaBlendEnable = TRUE;
-        SrcBlend         = ONE;//SRCALPHA;
-        DestBlend        = ONE;//INVSRCALPHA;
+        SrcBlend         = ONE;
+        DestBlend        = ONE;
         ZWriteEnable     = false;
     }
 }

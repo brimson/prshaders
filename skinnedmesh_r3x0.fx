@@ -1,5 +1,4 @@
 
-
 struct APP2VS_fullMRT
 {
     float4 Pos          : POSITION;
@@ -128,9 +127,9 @@ VS2PS_fullMRT vsFullMRT(APP2VS_fullMRT indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(pos4, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.wPos = mul(pos4, mWorldView);
@@ -277,9 +276,9 @@ VS2PS_fullMRT vsFullMRTtangent(APP2VS_fullMRTtangent indata, uniform int NumBone
 
     // Hemi lookup values
     float4 wPos = mul(pos4, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.wPos = mul(pos4, mWorldView);
@@ -348,7 +347,7 @@ VS2PS_fullMRTskinpre vsFullMRTskinpre(APP2VS_fullMRT indata, uniform int NumBone
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
     outdata.ObjEyeVec = normalize(objectEyePos-Pos);
 
     float3x3 mBone1 = transpose((float3x3)mBoneArray[IndexArray[0]]);
@@ -385,7 +384,7 @@ float4 psFullMRTskinpre(VS2PS_fullMRTskinpre indata) : COLOR
     float wrapDiff = dot(normal, -sunLightDir) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1-dot(normal, indata.ObjEyeVec);
+    float rimDiff = 1.0 - dot(normal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
 
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, -sunLightDir)));
@@ -416,7 +415,7 @@ VS2PS_fullMRTskinpreshadowed vsFullMRTskinpreshadowed(APP2VS_fullMRT indata, uni
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
     outdata.ObjEyeVec = normalize(objectEyePos-Pos);
 
     outdata.ShadowTex = mul(float4(Pos, 1), mLightVP);
@@ -459,7 +458,7 @@ float4 psFullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed indata) : COLOR
     float wrapDiff = dot(normal, -sunLightDir) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1-dot(normal, indata.ObjEyeVec);
+    float rimDiff = 1.0 - dot(normal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, -sunLightDir)));
 
@@ -501,7 +500,7 @@ float4 psFullMRTskinpreshadowedNV(VS2PS_fullMRTskinpreshadowed indata) : COLOR
     float wrapDiff = dot(normal, -sunLightDir) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1-dot(normal, indata.ObjEyeVec);
+    float rimDiff = 1.0 - dot(normal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, -sunLightDir)));
 
@@ -571,9 +570,9 @@ VS2PS_fullMRT vsFullMRTskinapply(APP2VS_fullMRT indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(pos4, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.wPos = mul(pos4, mWorldView);

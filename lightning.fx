@@ -1,6 +1,6 @@
 float4x4 wvp : WORLDVIEWPROJ;
 
-float4 lightningColor: LIGHTNINGCOLOR = {1,1,1,1};
+float4 lightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
 
 texture texture0 : TEXTURE;
 
@@ -31,7 +31,7 @@ struct VSOUT
 VSOUT vsLightning(VSINPUT input)
 {
     VSOUT output;
-    output.Pos = mul(float4(input.Pos,1), wvp);
+    output.Pos = mul(float4(input.Pos, 1.0), wvp);
     output.TexCoords = input.TexCoords;
     output.Color = input.Color;
     return output;

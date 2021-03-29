@@ -11,7 +11,7 @@ float  Alphas[64] : AlphaArray;
 float4 Colors[9] : ColorArray;
 float4 fAspectMul : AspectMul;
 
-float4 fArrowMult = float4(1.05, 1.05, 1, 1);
+float4 fArrowMult = float4(1.05, 1.05, 1.0, 1.0);
 float4 ArrowTrans : ArrowTransformation;
 float4 ArrowRot : ArrowRotation; // this is a 2x2 rotation matrix [X Y] [Z W]
 
@@ -102,14 +102,13 @@ VS2PS vsNametag(APP2VS input)
     float4 indexedTrans = Transformations[input.Indices.x];
 
     output.Pos.xyz = input.Pos + indexedTrans;
-    output.Pos.w = 1;
+    output.Pos.w = 1.0;
 
     output.Tex0 = input.Tex0;
 
     output.Col = lerp(Colors[input.Indices.y], Colors[input.Indices.z], crossFadeValue);
     output.Col.a = Alphas[input.Indices.x];
-    output.Col.a *= 1 - saturate(indexedTrans.w * vFadeoutValues.x + vFadeoutValues.y);
-
+    output.Col.a *= 1.0 - saturate(indexedTrans.w * vFadeoutValues.x + vFadeoutValues.y);
     return output;
 }
 
@@ -118,33 +117,32 @@ VS2PS vsNametag_arrow(APP2VS input)
     VS2PS output = (VS2PS)0;
 
     // does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
-    output.Pos.x = dot(input.Pos, float3(ArrowRot.x, ArrowRot.y, 0));
-    output.Pos.y = dot(input.Pos, float3(ArrowRot.z, ArrowRot.w, 0));
-    output.Pos.z = 0;
+    output.Pos.x = dot(input.Pos, float3(ArrowRot.xy, 0.0));
+    output.Pos.y = dot(input.Pos, float3(ArrowRot.zw, 0.0));
+    output.Pos.z = 0.0;
     output.Pos.xyz *= fAspectMul;
     output.Pos.xyz += ArrowTrans * fArrowMult;
-    output.Pos.w = 1;
+    output.Pos.w = 1.0;
 
     output.Tex0 = input.Tex0;
 
     output.Col = Colors[input.Indices.y];
     output.Col.a = 0.5;
-
     return output;
 }
 
 VS2PS2TEXT vsNametag_healthbar(APP2VS input)
 {
-    VS2PS2TEXT output = (VS2PS2TEXT)0;
+    VS2PS2TEXT output;
 
     output.Pos.xyz = input.Pos + HealthBarTrans;
-    output.Pos.w = 1;
+    output.Pos.w = 1.0;
 
     output.Tex0 = input.Tex0;
     output.Tex1 = input.Tex0;
 
     output.Col0.rgb = input.Tex0.x;
-    output.Col0.a = 1 - saturate(HealthBarTrans.w * vFadeoutValues.x + vFadeoutValues.y);
+    output.Col0.a = 1.0 - saturate(HealthBarTrans.w * vFadeoutValues.x + vFadeoutValues.y);
 
     float4 Col0 = Colors[colorIndex1];
     float4 Col1 = Colors[colorIndex2];
@@ -155,7 +153,7 @@ VS2PS2TEXT vsNametag_healthbar(APP2VS input)
 
 VS2PS vsNametag_vehicleIcons(APP2VS input)
 {
-    VS2PS output = (VS2PS)0;
+    VS2PS output;
 
     float3 tempPos = input.Pos;
 
@@ -163,15 +161,15 @@ VS2PS vsNametag_vehicleIcons(APP2VS input)
     tempPos.y /= fAspectComp;
 
     float3 rotPos;
-    rotPos.x = dot(tempPos, float3(IconRot.x, IconRot.z, 0));
-    rotPos.y = dot(tempPos, float3(IconRot.y, IconRot.w, 0));
+    rotPos.x = dot(tempPos, float3(IconRot.xz, 0.0));
+    rotPos.y = dot(tempPos, float3(IconRot.yw, 0.0));
     rotPos.z = input.Pos.z;
 
     // fix aspect again
     rotPos.y *= fAspectComp;
 
     output.Pos.xyz = rotPos + HealthBarTrans;
-    output.Pos.w = 1;
+    output.Pos.w = 1.0;
 
     output.Tex0 = input.Tex0 + iconTexOffset;
     output.Tex1 = input.Tex0 * iconFlashTexScaleOffset.xy + iconFlashTexScaleOffset.zw;
@@ -180,7 +178,7 @@ VS2PS vsNametag_vehicleIcons(APP2VS input)
     float4 Col1 = Colors[colorIndex2];
 
     output.Col = lerp(Col0, Col1, crossFadeValue);
-    output.Col.a *= 1 - saturate(HealthBarTrans.w * vFadeoutValues.x + vFadeoutValues.y);
+    output.Col.a *= 1.0 - saturate(HealthBarTrans.w * vFadeoutValues.x + vFadeoutValues.y);
 
     return output;
 }
@@ -194,15 +192,12 @@ float4 psNametag_icon(VS2PS indata) : COLOR0
 
 float4 psNametag(VS2PS indata) : COLOR0
 {
-    float4 tx0 = tex2D(sampler0_point, indata.Tex0);
-    return tx0 * indata.Col;
+    return tex2D(sampler0_point, indata.Tex0) * indata.Col;
 }
 
 float4 psNametag_arrow(VS2PS indata) : COLOR0
 {
-    float4 tx0 = tex2D(sampler0_bilin, indata.Tex0);
-    float4 result = tx0 * indata.Col;
-    return result;
+    return tex2D(sampler0_bilin, indata.Tex0) * indata.Col;
 }
 
 float4 psNametag_healthbar(VS2PS2TEXT indata) : COLOR0

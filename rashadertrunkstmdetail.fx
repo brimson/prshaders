@@ -4,24 +4,11 @@
 #define _HASSHADOW_ 0
 #endif
 
-//float3	TreeSkyColor;
 float4 	OverGrowthAmbient;
 Light	Lights[1];
 float4	PosUnpack;
 float2	NormalUnpack;
 float	TexUnpack;
-
-struct VS_OUTPUT
-{
-    float4 Pos  : POSITION0;
-    float2 Tex0 : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    #if _HASSHADOW_
-        float4 TexShadow : TEXCOORD2;
-    #endif
-    float4 Color : COLOR0;
-    float  Fog   : FOG;
-};
 
 texture	DetailMap;
 sampler DetailMapSampler = sampler_state
@@ -59,6 +46,18 @@ string reqVertexElement[] =
     #endif
 };
 
+struct VS_OUTPUT
+{
+    float4 Pos  : POSITION0;
+    float2 Tex0 : TEXCOORD0;
+    float2 Tex1 : TEXCOORD1;
+    #if _HASSHADOW_
+        float4 TexShadow : TEXCOORD2;
+    #endif
+    float4 Color : COLOR0;
+    float  Fog   : FOG;
+};
+
 VS_OUTPUT basicVertexShader
 (
     float4 inPos  : POSITION0,
@@ -72,7 +71,7 @@ VS_OUTPUT basicVertexShader
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
     inPos *= PosUnpack;
-    Out.Pos = mul(float4(inPos.xyz, 1), WorldViewProjection);
+    Out.Pos = mul(float4(inPos.xyz, 1.0), WorldViewProjection);
     Out.Fog  = calcFog(Out.Pos.w);
     Out.Tex0 = tex0 * TexUnpack;
 
@@ -87,7 +86,7 @@ VS_OUTPUT basicVertexShader
     Out.Color.a = Transparency;
 
     #if _HASSHADOW_
-        Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1));
+        Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1.0));
     #else
         Out.Color.rgb += OverGrowthAmbient;
     #endif
@@ -96,25 +95,6 @@ VS_OUTPUT basicVertexShader
 
     return Out;
 }
-
-float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
-{
-    float3 vertexColor = VsOut.Color;
-
-    #ifdef BASEDIFFUSEONLY
-        float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
-    #else
-        float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * tex2D(DetailMapSampler, VsOut.Tex1);
-    #endif
-
-    #if _HASSHADOW_
-        vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
-        vertexColor.rgb += OverGrowthAmbient/2;
-    #endif
-
-    //tl: use compressed color register to avoid this being compiled as a 2.0 shader.
-    return float4(vertexColor.rgb * diffuseMap * 4, VsOut.Color.a * 2);
-};
 
 string GlobalParameters[] =
 {
@@ -146,6 +126,25 @@ string InstanceParameters[] =
     "Transparency",
     "Lights",
     "OverGrowthAmbient"
+};
+
+float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
+{
+    float3 vertexColor = VsOut.Color;
+
+    #ifdef BASEDIFFUSEONLY
+        float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
+    #else
+        float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0) * tex2D(DetailMapSampler, VsOut.Tex1);
+    #endif
+
+    #if _HASSHADOW_
+        vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
+        vertexColor.rgb += OverGrowthAmbient/2;
+    #endif
+
+    //tl: use compressed color register to avoid this being compiled as a 2.0 shader.
+    return float4(vertexColor.rgb * diffuseMap * 4.0, VsOut.Color.a * 2.0);
 };
 
 technique defaultTechnique

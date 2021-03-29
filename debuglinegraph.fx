@@ -19,8 +19,8 @@ VS2PS vs(APP2VS indata)
     VS2PS outdata;
 
     float2 scrPos = indata.scrPos + graphPos;
-    scrPos.x = scrPos.x/(viewportSize.x/2)-1;
-    scrPos.y = -(scrPos.y/(viewportSize.y/2)-1);
+    scrPos.x = scrPos.x / (viewportSize.x * 0.5) - 1.0;
+    scrPos.y = -(scrPos.y / (viewportSize.y * 0.5) - 1.0);
 
     outdata.hPos.xy = scrPos;
     outdata.hPos.z = 0.001;

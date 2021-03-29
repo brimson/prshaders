@@ -7,26 +7,25 @@
 #endif
 
 // if we want to run the same path on 1_4 we should disable this.
-#define _USERENORMALIZEDTEXTURES_ 	1
-#define _USESPECULAR_  1
+#define _USERENORMALIZEDTEXTURES_ 1
+#define _USESPECULAR_ 1
 
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSTMCommon.fx"
 
-#define skyNormal 	float3(0.78,0.52,0.65)
-
+#define skyNormal 	float3(0.78, 0.52, 0.65)
 
 //tl: Alias packed data indices to regular indices:
 #ifdef TexBasePackedInd
-    #define TexBaseInd	TexBasePackedInd
+    #define TexBaseInd TexBasePackedInd
 #endif
 
 #ifdef TexDetailPackedInd
-    #define TexDetailInd	TexDetailPackedInd
+    #define TexDetailInd  TexDetailPackedInd
 #endif
 
 #ifdef TexDirtPackedInd
-    #define TexDirtInd	TexDirtPackedInd
+    #define TexDirtInd TexDirtPackedInd
 #endif
 
 #ifdef TexCrackPackedInd
@@ -34,7 +33,7 @@
 #endif
 
 #ifdef TexLightMapPackedInd
-    #define TexLightMapInd	TexLightMapPackedInd
+    #define TexLightMapInd TexLightMapPackedInd
 #endif
 
 #if ( _NBASE_||_NDETAIL_ || _NCRACK_ || _PARALLAXDETAIL_)
@@ -106,7 +105,7 @@ Light		Lights[NUM_LIGHTS];
 
 float getBinormalFlipping(VS_IN input)
 {
-    return 1.f + input.Pos.w * -2.f;
+    return 1.0f + input.Pos.w * -2.0f;
 }
 
 float3x3 getTanBasisTranspose(VS_IN input, float3 Normal, float3 Tan)
@@ -130,7 +129,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
     VS_OUT Out = (VS_OUT)0;
 
     // output position early
-    float4 unpackedPos = float4(indata.Pos.xyz,1) * PosUnpack;
+    float4 unpackedPos = float4(indata.Pos.xyz, 1.0) * PosUnpack;
     Out.Pos	= mul(unpackedPos, WorldViewProjection);
     float3 unpackedNormal = indata.Normal * NormalUnpack.x + NormalUnpack.y;
 
@@ -161,7 +160,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
                 Out.Interpolated[__LVEC_INTER].rgb = normalize(Out.Interpolated[__LVEC_INTER].rgb);
             #endif
 
-            Out.InvDotAndLightAtt.a = 1-(saturate(dot(unpackedNormal*0.2, -Lights[0].dir)));
+            Out.InvDotAndLightAtt.a = 1.0 - (saturate(dot(unpackedNormal*0.2, -Lights[0].dir)));
             Out.InvDotAndLightAtt.b = Lights[0].attenuation;
         #else
 
@@ -182,7 +181,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
                 #endif
             #endif
 
-            float invDot = 1-saturate(dot(unpackedNormal*0.2, -Lights[0].dir));
+            float invDot = 1.0 - saturate(dot(unpackedNormal*0.2, -Lights[0].dir));
             Out.InvDotAndLightAtt.rgb = skyNormal.z * StaticSkyColor * invDot;
             Out.ColorOrPointLightFog.rgb =  saturate(dot(unpackedNormal, -Lights[0].dir))*Lights[0].color;
         #endif
@@ -225,7 +224,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
     float2 calculateParallaxCoordinatesFromAlpha(float2 inHeightTexCoords, sampler2D inHeightSampler, float4 inScaleBias, float3 inEyeVecNormalized)
     {
         float2 height = tex2D(inHeightSampler, inHeightTexCoords).aa;
-        float2 eyeVecN = inEyeVecNormalized.xy * float2(1,-1);
+        float2 eyeVecN = inEyeVecNormalized.xy * float2(1.0, -1.0);
         float4 fakeBias = float4(FH2_HARDCODED_PARALLAX_BIAS, FH2_HARDCODED_PARALLAX_BIAS, 0.0, 0.0);
         height = height * fakeBias.xy + fakeBias.wz;
         return inHeightTexCoords + height * eyeVecN.xy;
@@ -233,8 +232,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
 #endif
 
 
-float4
-getCompositeDiffuse(VS_OUT indata, float3 normTanEyeVec, out float gloss)
+float4 getCompositeDiffuse(VS_OUT indata, float3 normTanEyeVec, out float gloss)
 {
     float4 totalDiffuse = 0;
     gloss = StaticGloss;
@@ -275,11 +273,6 @@ getCompositeDiffuse(VS_OUT indata, float3 normTanEyeVec, out float gloss)
     return totalDiffuse;
 }
 
-float3 reNormalize(float3 t)
-{
-    return normalize(t);
-}
-
 // This also includes the composite gloss map
 float3 getCompositeNormals(VS_OUT indata, float3 normTanEyeVec)
 {
@@ -302,21 +295,20 @@ float3 getCompositeNormals(VS_OUT indata, float3 normTanEyeVec)
     #endif
 
     #if _USERENORMALIZEDTEXTURES_
-        totalNormal.xyz = normalize(totalNormal.xyz * 2 - 1);
+        totalNormal.xyz = normalize(totalNormal.xyz * 2.0 - 1.0);
     #else
-        totalNormal.xyz = totalNormal.xyz * 2 - 1;
+        totalNormal.xyz = totalNormal.xyz * 2.0 - 1.0;
     #endif
 
     return totalNormal;
 }
-
 
 float3 getLightmap(VS_OUT indata)
 {
     #if _LIGHTMAP_
         return  tex2D(LightMapSampler, indata.Interpolated[__TEXLMAP_INTER].xy);
     #else
-        return float3(1,1,1);
+        return 1.0;
     #endif
 }
 
@@ -349,7 +341,7 @@ float3 getDiffusePixelLighting(float3 lightmap, float3 compNormals, float3 norma
     float3 bumpedSky = lightmap.b * dot(compNormals, skyNormal) * StaticSkyColor;
     diffuse = bumpedSky + diffuse*lightmap.g;
 
-    diffuse += lightmap.r * SinglePointColor; //tl: Jonas, disable once we know which materials are actually affected.
+    diffuse += lightmap.r * SinglePointColor; // tl: Jonas, disable once we know which materials are actually affected.
 
     return diffuse;
 }
@@ -358,16 +350,10 @@ float getSpecularPixelLighting(float3 lightmap, float3 compNormals, float3 norma
 {
     float3 halfVec = normalize(normalizedLightVec + eyeVec);
     float specular = saturate(dot(compNormals.xyz, halfVec));
-
-    // todo dep texlookup for spec
-    specular = pow(specular, 32);
-
-    // mask
-    specular *= lightmap.g * gloss;
-
+    specular = pow(specular, 32.0); // todo dep texlookup for spec
+    specular *= lightmap.g * gloss; // mask
     return specular;
 }
-
 
 float3 getPointPixelLighting(VS_OUT indata, float3 compNormal, float3 normLightVec, float3 normEyeVec, float gloss)
 {
@@ -387,7 +373,7 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
 {
 
     #if _FINDSHADER_
-        return float4(1,1,0.4,1);
+        return float4(1.0, 1.0, 0.4, 1.0);
     #endif
 
     float gloss;
@@ -410,15 +396,15 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
         #ifdef PERPIXEL
             float3 compNormals = getCompositeNormals(indata, normEyeVec);
         #else
-            float3 compNormals = float3(0,0,1);
+            float3 compNormals = float3(0.0, 0.0, 1.0);
         #endif
 
         float3 diffuse = getPointPixelLighting(indata, compNormals, normLightVec, normEyeVec, gloss);
 
-        FinalColor.rgb = 2*(FinalColor * diffuse);
+        FinalColor.rgb = 2.0 FinalColor * diffuse;
 
         return FinalColor;
-    #else	//if _POINTLIGHT_
+    #else //if _POINTLIGHT_
 
         #ifdef PERPIXEL
             float3 normEyeVec = indata.Interpolated[__EYEVEC_INTER].rgb;
@@ -439,7 +425,6 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
 
             float3 compNormals = getCompositeNormals(indata, normEyeVec);
 
-
             // directional light + lightmap etc
             float3 lightmap = getLightmap(indata);
 
@@ -450,10 +435,10 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
             float3 diffuse = getDiffusePixelLighting(lightmap, compNormals.rgb, normLightVec, indata);
 
             #ifdef	SHADOW_CHANNEL
-                return float4(diffuse,1);
+                return float4(diffuse, 1.0);
             #endif
 
-            FinalColor.rgb *= 2 * diffuse;
+            FinalColor.rgb *= 2.0 * diffuse;
 
             #if _USESPECULAR_
                 float specular = getSpecularPixelLighting(lightmap, compNormals, normLightVec, normEyeVec, gloss);
@@ -462,10 +447,10 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
 
         #else //if PERPIXEL
 
-            FinalColor = getCompositeDiffuse(indata, 0, gloss);
+            FinalColor = getCompositeDiffuse(indata, 0.0, gloss);
 
             #ifdef	DIFFUSE_CHANNEL
-                return float4(FinalColor.rgb,1);
+                return float4(FinalColor.rgb, 1.0);
             #endif
 
             float3 lightmap = getLightmap(indata);
@@ -477,10 +462,10 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
             float3 diffuse = getDiffuseVertexLighting(lightmap, indata);
 
             #ifdef	SHADOW_CHANNEL
-                return float4(diffuse,1);
+                return float4(diffuse, 1.0);
             #endif
 
-            FinalColor.rgb *= 2 * diffuse;
+            FinalColor.rgb *= 2.0 * diffuse;
 
             #if _USESPECULAR_
                 #ifdef USEVERTEXSPECULAR
@@ -490,15 +475,14 @@ float4 psStaticMesh(VS_OUT indata) : COLOR
                     #if	_USEPERPIXELNORMALIZE_
                         normEyeVec = normalize(normEyeVec);
                     #endif
-                    float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
 
-                    //float specular = getSpecularPixelLighting(lightmap, float4(normalize(indata.Interpolated[__NORMAL_INTER].rgb), StaticGloss), normLightVec, normEyeVec);
-                    float specular = getSpecularPixelLighting(lightmap, float4(0.f,0.f,1.f, StaticGloss), normLightVec, normEyeVec, gloss);
+                    float3 normLightVec = indata.Interpolated[__LVEC_INTER].rgb;
+                    float specular = getSpecularPixelLighting(lightmap, float4(0.0f, 0.0f, 1.0f, StaticGloss), normLightVec, normEyeVec, gloss);
                     FinalColor.rgb += specular * StaticSpecularColor;
                 #endif
-            #endif //if _USESPECULAR_
-        #endif //if PERPIXEL
-    #endif //if _POINTLIGHT_
+            #endif // if _USESPECULAR_
+        #endif // if PERPIXEL
+    #endif // if _POINTLIGHT_
 
     return FinalColor;
 };
@@ -529,4 +513,3 @@ technique defaultTechnique
         AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
     }
 }
-//#endif

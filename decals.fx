@@ -1,3 +1,4 @@
+
 #line 2 "Decals.fx"
 
 #include "shaders/RaCommon.fx"
@@ -12,15 +13,31 @@ float4 ambientColor : AmbientColor;
 float4 sunColor : SunColor;
 float4 sunDirection : SunDirection;
 
-
-float2 decalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.f, 30.f);
+float2 decalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0f, 30.0f);
 
 texture texture0: TEXLAYER0;
-texture texture1: HemiMapTexture;
-texture shadowMapTex: ShadowMapTex;
+sampler sampler0 = sampler_state
+{
+    Texture = (texture0);
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+};
 
-sampler sampler0 = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1 = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
+texture texture1: HemiMapTexture;
+sampler sampler1 = sampler_state
+{
+    Texture = (texture1);
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+};
+
+texture shadowMapTex: ShadowMapTex;
 
 struct appdata
 {
@@ -38,6 +55,19 @@ struct OUT_vsDecal
     float3 Diffuse  : TEXCOORD2;
     float4 Alpha    : COLOR0;
     float  Fog      : FOG;
+};
+
+// Decal Shadow shaders aren't used. Should we use it?
+struct OUT_vsDecalShadowed
+{
+    float4 HPos        : POSITION;
+    float2 Texture0    : TEXCOORD0;
+    float4 TexShadow   : TEXCOORD1;
+    float4 ViewPortMap : TEXCOORD2;
+    float3 Color       : TEXCOORD3;
+    float3 Diffuse     : TEXCOORD4;
+    float4 Alpha       : COLOR0;
+    float  Fog         : FOG;
 };
 
 OUT_vsDecal vsDecal(appdata input)
@@ -63,29 +93,6 @@ OUT_vsDecal vsDecal(appdata input)
 
     return Out;
 }
-
-float4 psDecal(	OUT_vsDecal indata) : COLOR
-{
-    float3 lighting =  ambientColor + indata.Diffuse;
-    float4 outColor = tex2D(sampler0, indata.Texture0); // * indata.Color;
-    outColor.rgb *= indata.Color * lighting;
-    outColor.a *= indata.Alpha;
-    return outColor;
-}
-
-
-
-struct OUT_vsDecalShadowed
-{
-    float4 HPos        : POSITION;
-    float2 Texture0    : TEXCOORD0;
-    float4 TexShadow   : TEXCOORD1;
-    float4 ViewPortMap : TEXCOORD2;
-    float3 Color       : TEXCOORD3;
-    float3 Diffuse     : TEXCOORD4;
-    float4 Alpha       : COLOR0;
-    float  Fog         : FOG;
-};
 
 OUT_vsDecalShadowed vsDecalShadowed(appdata input)
 {
@@ -116,7 +123,16 @@ OUT_vsDecalShadowed vsDecalShadowed(appdata input)
     return Out;
 }
 
-float4 psDecalShadowed(	OUT_vsDecalShadowed indata) : COLOR
+float4 psDecal(OUT_vsDecal indata) : COLOR
+{
+    float3 lighting =  ambientColor + indata.Diffuse;
+    float4 outColor = tex2D(sampler0, indata.Texture0); // * indata.Color;
+    outColor.rgb *= indata.Color * lighting;
+    outColor.a *= indata.Alpha;
+    return outColor;
+}
+
+float4 psDecalShadowed(OUT_vsDecalShadowed indata) : COLOR
 {
     float2 texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
     float4 samples;
@@ -133,7 +149,6 @@ float4 psDecalShadowed(	OUT_vsDecalShadowed indata) : COLOR
     return outColor;
 }
 
-
 technique Decal
 <
     int Declaration[] =
@@ -149,7 +164,6 @@ technique Decal
 {
     pass p0
     {
-        //FillMode = WireFrame;
         AlphaTestEnable = TRUE;
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
@@ -167,7 +181,6 @@ technique Decal
 
     pass p1
     {
-        //FillMode = WireFrame;
         AlphaTestEnable = TRUE;
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
@@ -183,4 +196,3 @@ technique Decal
         PixelShader = compile ps_2_a psDecal();
     }
 }
-

@@ -62,7 +62,6 @@ sampler DiffuseMapSampler = sampler_state
     AddressV  = WRAP;
 };
 
-
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {
@@ -71,14 +70,11 @@ string reqVertexElement[] =
     "TDetailPacked2D"
 };
 
-VS_OUTPUT basicVertexShader
-(
-float4 inPos: POSITION0,
-float2 tex0	: TEXCOORD0,
-float2 tex1	: TEXCOORD1
-)
+VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
+                            float2 tex0	: TEXCOORD0,
+                            float2 tex1	: TEXCOORD1)
 {
-    VS_OUTPUT Out = (VS_OUTPUT)0;
+    VS_OUTPUT Out;
 
     float4 wPos = mul(inPos * PosUnpack, World);
     wPos.y += 0.01;
@@ -87,17 +83,14 @@ float2 tex1	: TEXCOORD1
     Out.Tex0AndZFade.xy = tex0 * TexUnpack;
     Out.Tex1 = tex1 * TexUnpack;
 
-    Out.lightTex.xy = Out.Pos.xy/Out.Pos.w;
-    Out.lightTex.xy = (Out.lightTex.xy + 1) / 2;
-    Out.lightTex.y = 1-Out.lightTex.y;
+    Out.lightTex.xy = (Out.Pos.xy / Out.Pos.ww) * 0.5 + 0.5;
+    Out.lightTex.y  = 1.0 - Out.lightTex.y;
     Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
     Out.lightTex.zw = Out.Pos.zw;
 
     float cameraDist = length(WorldSpaceCamPos - wPos);
-    Out.Tex0AndZFade.z = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
-
+    Out.Tex0AndZFade.z = 1.0 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
     Out.Fog = calcFog(Out.Pos.w);
-
     return Out;
 }
 

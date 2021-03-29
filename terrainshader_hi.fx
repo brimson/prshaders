@@ -454,9 +454,9 @@ float4 Hi_PS_FullDetailWithEnvMap(Hi_VS2PS_FullDetailWithEnvMap indata) : COLOR
         float4 envmapColor = texCUBE(sampler6Cube, indata.EnvMap);
 
         #if HIGHTERRAIN
-            outColor = lerp(outColor, envmapColor, detailmap.w * (1-indata.BlendValueAndFade.w)) * 2;
+            outColor = lerp(outColor, envmapColor, detailmap.w * (1.0 - indata.BlendValueAndFade.w)) * 2;
         #else
-            outColor = lerp(outColor, envmapColor, detailmap.w * (1-indata.FogAndFade2.y)) * 2;
+            outColor = lerp(outColor, envmapColor, detailmap.w * (1.0 - indata.FogAndFade2.y)) * 2;
         #endif
 
         outColor = lerp(FogColor, outColor, indata.FogAndFade2.x);
@@ -598,12 +598,10 @@ Hi_VS2PS_PerPixelPointLight Hi_VS_PerPixelPointLight(Shared_APP2VS_Default indat
 float4 Hi_PS_DirectionalLightShadows(Shared_VS2PS_DirectionalLightShadows indata) : COLOR
 {
     float4 lightmap = tex2D(sampler0Clamp, indata.Tex0);
-
     float4 avgShadowValue = getShadowFactor(ShadowMapSampler, indata.ShadowTex);
+    float4 light = saturate(lightmap.z * vGIColor * 2.0) * 0.5;
 
-    float4 light = saturate(lightmap.z * vGIColor*2) * 0.5;
     if (avgShadowValue.z < lightmap.y)
-        //light.w = 1-saturate(4-indata.Z.x)+avgShadowValue.x;
         light.w = avgShadowValue.z;
     else
         light.w = lightmap.y;

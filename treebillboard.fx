@@ -29,7 +29,7 @@ sampler sampler0 = sampler_state
 texture texture1: TEXLAYER1;
 sampler sampler1 = sampler_state
 {
-    Texture = (texture0);
+    Texture = (texture1);
     AddressU = WRAP;
     AddressV = CLAMP;
     MipFilter = LINEAR;
@@ -55,7 +55,6 @@ struct VS2PS
     float2 Tex2 : TEXCOORD1;
 };
 
-
 float4 psFFP(VS2PS indata) : COLOR
 {
     float4 col0 = tex2D(sampler0, indata.Tex);
@@ -73,7 +72,6 @@ VS2PS vsFFP(APP2VS indata)
     outdata.Tex2 = indata.Tex2;
     return outdata;
 }
-
 
 technique QuadWithTexture
 <
@@ -95,11 +93,10 @@ technique QuadWithTexture
         AlphaBlendEnable = (bAlphaBlend);
         SrcBlend = (dwSrcBlend);
         DestBlend = (dwDestBlend);
-        AlphaTestEnable = true;//(bAlphaTest);
+        AlphaTestEnable = true;
         AlphaFunc = (dwAlphaFunc);
         AlphaRef = (dwAlphaRef);
         ZWriteEnable = (bZWriteEnable);
-        //TextureFactor = (dwTexFactor);
         CullMode = NONE;
 
         VertexShader = compile vs_2_a vsFFP();

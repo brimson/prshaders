@@ -1,6 +1,5 @@
-//
+
 // Description: 1,2 bone skinning
-//
 // Author: Mats Dal
 
 // Note: obj space light vectors
@@ -196,7 +195,6 @@ void skinSoldierForSpotPP(uniform int NumBones, in APP2VS indata, in float3 ligh
     SkinnedLVec = SkinnedLVec;//normalize(SkinnedLVec);
     SkinnedLDir = normalize(SkinnedLDir);
 }
-
 
 // tangent based lighting
 
@@ -440,13 +438,11 @@ VS2PS_PP VShader_HemiAndSunPP(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
+    outdata.GroundUVAndLerp.xy = ((wPos + (hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
-    //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
-    //outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     outdata.SkinnedLVec = normalize(SkinnedLVec);
 
@@ -483,13 +479,11 @@ VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPP(APP2VS indata, uniform int NumBone
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
+    outdata.GroundUVAndLerp.xy = ((wPos + (hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
-    //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
-    //outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     outdata.SkinnedLVec = normalize(SkinnedLVec);
 
@@ -688,8 +682,8 @@ VS2PS_PP VShader_HemiAndSunPPtangent(APP2VStangent indata, uniform int NumBones)
 
     // Hemi lookup values
     outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.SkinnedLVec = normalize(SkinnedLVec);
@@ -712,8 +706,8 @@ VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPPtangent(APP2VStangent indata, unifo
 
     // Hemi lookup values
     outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     // Shadow
@@ -811,8 +805,8 @@ VS2PS_PV VShader_HemiAndSunPV(APP2VS indata, uniform int NumBones)
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
     outdata.GroundUV.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    outdata.GroundUV.y = 1-outdata.GroundUV.y;
-    outdata.Lerp = (Normal.y+1)/2;
+    outdata.GroundUV.y = 1.0 - outdata.GroundUV.y;
+    outdata.Lerp = Normal.y * 0.5 + 0.5;
     outdata.Lerp -= hemiMapInfo.w;
 
     float diff = dot(Normal, -sunLightDir);
@@ -887,8 +881,8 @@ VS2PS_PVCOLOR VShader_HemiAndSunAndColorPV(APP2VS indata, uniform int NumBones)
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
     outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -948,8 +942,8 @@ VS2PS_PVCOLOR_SHADOW VShader_HemiAndSunAndShadowAndColorPV(APP2VS indata, unifor
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
     outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1051,7 +1045,7 @@ VS2PS_PointLight_PV VShader_PointLightPV(APP2VS indata, uniform int NumBones)
     float3 lvec = lightPos - Pos.xyz;
     float3 lvecNormalized = normalize(lvec);
 
-    float radialAtt = 1-saturate(dot(lvec,lvec)*attenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(lvec,lvec)*attenuationSqrInv);
 
     outdata.Diffuse = dot(lvecNormalized, Normal);
     outdata.Diffuse *= lightColor * radialAtt;
@@ -1114,7 +1108,7 @@ VS2PS_PointLight_PP VShader_PointLightPP(APP2VS indata, uniform int NumBones)
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     outdata.SkinnedLVec.w = radialAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1169,7 +1163,7 @@ VS2PS_PointLight_PP VShader_PointLightPPtangent(APP2VStangent indata, uniform in
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     outdata.SkinnedLVec.w = radialAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1218,15 +1212,13 @@ VS2PS_SpotLight_PV VShader_SpotLightPV(APP2VS indata, uniform int NumBones)
     float3 lvec = lightPos - Pos.xyz;
     float3 lvecnorm = normalize(lvec);
 
-    float radialAtt = 1-saturate(dot(lvec,lvec)*attenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(lvec,lvec)*attenuationSqrInv);
     float offCenter = dot(lvecnorm, lightDir);
-    float conicalAtt = saturate(offCenter-(1-coneAngle))/coneAngle;
+    float conicalAtt = saturate(offCenter - (1.0 - coneAngle)) / coneAngle;
 
     outdata.Diffuse = dot(lvecnorm,Normal) * lightColor;
-    outdata.Diffuse *= conicalAtt*radialAtt;
-
+    outdata.Diffuse *= conicalAtt * radialAtt;
     outdata.Tex0 = indata.TexCoord0;
-
     return outdata;
 }
 
@@ -1281,9 +1273,9 @@ VS2PS_SpotLight_PP VShader_SpotLightPP(APP2VS indata, uniform int NumBones)
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     float offCenter = dot(nrmSkinnedLVec, SkinnedLDir);
-    float conicalAtt = saturate(offCenter-(1-coneAngle))/coneAngle;
+    float conicalAtt = saturate(offCenter-(1.0 - coneAngle))/coneAngle;
     outdata.SkinnedLVec.w = radialAtt * conicalAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1339,9 +1331,9 @@ VS2PS_SpotLight_PP VShader_SpotLightPPtangent(APP2VStangent indata, uniform int 
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     float offCenter = dot(nrmSkinnedLVec, SkinnedLDir);
-    float conicalAtt = saturate(offCenter-(1-coneAngle))/coneAngle;
+    float conicalAtt = saturate(offCenter-(1.0 - coneAngle))/coneAngle;
     outdata.SkinnedLVec.w = radialAtt * conicalAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1440,8 +1432,8 @@ VS2PS_Skinpre vsSkinpre(APP2VS indata, uniform int NumBones)
     // Hemi lookup values
     float4 wPos = mul(Pos, mWorld);
     outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1460,7 +1452,7 @@ float4 psSkinpre(VS2PS_Skinpre indata) : COLOR
     float wrapDiff = dot(expnormal, indata.SkinnedLVec) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1-dot(expnormal, indata.ObjEyeVec);
+    float rimDiff = 1.0 - dot(expnormal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
 
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, indata.SkinnedLVec)));
@@ -1505,7 +1497,7 @@ float4 psSkinpreshadowed(VS2PS_Skinpreshadowed indata) : COLOR
     float wrapDiff = dot(expnormal, indata.SkinnedLVec) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1-dot(expnormal, indata.ObjEyeVec);
+    float rimDiff = 1.0 - dot(expnormal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, indata.SkinnedLVec)));
 
@@ -1539,7 +1531,7 @@ float4 psSkinpreshadowedNV(VS2PS_Skinpreshadowed indata) : COLOR
     float wrapDiff = dot(expnormal, indata.SkinnedLVec) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1-dot(expnormal, indata.ObjEyeVec);
+    float rimDiff = 1.0 - dot(expnormal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, indata.SkinnedLVec)));
 
@@ -1571,9 +1563,9 @@ VS2PS_PP vsSkinapply(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(Pos, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1715,7 +1707,7 @@ VS2PS_ShadowMap vsShadowMap(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
 
      outdata.Pos = mul(float4(Pos.xyz, 1.0), vpLightTrapezMat);
      float2 lightZW = mul(float4(Pos.xyz, 1.0), vpLightMat).zw;
@@ -1759,7 +1751,7 @@ VS2PS_ShadowMapAlpha vsShadowMapAlpha(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
 
 
     outdata.Pos = mul(float4(Pos.xyz, 1.0), vpLightTrapezMat);
@@ -1805,7 +1797,7 @@ VS2PS_ShadowMap vsShadowMapPoint(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
 
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
@@ -1843,7 +1835,7 @@ VS2PS_ShadowMap vsShadowMapPointNV(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
 
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 

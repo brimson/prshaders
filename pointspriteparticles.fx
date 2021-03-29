@@ -12,8 +12,8 @@ uniform texture texture1: Texture1;
 
 uniform float baseSize : BaseSize;
 
-uniform float2 heightmapSize : HeightmapSize = 2048.f;
-uniform float alphaPixelTestRef : AlphaPixelTestRef = 0;
+uniform float2 heightmapSize : HeightmapSize = 2048.0f;
+uniform float alphaPixelTestRef : AlphaPixelTestRef = 0.0;
 
 sampler diffuseSampler = sampler_state
 {
@@ -49,7 +49,6 @@ struct TemplateParameters
 };
 
 TemplateParameters tParameters[10] : TemplateParameters;
-//TemplateParameters tParameters : TemplateParameters;
 
 struct appdata
 {
@@ -71,31 +70,34 @@ struct VS_POINTSPRITE_OUTPUT
     float  pointSize              : PSIZE0;
 };
 
-VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input, uniform float4x4 myWVP, uniform TemplateParameters templ[10], uniform float scale, uniform float myHeightmapSize)
+VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input,
+                                    uniform float4x4 myWVP,
+                                    uniform TemplateParameters templ[10],
+                                    uniform float scale,
+                                    uniform float myHeightmapSize)
 {
     VS_POINTSPRITE_OUTPUT Out;
     Out.HPos = mul(float4(input.pos.xyz, 1.0f), myWVP);
-    Out.texCoords.xy = 0;
+    Out.texCoords.xy = 0.0;
 
     // hemi lookup coords
-    Out.texCoords1 = (input.pos.xyz + (myHeightmapSize/2)).xz / myHeightmapSize;
-
+    Out.texCoords1 = (input.pos.xyz + (myHeightmapSize * 0.5)).xz / myHeightmapSize;
 
     // Compute Cubic polynomial factors.
-    float4 pc = {input.ageFactor*input.ageFactor*input.ageFactor, input.ageFactor*input.ageFactor, input.ageFactor, 1.f};
+    float4 pc = { pow(input.ageFactor, 3.0), pow(input.ageFactor, 2.0), input.ageFactor, 1.0f};
 
     // compute size of particle using the constants of the template (mSizeGraph)
-    float pointSize = min(dot(templ[input.graphIndex.x].m_sizeGraph, pc), 1) * templ[input.graphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
+    float pointSize = min(dot(templ[input.graphIndex.x].m_sizeGraph, pc), 1.0) * templ[input.graphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
     pointSize = (pointSize + input.randomSizeAndAlpha.x) * scale;
     Out.pointSize = pointSize / Out.HPos.w;
     Out.lightMapIntensityOffset = templ[input.graphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
 
-    float colorBlendFactor = min(dot(templ[input.graphIndex.x].m_colorBlendGraph, pc), 1);
+    float colorBlendFactor = min(dot(templ[input.graphIndex.x].m_colorBlendGraph, pc), 1.0);
     float3 color = colorBlendFactor * templ[input.graphIndex.x].m_color2;
-    color += (1 - colorBlendFactor) * templ[input.graphIndex.x].m_color1;
+    color += (1.0 - colorBlendFactor) * templ[input.graphIndex.x].m_color1;
 
     Out.color.rgb = (color * input.intensityAndRandomIntensity[0]) + input.intensityAndRandomIntensity[1];
-    float alphaBlendFactor = min(dot(templ[input.graphIndex.x].m_transparencyGraph, pc), 1);
+    float alphaBlendFactor = min(dot(templ[input.graphIndex.x].m_transparencyGraph, pc), 1.0);
     Out.color.a = alphaBlendFactor * input.randomSizeAndAlpha[1];
 
     return Out;
@@ -105,12 +107,11 @@ float4 psPointSprite(VS_POINTSPRITE_OUTPUT input) : COLOR
 {
     float4 tDiffuse = tex2D( diffuseSampler, input.texCoords);
     float4 tLut = tex2D( lutSampler, input.texCoords1);
+
     float4 color = input.color * tDiffuse;
     color.rgb *= tLut.a + input.lightMapIntensityOffset;
-
     return color;
 }
-
 
 technique PointSprite
 <

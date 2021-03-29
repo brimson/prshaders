@@ -51,12 +51,12 @@ VS_REGULAR VSRegular(appData input)
 
 float4 PSRegular(VS_REGULAR input) : COLOR
 {
-    return tex2D( TexMapSamplerClamp, input.TexCoord ) * input.Diffuse;
+    return tex2D(TexMapSamplerClamp, input.TexCoord) * input.Diffuse;
 }
 
 float4 PSRegularScaled(VS_REGULAR input) : COLOR
 {
-    return tex2D( TexMapSamplerClampLinear, input.TexCoord ) * input.Diffuse;
+    return tex2D(TexMapSamplerClampLinear, input.TexCoord) * input.Diffuse;
 }
 
 struct VS_SELECTIONQUAD
@@ -67,7 +67,7 @@ struct VS_SELECTIONQUAD
 
 VS_SELECTIONQUAD VSSelectionQuad(float3 Position : POSITION)
 {
-    VS_SELECTIONQUAD Out = (VS_SELECTIONQUAD)0;
+    VS_SELECTIONQUAD Out;
     Out.Position = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
     Out.Diffuse = DiffuseColor;
     return Out;

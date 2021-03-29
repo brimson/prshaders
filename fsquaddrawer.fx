@@ -63,7 +63,6 @@ struct VS2PS_blit_
     float2 TexCoord0 : TEXCOORD0;
 };
 
-
 struct VS2PS_blit
 {
     float4 Pos       : POSITION;
@@ -101,8 +100,8 @@ struct VS2PS_tr_blit
 VS2PS_tr_blit vsDx9_tr_blit(APP2VS_blit indata) // TODO: implement support for old shader versions. TODO: try to use fakeHDRWeights as variables
 {
     VS2PS_tr_blit outdata;
-     outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-     outdata.TexCoord0 = indata.TexCoord0;
+    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0.0, 1.0);
+    outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 
