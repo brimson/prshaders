@@ -27,14 +27,11 @@ string reqVertexElement[] =
     "TBase2D"
 };
 
-VS_OUTPUT basicVertexShader
-(
-float3 inPos: POSITION0,
-float2 tex0	: TEXCOORD0
-)
+VS_OUTPUT basicVertexShader(float3 inPos: POSITION0,
+                            float2 tex0 : TEXCOORD0)
 {
-    VS_OUTPUT Out = (VS_OUTPUT)0;
-    Out.Pos  = mul(float4(inPos, 1), mul(World, ViewProjection));
+    VS_OUTPUT Out;
+    Out.Pos  = mul(float4(inPos, 1.0), mul(World, ViewProjection));
     Out.Fog  = calcFog(Out.Pos.w);
     Out.Tex0 = tex0;
     return Out;
@@ -60,8 +57,7 @@ string InstanceParameters[] =
 
 float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
 {
-    float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
-    return diffuseMap;
+    return tex2D(DiffuseMapSampler, VsOut.Tex0);
 };
 
 technique defaultTechnique
@@ -75,7 +71,7 @@ technique defaultTechnique
             FillMode = WireFrame;
         #endif
 
-        AlphaTestEnable  = true;//< AlphaTest >;
+        AlphaTestEnable  = true;
         AlphaBlendEnable = < alphaBlendEnable >;
         AlphaRef         = < alphaRef >;
         SrcBlend         = < srcBlend >;

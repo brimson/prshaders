@@ -1,5 +1,38 @@
 // common BundledMesh samplers
 
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
+
+bool AlphaBlendEnable = false;
+int  AlphaTestRef     = 0;
+bool DepthWrite       = 1;
+bool DoubleSided      = 2;
+
+float4 DiffuseColor;
+float4 DiffuseColorAndAmbient;
+float4 SpecularColor;
+float  SpecularPower;
+float4 StaticGloss;
+float4 Ambient;
+
+float4 HemiMapSkyColor;
+float  InvHemiHeightScale = 100.0;
+float  HeightOverTerrain = 0.0;
+
+float Reflectivity;
+
+float4x3 GeomBones[26];
+
+struct
+{
+    float4x4 uvMatrix[7] : UVMatrix;
+} UserData;
+
+Light Lights[1];
+float4 PosUnpack;
+float  TexUnpack;
+float2 NormalUnpack;
+
 texture	HemiMap;
 sampler HemiMapSampler = sampler_state
 {
@@ -58,36 +91,3 @@ sampler NormalMapSampler = sampler_state
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
-
-float4 ObjectSpaceCamPos;
-float4 WorldSpaceCamPos;
-
-bool AlphaBlendEnable = false;
-int  AlphaTestRef     = 0;
-bool DepthWrite       = 1;
-bool DoubleSided      = 2;
-
-float4 DiffuseColor;
-float4 DiffuseColorAndAmbient;
-float4 SpecularColor;
-float  SpecularPower;
-float4 StaticGloss;
-float4 Ambient;
-
-float4 HemiMapSkyColor;
-float  InvHemiHeightScale = 100;
-float  HeightOverTerrain = 0;
-
-float Reflectivity;
-
-float4x3 GeomBones[26];
-
-struct
-{
-    float4x4 uvMatrix[7] : UVMatrix;
-} UserData;
-
-Light Lights[1];
-float4 PosUnpack;
-float  TexUnpack;
-float2 NormalUnpack;
