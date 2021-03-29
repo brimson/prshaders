@@ -1,11 +1,8 @@
 
-VS_OUTPUT bumpSpecularVertexShaderBlinn1
-(
-    appdata input,
-    uniform float4x4 ViewProj,
-    uniform float4x4 ViewInv,
-    uniform float4 LightPos
-)
+VS_OUTPUT bumpSpecularVertexShaderBlinn1(   appdata input,
+                                            uniform float4x4 ViewProj,
+                                            uniform float4x4 ViewInv,
+                                            uniform float4 LightPos)
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 

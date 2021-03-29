@@ -95,28 +95,21 @@ float4 showChannel(
     return returnVal;
 }
 
-
-
 // Common dynamic shadow stuff
-float4x4 	ShadowProjMat : ShadowProjMatrix;
-float4x4 	ShadowOccProjMat : ShadowOccProjMatrix;
-float4x4 	ShadowTrapMat : ShadowTrapMatrix;
+float4x4 ShadowProjMat    : ShadowProjMatrix;
+float4x4 ShadowOccProjMat : ShadowOccProjMatrix;
+float4x4 ShadowTrapMat    : ShadowTrapMatrix;
 
 texture ShadowMap : SHADOWMAP;
 sampler ShadowMapSampler
 #ifdef _CUSTOMSHADOWSAMPLER_
-: register(_CUSTOMSHADOWSAMPLER_)
+    : register(_CUSTOMSHADOWSAMPLER_)
 #endif
 = sampler_state
 {
     Texture = (ShadowMap);
-    #if NVIDIA
-        MinFilter = Linear;
-        MagFilter = Linear;
-    #else
-        MinFilter = Point;
-        MagFilter = Point;
-    #endif
+    MinFilter = Linear;
+    MagFilter = Linear;
     MipFilter = None;
     AddressU = Clamp;
     AddressV = Clamp;
@@ -124,17 +117,11 @@ sampler ShadowMapSampler
 };
 
 texture ShadowOccluderMap : SHADOWOCCLUDERMAP;
-sampler ShadowOccluderMapSampler
-= sampler_state
+sampler ShadowOccluderMapSampler = sampler_state
 {
     Texture = (ShadowOccluderMap);
-    #if NVIDIA
-        MinFilter = Linear;
-        MagFilter = Linear;
-    #else
-        MinFilter = Point;
-        MagFilter = Point;
-    #endif
+    MinFilter = Linear;
+    MagFilter = Linear;
     MipFilter = None;
     AddressU = Clamp;
     AddressV = Clamp;
