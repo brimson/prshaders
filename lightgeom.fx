@@ -21,7 +21,7 @@ struct VS_OUTPUT
 VS_OUTPUT vsPointLight(appdata input, uniform float4x4 myWVP)
 {
     VS_OUTPUT Out;
-     Out.HPos = mul(float4(input.Pos.xyz, 1.0f), myWVP);
+    Out.HPos = mul(float4(input.Pos.xyz, 1.0f), myWVP);
     return Out;
 }
 
@@ -82,8 +82,7 @@ float4 psSpotLight(VS_SPOT_OUTPUT input, uniform float coneAngle, uniform float 
 {
     float3 lvec = normalize(input.lightVec);
     float3 ldir = normalize(input.lightDir);
-    float conicalAtt = saturate(pow(saturate(dot(lvec, ldir)), 2) - oneMinusConeAngle);///coneAngle;
-
+    float conicalAtt = saturate(pow(saturate(dot(lvec, ldir)), 2.0) - oneMinusConeAngle); // coneAngle;
     return lightColor * conicalAtt;
 }
 

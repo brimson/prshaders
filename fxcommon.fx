@@ -16,8 +16,7 @@ uniform float4 hemiMapInfo : HemiMapInfo;
 uniform float hemiShadowAltitude : HemiShadowAltitude;
 uniform float alphaPixelTestRef : AlphaPixelTestRef = 0;
 
-const float OneOverShort = 1.0/32767.0;
-
+const float OneOverShort = 1.0 / 32767.0;
 
 sampler diffuseSampler = sampler_state
 {
@@ -57,6 +56,5 @@ float3 calcParticleLighting(float lm, float lmOffset, float lightFactor)
 {
     float lut = saturate(lm + lmOffset);
     float3 diffuse = lerp(effectShadowColor, effectSunColor, lut);
-
-    return lerp(1, diffuse, lightFactor);
+    return lerp(1.0, diffuse, lightFactor);
 }

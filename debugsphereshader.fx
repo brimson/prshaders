@@ -41,18 +41,18 @@ struct PS2FB
     float4 Col : COLOR;
 };
 
-float3 Diffuse(float3 Normal,uniform float4 lhtDir)
+float3 Diffuse(float3 Normal, uniform float4 lhtDir)
 {
     float CosTheta;
     CosTheta = max(0.0f, dot(Normal, lhtDir.xyz)); // N.L Clamped
     return (CosTheta); // propogate float result to vector
 }
 
-VS2PS VShader(APP2VS indata,
-    uniform float4x4 wvp,
-    uniform float4 materialAmbient,
-    uniform float4 materialDiffuse,
-    uniform float4 lhtDir)
+VS2PS VShader(  APP2VS indata,
+                uniform float4x4 wvp,
+                uniform float4 materialAmbient,
+                uniform float4 materialDiffuse,
+                uniform float4 lhtDir)
 {
     VS2PS outdata;
 
@@ -75,8 +75,7 @@ PS2FB PShader(VS2PS indata, uniform sampler2D colorMap)
     return outdata;
 }
 
-PS2FB PShaderMarked(VS2PS indata,
-    uniform sampler2D colorMap)
+PS2FB PShaderMarked(VS2PS indata, uniform sampler2D colorMap)
 {
     PS2FB outdata;
     float4 base = tex2D(colorMap, indata.Tex0);
@@ -84,8 +83,8 @@ PS2FB PShaderMarked(VS2PS indata,
     return outdata;
 }
 
-
-technique t0_States <bool Restore = false;> {
+technique t0_States <bool Restore = false;>
+{
     pass BeginStates
     {
         CullMode = NONE;
@@ -116,8 +115,6 @@ technique t0
     }
 }
 
-
-
 technique marked
 <
     int DetailLevel = DLHigh+DLNormal+DLLow+DLAbysmal;
@@ -143,22 +140,18 @@ technique marked
 }
 
 VS2PS vsLightSource(APP2VS indata,
-    uniform float4x4 wvp,
-    uniform float4 materialDiffuse )
+                    uniform float4x4 wvp,
+                    uniform float4 materialDiffuse )
 {
     VS2PS outdata;
 
-    float4 Pos;
-    Pos.xyz = mul(indata.Pos, world);
-    Pos.w = 1;
+    float4 Pos = float4(mul(indata.Pos, world), 1.0));
     outdata.Pos = mul(Pos, wvp);
 
     // Lighting. Shade (Ambient + etc.)
     outdata.Diffuse.rgb = materialDiffuse.xyz;
     outdata.Diffuse.a = materialDiffuse.w;
-
     outdata.Tex0 = 0;
-
     return outdata;
 }
 
