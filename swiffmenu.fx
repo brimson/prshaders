@@ -76,7 +76,7 @@ struct VS_TEXTURE
 
 VS_SHAPE VSShape(float3 Position : POSITION, float4 VtxColor : COLOR0)
 {
-    VS_SHAPE Out = (VS_SHAPE)0;
+    VS_SHAPE Out;
     Out.Position = float4(Position.xy, 0.0f, 1.0);
     Out.Diffuse = VtxColor;
     return Out;
@@ -84,7 +84,7 @@ VS_SHAPE VSShape(float3 Position : POSITION, float4 VtxColor : COLOR0)
 
 VS_SHAPE VSLine(float3 Position : POSITION)
 {
-    VS_SHAPE Out = (VS_SHAPE)0;
+    VS_SHAPE Out;
     Out.Position = float4(Position.xy, 0.0f, 1.0);
     Out.Diffuse = DiffuseColor;
     return Out;
@@ -92,13 +92,12 @@ VS_SHAPE VSLine(float3 Position : POSITION)
 
 VS_SHAPETEXTURE VSShapeTexture(float3 Position : POSITION)
 {
-    VS_SHAPETEXTURE Out = (VS_SHAPETEXTURE)0;
+    VS_SHAPETEXTURE Out;
     Out.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
     Out.Diffuse = DiffuseColor;
     Out.Selector = Position.zzzz;
     float4 texPos = float4(Position.xy, 0.0, 1.0);
-    Out.TexCoord.x = mul(texPos, TexGenS);
-    Out.TexCoord.y = mul(texPos, TexGenT);
+    Out.TexCoord = float2(mul(texPos, TexGenS), mul(texPos, TexGenT));
     return Out;
 }
 
@@ -106,17 +105,17 @@ float4 PSRegularWrap(VS_SHAPETEXTURE input) : COLOR
 {
     float4 color;
     float4 tex = tex2D( TexMapSamplerWrap, input.TexCoord );
-    color.rgb = tex*input.Diffuse*input.Selector + input.Diffuse*(1-input.Selector);
-    color.a = tex.a*input.Diffuse.a;
+    color.rgb = tex * input.Diffuse * input.Selector + input.Diffuse * (1.0 - input.Selector);
+    color.a = tex.a * input.Diffuse.a;
     return color;
 }
 
 float4 PSRegularClamp(VS_SHAPETEXTURE input) : COLOR
 {
     float4 color;
-    float4 tex = tex2D( TexMapSamplerClamp, input.TexCoord );
-    color.rgb = tex*input.Diffuse*input.Selector + input.Diffuse*(1-input.Selector);
-    color.a = tex.a*input.Diffuse.a;
+    float4 tex = tex2D(TexMapSamplerClamp, input.TexCoord);
+    color.rgb = tex * input.Diffuse * input.Selector + input.Diffuse * (1.0 - input.Selector);
+    color.a = tex.a * input.Diffuse.a;
     return color;
 }
 
@@ -127,57 +126,54 @@ float4 PSDiffuse(VS_SHAPE input) : COLOR
 
 VS_TS0 VSTS0_0(float3 Position : POSITION)
 {
-    VS_TS0 Out = (VS_TS0)0;
-    Out.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
-    float4 texPos = float4(Position.xy+sin(Time*1)*240.5, 0.0, 1.0);
-    Out.TexCoord.x = (mul(texPos, TexGenS) + sin(Time*0.1)*0.1)*0.8+0.1;
-    Out.TexCoord.y = (mul(texPos, TexGenT) + cos(Time*0.12+0.2)*0.1)*0.8+0.1;
+    VS_TS0 Out;
+    Out.Position = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+    float4 texPos = float4(Position.xy + sin(Time) * 240.5, 0.0, 1.0);
+    Out.TexCoord.x = (mul(texPos, TexGenS) + sin(Time * 0.1) * 0.1) * 0.8 + 0.1;
+    Out.TexCoord.y = (mul(texPos, TexGenT) + cos(Time * 0.12 + 0.2) * 0.1) * 0.8 + 0.1;
     return Out;
 }
 
 VS_SHAPE VSTS0_1(float3 Position : POSITION)
 {
-    VS_SHAPE Out = (VS_SHAPE)0;
+    VS_SHAPE Out;
     Out.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
-    float a = sin(Time)*0.2+0.2+cos(Time*0.31)*0.1+0.1;
-    Out.Diffuse = float4(a,a,a,a);
+    Out.Diffuse = sin(Time) * 0.2 + 0.2 + cos(Time * 0.31) * 0.1 + 0.1;
     return Out;
 }
 
-
 VS_TS3 VSTS1_0(float3 Position : POSITION)
 {
-    VS_TS3 Out = (VS_TS3)0;
+    VS_TS3 Out;
     Out.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
     float4 texPos = float4(Position.xy, 0.0, 1.0);
     Out.TexCoord.x = mul(texPos, TexGenS);
-    Out.TexCoord.y = mul(texPos, TexGenT) + Time*0.005;
-    Out.Diffuse = float4(1,1,1,1);
+    Out.TexCoord.y = mul(texPos, TexGenT) + Time * 0.005;
+    Out.Diffuse = 1.0;
     return Out;
 }
 
 VS_TS3 VSTS2_0(float3 Position : POSITION)
 {
-    VS_TS3 Out = (VS_TS3)0;
-    Out.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
+    VS_TS3 Out;
+    Out.Position = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
     float4 texPos = float4(Position.xy, 0.0, 1.0);
     Out.TexCoord.x = mul(texPos, TexGenS);
     Out.TexCoord.y = mul(texPos, TexGenT);
-    float a = sin(Time*1+1)*0.15+0.4 + cos(Time*33)*0.03+0.03;
-    Out.Diffuse = float4(1,1,1,a);
-
+    float a = sin(Time + 1.0) * 0.15 + 0.4 + cos(Time * 33.0) * 0.03 + 0.03;
+    Out.Diffuse = float2(1.0, a).xxxy;
     return Out;
 }
 
 VS_TS3 VSTS3_0(float3 Position : POSITION)
 {
-    VS_TS3 Out = (VS_TS3)0;
-    Out.Position = mul( float4(Position.xy, 0.0f, 1.0), WorldView);
-    float4 texPos = float4(Position.xy+sin(Time*1+0.2)*240.5, 0.0, 1.0);
-    Out.TexCoord.x = (mul(texPos, TexGenS) + sin(Time*0.1)*0.1)*0.8+0.1;
-    Out.TexCoord.y = (mul(texPos, TexGenT) + cos(Time*0.12+0.2)*0.1)*0.8+0.1;
-    float a = sin(Time*1)*0.15+0.4 + cos(Time*33)*0.03+0.03;
-    Out.Diffuse = float4(1,1,1,a);
+    VS_TS3 Out;
+    Out.Position = mul(float4(Position.xy, 0.0f, 1.0), WorldView);
+    float4 texPos = float4(Position.xy + sin(Time + 0.2) * 240.5, 0.0, 1.0);
+    Out.TexCoord.x = (mul(texPos, TexGenS) + sin(Time * 0.1) * 0.1) * 0.8 + 0.1;
+    Out.TexCoord.y = (mul(texPos, TexGenT) + cos(Time * 0.12 + 0.2) * 0.1) * 0.8 + 0.1;
+    float a = sin(Time) * 0.15 + 0.4 + cos(Time * 33.0) * 0.03 + 0.03;
+    Out.Diffuse = float2(1.0, a).xxxy;
     return Out;
 }
 
@@ -191,7 +187,6 @@ float4 PSRegularTSX(VS_TS3 input) : COLOR
     return tex2D(TexMapSamplerWrap, input.TexCoord) * input.Diffuse;
 }
 
-
 technique Shape
 {
     pass P0
@@ -200,7 +195,6 @@ technique Shape
         PixelShader  = compile ps_2_a PSDiffuse();
     }
 }
-
 
 technique ShapeTextureWrap
 {
@@ -227,7 +221,7 @@ technique Line
     {
         VertexShader = compile vs_2_a VSLine();
         PixelShader  = NULL;
-        AlphaTestEnable		= false;
+        AlphaTestEnable = false;
         TexCoordIndex[0] =0;
         TextureTransformFlags[0] = Disable;
         Sampler[0] = <TexMapSamplerClamp>;
@@ -240,7 +234,7 @@ technique TS0
     {
         VertexShader = compile vs_2_a VSTS0_0();
         PixelShader  = compile ps_2_a PSTS0_0();
-        AlphaTestEnable		= false;
+        AlphaTestEnable = false;
     }
     pass P1
     {
@@ -257,7 +251,7 @@ technique TS1
     {
         VertexShader = compile vs_2_a VSTS1_0();
         PixelShader  = compile ps_2_a PSRegularTSX();
-        AlphaTestEnable		= false;
+        AlphaTestEnable = false;
     }
 }
 
@@ -267,7 +261,7 @@ technique TS2
     {
         VertexShader = compile vs_2_a VSTS2_0();
         PixelShader  = compile ps_2_a PSRegularTSX();
-        AlphaTestEnable		= false;
+        AlphaTestEnable = false;
     }
 }
 
@@ -277,6 +271,6 @@ technique TS3
     {
         VertexShader = compile vs_2_a VSTS3_0();
         PixelShader  = compile ps_2_a PSRegularTSX();
-        AlphaTestEnable		= false;
+        AlphaTestEnable = false;
     }
 }

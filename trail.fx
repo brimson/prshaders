@@ -53,7 +53,7 @@ struct appdata
 
 struct VS_TRAIL_OUTPUT
 {
-    float4 HPos : POSITION;
+    float4 HPos  : POSITION;
     float4 color : TEXCOORD3;
     float3 animBFactorAndLMapIntOffset : COLOR0;
     float4 lightFactorAndAlpha         : COLOR1;
@@ -73,7 +73,7 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
 
     // FADE values
     float fadeIn = saturate(age/tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.x);
-    float fadeOut = saturate((1.f - age)/tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
+    float fadeOut = saturate((1.0f - age) / tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
 
     float3 eyeVec = eyePos - input.pos;
 
@@ -96,24 +96,24 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
     float4 pc = {age*age*age, age*age, age, 1.f};
 
     // comput size of particle using the constants of the templ[input.ageFactorAndGraphIndex.y]ate (mSizeGraph)
-    float size = min(dot(tParameters.m_sizeGraph, pc), 1) * tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
+    float size = min(dot(tParameters.m_sizeGraph, pc), 1.0) * tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.w;
 
     // displace vertex
-    float4 pos = mul(float4(input.pos.xyz + size*(input.localCoords.xyz*input.texCoords.y), 1), myWV);
+    float4 pos = mul(float4(input.pos.xyz + size*(input.localCoords.xyz * input.texCoords.y), 1.0), myWV);
     Out.HPos = mul(pos, myWP);
 
-    float colorBlendFactor = min(dot(tParameters.m_colorBlendGraph, pc), 1);
+    float colorBlendFactor = min(dot(tParameters.m_colorBlendGraph, pc), 1.0);
     float3 color = colorBlendFactor * tParameters.m_color2.rgb;
     color += (1 - colorBlendFactor) * tParameters.m_color1AndLightFactor.rgb;
 
-    float alphaBlendFactor = min(dot(tParameters.m_transparencyGraph, pc), 1) * input.intensityAgeAnimBlendFactorAndAlpha[3];
+    float alphaBlendFactor = min(dot(tParameters.m_transparencyGraph, pc), 1.0) * input.intensityAgeAnimBlendFactorAndAlpha[3];
     alphaBlendFactor *= fadeFactor;
 
-    Out.color.rgb = color/2;
+    Out.color.rgb = color / 2.0;
     Out.lightFactorAndAlpha.b = alphaBlendFactor;
     Out.animBFactorAndLMapIntOffset.x = input.intensityAgeAnimBlendFactorAndAlpha[2];
 
-    float lightMapIntensity = saturate(clamp((input.pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
+    float lightMapIntensity = saturate(clamp((input.pos.y - hemiShadowAltitude) / 10.0f, 0.0f, 1.0f) + tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
     Out.animBFactorAndLMapIntOffset.yz = lightMapIntensity;
 
     // compute texcoords for trail
@@ -153,7 +153,7 @@ float4 psTrailHigh(VS_TRAIL_OUTPUT input) : COLOR
     float4 tLut = tex2D( lutSampler, input.texCoords2.xy);
 
     float4 color = lerp(tDiffuse, tDiffuse2, input.animBFactorAndLMapIntOffset.x);
-    color.rgb *= 2*input.color.rgb;
+    color.rgb *= 2.0 * input.color.rgb;
     color.rgb *= calcParticleLighting(tLut.a, input.animBFactorAndLMapIntOffset.z, input.lightFactorAndAlpha.a);
     color.a *= input.lightFactorAndAlpha.b;
 
@@ -166,17 +166,16 @@ float4 psTrailMedium(VS_TRAIL_OUTPUT input) : COLOR
     float4 tDiffuse2 = tex2D( trailDiffuseSampler2, input.texCoords1);
 
     float4 color = lerp(tDiffuse, tDiffuse2, input.animBFactorAndLMapIntOffset.x);
-    color.rgb *= 2*input.color.rgb;
-    color.rgb *= calcParticleLighting(1, input.animBFactorAndLMapIntOffset.z, input.lightFactorAndAlpha.a);
+    color.rgb *= 2.0 * input.color.rgb;
+    color.rgb *= calcParticleLighting(1.0, input.animBFactorAndLMapIntOffset.z, input.lightFactorAndAlpha.a);
     color.a *= input.lightFactorAndAlpha.b;
-
     return color;
 }
 
 float4 psTrailLow(VS_TRAIL_OUTPUT input) : COLOR
 {
     float4 color = tex2D( trailDiffuseSampler, input.texCoords0);
-    color.rgb *= 2*input.color.rgb;
+    color.rgb *= 2.0 * input.color.rgb;
     color.a *= input.lightFactorAndAlpha.b;
 
     return color;
@@ -210,7 +209,7 @@ technique TrailLow
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
+        VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailLow();
     }
 }
@@ -260,7 +259,7 @@ technique TrailHigh
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
+        VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailHigh();
     }
 }
@@ -285,7 +284,7 @@ technique TrailShowFill
         DestBlend = ONE;
         FogEnable = TRUE;
 
-         VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
+        VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailShowFill();
     }
 }

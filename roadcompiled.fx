@@ -93,7 +93,7 @@ VS2PS RoadCompiledVS(APP2VS input)
 
     float cameraDist = length(vLocalEyePos - input.Pos);
     float interpVal = saturate(cameraDist * vFadeoutValues.x - vFadeoutValues.y);
-    // wPos.y += 0.01 * (1-interpVal);
+    // wPos.y += 0.01 * (1.0 - interpVal);
     wPos.y += 0.01;
 
     outdata.Pos = mul(wPos, mWorldViewProj);

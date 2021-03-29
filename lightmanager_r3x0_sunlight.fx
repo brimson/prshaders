@@ -96,7 +96,7 @@ VS2PS_D3DXMesh vsDx9_SunLightShadowDynamicObjects(APP2VS_D3DXMesh indata)
 
     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.y = 1.0 - outdata.TexCoord0.y;
     outdata.TexCoord0.x += 0.5 / 800.0;
     outdata.TexCoord0.y += 0.5 / 600.0;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
@@ -255,7 +255,7 @@ VS2PS_D3DXMesh vsDx9_SunLightShadowStaticObjects(APP2VS_D3DXMesh indata)
 
     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.y = 1.0 - outdata.TexCoord0.y;
     outdata.TexCoord0.x += 0.000625;
     outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;

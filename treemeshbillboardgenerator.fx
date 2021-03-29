@@ -234,7 +234,7 @@ VS_OUTPUT2 spriteVertexShader
     float4 vectorMagnitude = normalize(shadowSpherePos - eyeShadowSperePos);
     float shadowFactor = vectorMagnitude * BoundingboxScaledInvGradientMag;
     shadowFactor = min(shadowFactor,1);
-    float3 shadowColorInt = ShadowColor*(1-shadowFactor);
+    float3 shadowColorInt = ShadowColor*(1.0 - shadowFactor);
     float3 color = LightColor*shadowFactor+shadowColorInt;
     Out.Diffuse =  float4(color,1.f);
 
@@ -255,12 +255,8 @@ technique trunk
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-         VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
-                                                                        worldIMatrix,
-                                                                        viewInverseMatrix,
-                                                                        lightPos,
-                                                                        eyePos);
-
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(   mvpMatrix, worldIMatrix, viewInverseMatrix,
+                                                                        lightPos, eyePos);
         PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1();
     }
 }
@@ -285,11 +281,8 @@ technique branch
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-         VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
-                                                                        worldIMatrix,
-                                                                        viewInverseMatrix,
-                                                                        lightPos,
-                                                                        eyePos);
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(   mvpMatrix, worldIMatrix, viewInverseMatrix,
+                                                                        lightPos, eyePos);
         PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1();
     }
 }
@@ -312,14 +305,10 @@ technique sprite
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-         VertexShader = compile vs_2_a spriteVertexShader(	worldViewMatrix,
-                                                             projMatrix,
-                                                            spriteScale,
-                                                            shadowSpherePoint,
-                                                            invBoundingBoxScale,
+        VertexShader = compile vs_2_a spriteVertexShader(  worldViewMatrix, projMatrix,
+                                                            spriteScale, shadowSpherePoint, invBoundingBoxScale,
                                                             boundingboxScaledInvGradientMag,
-                                                            shadowColor,
-                                                            lightColor	);
+                                                            shadowColor, lightColor);
 
 
         PixelShader = compile ps_2_a spritePixelShader();
@@ -338,11 +327,8 @@ technique alpha
         DestBlend = D3DBLEND_ZERO;
         AlphaTestEnable = false;
 
-         VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
-                                                                        worldIMatrix,
-                                                                        viewInverseMatrix,
-                                                                        lightPos,
-                                                                        eyePos);
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(mvpMatrix, worldIMatrix, viewInverseMatrix,
+                                                                    lightPos, eyePos);
         PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1Alpha();
     }
 }
@@ -361,14 +347,10 @@ technique alphaSprite
         DestBlend = D3DBLEND_ZERO;
         AlphaTestEnable = false;
 
-         VertexShader = compile vs_2_a spriteVertexShader(	worldViewMatrix,
-                                                             projMatrix,
-                                                            spriteScale,
-                                                            shadowSpherePoint,
-                                                            invBoundingBoxScale,
+        VertexShader = compile vs_2_a spriteVertexShader(   worldViewMatrix, projMatrix,
+                                                            spriteScale, shadowSpherePoint, invBoundingBoxScale,
                                                             boundingboxScaledInvGradientMag,
-                                                            shadowColor,
-                                                            lightColor	);
+                                                            shadowColor, lightColor);
 
         PixelShader = compile ps_2_a spritePixelShaderAlpha();
     }

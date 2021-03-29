@@ -7,7 +7,7 @@ VS2PS_D3DXMesh vsDx9_SpotLight(APP2VS_D3DXMesh indata)
 
     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.y = 1.0 - outdata.TexCoord0.y;
     outdata.TexCoord0.x += 0.000625;
     outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;
@@ -30,7 +30,7 @@ PS2FB_DiffSpec psDx9_SpotLightNV40(VS2PS_D3DXMesh indata)
 
     float3 lightVecN = normalize(lightVec);
     float fallOff = dot(-lightVecN, LightDir);
-    float4 conicalAtt = tex1D(sampler5bilin, 1-(fallOff*fallOff));
+    float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(viewPos.xyz-EyePos.xyz));
@@ -59,7 +59,7 @@ PS2FB_DiffSpec psDx9_SpotLight(VS2PS_D3DXMesh indata)
 
     float3 lightVecN = normalize(lightVec);
     float fallOff = dot(-lightVecN, LightDir);
-    float4 conicalAtt = tex1D(sampler5bilin, 1-(fallOff*fallOff));
+    float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(viewPos.xyz-EyePos.xyz));
@@ -94,7 +94,7 @@ PS2FB_DiffSpec psDx9_SpotLightShadowNV(VS2PS_D3DXMesh indata)
 
     float3 lightVecN = normalize(lightVec);
     float fallOff = dot(-lightVecN, LightDir);
-    float4 conicalAtt = tex1D(sampler5bilin, 1-(fallOff*fallOff));
+    float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(viewPos.xyz-EyePos.xyz));
@@ -126,7 +126,7 @@ PS2FB_DiffSpec psDx9_SpotLightShadowNV40(VS2PS_D3DXMesh indata)
 
     float3 lightVecN = normalize(lightVec);
     float fallOff = dot(-lightVecN, LightDir);
-    float4 conicalAtt = tex1D(sampler5bilin, 1-(fallOff*fallOff));
+    float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(viewPos.xyz-EyePos.xyz));
@@ -161,7 +161,7 @@ PS2FB_DiffSpec psDx9_SpotLightShadow(VS2PS_D3DXMesh indata)
 
     float3 lightVecN = normalize(lightVec);
     float fallOff = dot(-lightVecN, LightDir);
-    float4 conicalAtt = tex1D(sampler5bilin, 1-(fallOff*fallOff));
+    float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
     float3 halfVec = normalize(-LightDir.xyz + normalize(viewPos.xyz-EyePos.xyz));
@@ -186,7 +186,7 @@ VS2PS_D3DXMesh vsDx9_SpotProjector(APP2VS_D3DXMesh indata)
 
     outdata.TexCoord0.xy = outdata.Pos.xy/outdata.Pos.w;
     outdata.TexCoord0.xy = (outdata.TexCoord0.xy * 0.5) + 0.5;
-    outdata.TexCoord0.y = 1-outdata.TexCoord0.y;
+    outdata.TexCoord0.y = 1.0 - outdata.TexCoord0.y;
     outdata.TexCoord0.x += 0.000625;
     outdata.TexCoord0.y += 0.000833;
     outdata.TexCoord0.xy = outdata.TexCoord0.xy * outdata.Pos.w;

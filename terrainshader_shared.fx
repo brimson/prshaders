@@ -279,7 +279,7 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
 
 
     //tl: changed a few things with this factor:
-    // - using (1-a) is unnecessary, we can just invert the lerp in the ps instead.
+    // - using (1.0 - a) is unnecessary, we can just invert the lerp in the ps instead.
     // - saturate is unneeded because color interpolators are clamped [0,1] before the pixel shader
     // - by pre-multiplying the waterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
      outdata.BlendValueAndWater.w = (wPos.y/-3.0) + waterHeight;
@@ -290,7 +290,7 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
         float2 yPlaneTexCord = tex.zx;
         float2 zPlaneTexCord = tex.zy;
 
-        outdata.Tex3 = (yPlaneTexCord*vDetailTex.x) + vDetailTex.y;
+        outdata.Tex3 = (yPlaneTexCord * vDetailTex.x) + vDetailTex.y;
         outdata.Tex0b = yPlaneTexCord * vFarTexTiling.z;
         outdata.Tex2a = xPlaneTexCord.xy * vFarTexTiling.xy;
         outdata.Tex2a.y += vFarTexTiling.w;

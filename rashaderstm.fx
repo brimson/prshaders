@@ -160,7 +160,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
                 Out.Interpolated[__LVEC_INTER].rgb = normalize(Out.Interpolated[__LVEC_INTER].rgb);
             #endif
 
-            Out.InvDotAndLightAtt.a = 1-(saturate(dot(unpackedNormal*0.2, -Lights[0].dir)));
+            Out.InvDotAndLightAtt.a = 1.0 - (saturate(dot(unpackedNormal*0.2, -Lights[0].dir)));
             Out.InvDotAndLightAtt.b = Lights[0].attenuation;
         #else
 
@@ -181,7 +181,7 @@ VS_OUT vsStaticMesh(VS_IN indata)
                 #endif
             #endif
 
-            float invDot = 1-saturate(dot(unpackedNormal*0.2, -Lights[0].dir));
+            float invDot = 1.0 - saturate(dot(unpackedNormal*0.2, -Lights[0].dir));
             Out.InvDotAndLightAtt.rgb = skyNormal.z * StaticSkyColor * invDot;
             Out.ColorOrPointLightFog.rgb =  saturate(dot(unpackedNormal, -Lights[0].dir))*Lights[0].color;
         #endif

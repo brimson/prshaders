@@ -179,9 +179,9 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
     float4 worldPos = mul(matsEyePos, ViewInv);
 
     float3 objPos = mul(float4(worldPos.xyz, 1.0f), WorldIT);
-    float3 tanPos = float3(	dot(objPos,input.Tan),
-                            dot(objPos,binormal),
-                            dot(objPos,input.Normal));
+    float3 tanPos = float3( dot(objPos, input.Tan),
+                            dot(objPos, binormal),
+                            dot(objPos, input.Normal));
 
     float3 halfVector = normalize(normalizedTanLightVec + tanPos);
     // Compress H' in tex3... don't compress, autoclamp >0
@@ -224,7 +224,7 @@ VS_OUTPUT2 spriteVertexShader
     float4 vectorMagnitude = normalize(shadowSpherePos - eyeShadowSperePos);
     float shadowFactor = vectorMagnitude * BoundingboxScaledInvGradientMag;
     shadowFactor = min(shadowFactor,1);
-    float3 shadowColorInt = ShadowColor*(1-shadowFactor);
+    float3 shadowColorInt = ShadowColor*(1.0 - shadowFactor);
     float3 color = LightColor*shadowFactor+shadowColorInt;
     Out.Diffuse =  float4(color,1.f);
 
@@ -352,11 +352,8 @@ technique HemiAndSun
         ZFunc = LESSEQUAL;
         ZWriteEnable = TRUE;
 
-        VertexShader = compile vs_2_a vsBumpSpecularHemiAndSunPV(   mvpMatrix,
-                                                                    viewInverseMatrix,
-                                                                    lightDir,
-                                                                    heightmapSize,
-                                                                    normalOffsetScale );
+        VertexShader = compile vs_2_a vsBumpSpecularHemiAndSunPV(   mvpMatrix, viewInverseMatrix,
+                                                                    lightDir, heightmapSize, normalOffsetScale );
         PixelShader = compile ps_2_a psBumpSpecularHemiAndSunPV(skyColor, ambientColor, sunColor);
     }
 }
@@ -420,7 +417,7 @@ float4 psBumpSpecularPointLight(OUT_vsBumpSpecularPointLight indata,
     float4 realintensity = intensityuv.r + pow(intensityuv.g,36)*normalmap.a;
     realintensity *= LightColor;
 
-    float attenuation = saturate(1-dot(indata.ObjectLightVec,indata.ObjectLightVec)*AttenuationSqrInv);
+    float attenuation = saturate(1.0 - dot(indata.ObjectLightVec,indata.ObjectLightVec)*AttenuationSqrInv);
     float4 result = attenuation * realintensity;
     result.a = diffuse.a;
     return result;
@@ -460,10 +457,7 @@ technique PointLight
         MinFilter[0] = LINEAR;
         MagFilter[0] = LINEAR;
 
-        VertexShader = compile vs_2_a vsBumpSpecularPointLight( mvpMatrix,
-                                                                viewInverseMatrix,
-                                                                lightPos);
-
+        VertexShader = compile vs_2_a vsBumpSpecularPointLight(mvpMatrix, viewInverseMatrix, lightPos);
         PixelShader = compile ps_2_a psBumpSpecularPointLight(attenuationSqrInv, lightColor);
     }
 }
@@ -524,7 +518,7 @@ float4 psBumpSpecularSpotLight( OUT_vsBumpSpecularSpotLight indata,
                                 uniform float LightConeAngle) : COLOR
 {
     float offCenter = dot(normalize(indata.LightVec), indata.LightDir);
-    float conicalAtt = saturate(offCenter-(1-LightConeAngle))/LightConeAngle;
+    float conicalAtt = saturate(offCenter-(1.0 - LightConeAngle))/LightConeAngle;
 
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
     float3 expandedNormal = (normalmap.xyz - 0.5) * 2;
@@ -533,7 +527,7 @@ float4 psBumpSpecularSpotLight( OUT_vsBumpSpecularSpotLight indata,
     float2 intensityuv = float2(dot(normalizedLVec,expandedNormal), dot(indata.HalfVec,expandedNormal));
     float4 realintensity = intensityuv.r + pow(intensityuv.g,36)*normalmap.a;
     realintensity *= LightColor;
-    float radialAtt = 1-saturate(dot(indata.LightVec,indata.LightVec)*AttenuationSqrInv);
+    float radialAtt = 1.0 - saturate(dot(indata.LightVec,indata.LightVec)*AttenuationSqrInv);
     return realintensity * conicalAtt * radialAtt;
 }
 
@@ -571,9 +565,7 @@ technique SpotLight
         MinFilter[0] = LINEAR;
         MagFilter[0] = LINEAR;
 
-        VertexShader = compile vs_2_a vsBumpSpecularSpotLight(	mvpMatrix,
-                                                                viewInverseMatrix,
-                                                                lightPos, lightDir );
+        VertexShader = compile vs_2_a vsBumpSpecularSpotLight(mvpMatrix, viewInverseMatrix, lightPos, lightDir );
         PixelShader = compile ps_2_a psBumpSpecularSpotLight(attenuationSqrInv, lightColor, coneAngle);
     }
 }
@@ -640,11 +632,8 @@ technique trunk
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(   mvpMatrix,
-                                                                        worldIMatrix,
-                                                                        viewInverseMatrix,
-                                                                        lightPos,
-                                                                        eyePos);
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(   mvpMatrix, worldIMatrix, viewInverseMatrix,
+                                                                        lightPos, eyePos);
         PixelShader = compile ps_2_a bumpSpecularPixedShaderBlinn1();
     }
 }
@@ -662,14 +651,10 @@ technique sprite
         AlphaRef = 0;
         AlphaFunc = GREATER;
 
-        VertexShader = compile vs_2_a spriteVertexShader(   worldViewMatrix,
-                                                            projMatrix,
-                                                            spriteScale,
-                                                            shadowSpherePoint,
-                                                            invBoundingBoxScale,
+        VertexShader = compile vs_2_a spriteVertexShader(   worldViewMatrix, projMatrix,
+                                                            spriteScale, shadowSpherePoint, invBoundingBoxScale,
                                                             boundingboxScaledInvGradientMag,
-                                                            shadowColor,
-                                                            lightColor);
+                                                            shadowColor, lightColor);
         PixelShader = compile ps_2_a spritePixelShader();
     }
 }
