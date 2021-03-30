@@ -16,7 +16,8 @@ vs2ps_optics vsDx9_tr_opticsBlurH(APP2VS_blit input)
     float2 coord = input.TexCoord0;
     o.uv[0] = coord.xyxy;
 
-    for(int i = 1; i < 9; i++) {
+    for(int i = 1; i < 9; i++)
+    {
         o.uv[i].xy = float2(coord.x + (i * kBlurSize), coord.y);
         o.uv[i].zw = float2(coord.x - (i * kBlurSize), coord.y);
     }
@@ -34,7 +35,8 @@ vs2ps_optics vsDx9_tr_opticsBlurV(APP2VS_blit input)
     float2 coord = input.TexCoord0;
     o.uv[0] = coord.xyxy;
 
-    for(int i = 1; i < 9; i++) {
+    for(int i = 1; i < 9; i++)
+    {
         o.uv[i].xy = float2(coord.x, coord.y + (i * kBlurSize));
         o.uv[i].zw = float2(coord.x, coord.y - (i * kBlurSize));
     }

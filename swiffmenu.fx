@@ -222,7 +222,7 @@ technique Line
         VertexShader = compile vs_2_a VSLine();
         PixelShader  = NULL;
         AlphaTestEnable = false;
-        TexCoordIndex[0] =0;
+        TexCoordIndex[0] = 0;
         TextureTransformFlags[0] = Disable;
         Sampler[0] = <TexMapSamplerClamp>;
     }
