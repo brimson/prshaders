@@ -11,22 +11,22 @@ float2 sampleoffset : SAMPLEOFFSET;
 float2 fogStartAndEnd : FOGSTARTANDEND;
 float3 fogColor : FOGCOLOR;
 
-#define dSampler() AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT
-sampler sampler0 = sampler_state { Texture = (texture0); dSampler(); };
-sampler sampler1 = sampler_state { Texture = (texture1); dSampler(); };
-sampler sampler2 = sampler_state { Texture = (texture2); dSampler(); };
-sampler sampler3 = sampler_state { Texture = (texture3); dSampler(); };
-sampler sampler4 = sampler_state { Texture = (texture4); dSampler(); };
-sampler sampler5 = sampler_state { Texture = (texture5); dSampler(); };
-sampler sampler6 = sampler_state { Texture = (texture6); dSampler(); };
+#define dSampler AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT
+sampler sampler0 = sampler_state { Texture = (texture0); dSampler; };
+sampler sampler1 = sampler_state { Texture = (texture1); dSampler; };
+sampler sampler2 = sampler_state { Texture = (texture2); dSampler; };
+sampler sampler3 = sampler_state { Texture = (texture3); dSampler; };
+sampler sampler4 = sampler_state { Texture = (texture4); dSampler; };
+sampler sampler5 = sampler_state { Texture = (texture5); dSampler; };
+sampler sampler6 = sampler_state { Texture = (texture6); dSampler; };
 
-#define dSamplerBilin() AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR
-sampler sampler0bilin = sampler_state { Texture = (texture0); dSamplerBilin(); };
-sampler sampler1bilin = sampler_state { Texture = (texture1); dSamplerBilin(); };
-sampler sampler2bilin = sampler_state { Texture = (texture2); dSamplerBilin(); };
-sampler sampler3bilin = sampler_state { Texture = (texture3); dSamplerBilin(); };
-sampler sampler4bilin = sampler_state { Texture = (texture4); dSamplerBilin(); };
-sampler sampler5bilin = sampler_state { Texture = (texture5); dSamplerBilin(); };
+#define dSamplerBilin AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR
+sampler sampler0bilin = sampler_state { Texture = (texture0); dSamplerBilin; };
+sampler sampler1bilin = sampler_state { Texture = (texture1); dSamplerBilin; };
+sampler sampler2bilin = sampler_state { Texture = (texture2); dSamplerBilin; };
+sampler sampler3bilin = sampler_state { Texture = (texture3); dSamplerBilin; };
+sampler sampler4bilin = sampler_state { Texture = (texture4); dSamplerBilin; };
+sampler sampler5bilin = sampler_state { Texture = (texture5); dSamplerBilin; };
 
 float NPixels : NPIXLES = 1.0;
 float2 ScreenSize : VIEWPORTSIZE = { 800.0, 600.0 };
@@ -45,11 +45,10 @@ struct VS2PS_Quad
     float2 TexCoord0 : TEXCOORD0;
 };
 
-struct VS2PS_Quad2
+struct vs2ps_tinnitus
 {
-    float4 Pos       : POSITION;
-    float2 TexCoord0 : TEXCOORD0;
-    float2 TexCoord1 : TEXCOORD1;
+    float4 vpos  : POSITION;
+    float4 uv[5] : TEXCOORD0;
 };
 
 struct PS2FB_Combine
@@ -65,47 +64,46 @@ VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
     return outdata;
 }
 
-const float4 filterkernel[8] =
+vs2ps_tinnitus vsDx9_Tinnitus(APP2VS_Quad input)
 {
-    -1.0,  1.0, 0.0, 0.125,
-     0.0,  1.0, 0.0, 0.125,
-     1.0,  1.0, 0.0, 0.125,
-    -1.0,  0.0, 0.0, 0.125,
-     1.0,  0.0, 0.0, 0.125,
-    -1.0, -1.0, 0.0, 0.125,
-     0.0, -1.0, 0.0, 0.125,
-     1.0, -1.0, 0.0, 0.125,
-};
-
-VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)
-{
-    VS2PS_Quad2 outdata;
-    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0.0, 1.0);
-    outdata.TexCoord0 = indata.TexCoord0;
-    outdata.TexCoord1 = float2(indata.TexCoord0.x - sampleoffset.x, indata.TexCoord0.y - sampleoffset.y);
-    return outdata;
+    vs2ps_tinnitus o;
+    o.vpos = float4(input.Pos, 0.0, 1.0);
+    float2 coord = input.TexCoord0;
+    o.uv[0]    = coord.xyxy;
+    o.uv[1].xy = coord + 0.02 * float2(-1.0,  1.0);
+    o.uv[1].zw = coord + 0.02 * float2( 0.0,  1.0);
+    o.uv[2].xy = coord + 0.02 * float2( 1.0,  1.0);
+    o.uv[2].zw = coord + 0.02 * float2(-1.0,  0.0);
+    o.uv[3].xy = coord + 0.02 * float2( 1.0,  0.0);
+    o.uv[3].zw = coord + 0.02 * float2(-1.0, -1.0);
+    o.uv[4].xy = coord + 0.02 * float2( 0.0, -1.0);
+    o.uv[4].zw = coord + 0.02 * float2( 1.0, -1.0);
+    return o;
 }
 
-PS2FB_Combine psDx9_Tinnitus(VS2PS_Quad2 indata)
+PS2FB_Combine psDx9_Tinnitus(vs2ps_tinnitus input)
 {
     PS2FB_Combine outdata;
-    float4 blur;
+    float4 blur = 0.0;
 
-    for(int i=0;i<8;i++)
-        blur += filterkernel[i].w * tex2D(sampler0bilin, float2(indata.TexCoord0.x + 0.02 * filterkernel[i].x, indata.TexCoord0.y + 0.02 * filterkernel[i].y));
+    for(int i = 1; i <= 4; i++) {
+        blur += 0.125 * tex2D(sampler0bilin, input.uv[i].xy);
+        blur += 0.125 * tex2D(sampler0bilin, input.uv[i].zw);
+    }
 
-    float4 color = tex2D(sampler0bilin, indata.TexCoord0);
-    float2 tcxy = indata.TexCoord0.xy;
+    float4 color = tex2D(sampler0bilin, input.uv[0].xy);
+    float2 tcxy = input.uv[0].xy;
 
-    //parabolic function for x opacity to darken the edges, exponential function for yopacity to darken the lower part of the screen
+    // parabolic function for x opacity to darken the edges
+    // exponential function for yopacity to darken the lower part of the screen
     float darkness = max(4.0 * tcxy.x * tcxy.x - 4.0 * tcxy.x + 1.0, saturate((pow(2.5, tcxy.y) - tcxy.y / 2.0 - 1.0)));
 
-    //weight the blurred version more heavily as you go lower on the screen
+    // weight the blurred version more heavily as you go lower on the screen
     float4 finalcolor = lerp(color, blur, saturate(2.0 * (pow(4.0, tcxy.y) - tcxy.y - 1.0)));
 
-    //darken the left, right, and bottom edges of the final product
+    // darken the left, right, and bottom edges of the final product
     finalcolor = lerp(finalcolor, float4(0.0, 0.0, 0.0, 1.0), darkness);
-    float4 outcolor = float4(finalcolor.rgb,saturate(2.0 * backbufferLerpbias));
+    float4 outcolor = float4(finalcolor.rgb, saturate(2.0 * backbufferLerpbias));
     outdata.Col0 = outcolor;
     return outdata;
 }
@@ -120,8 +118,8 @@ technique Tinnitus
         DestBlend = INVSRCALPHA;
         StencilEnable = FALSE;
 
-        VertexShader = compile vs_2_a vsDx9_Tinnitus();
-        PixelShader = compile ps_2_a psDx9_Tinnitus();
+        VertexShader = compile vs_3_0 vsDx9_Tinnitus();
+        PixelShader = compile ps_3_0 psDx9_Tinnitus();
     }
 }
 
@@ -153,8 +151,8 @@ technique GlowMaterial
         StencilZFail = KEEP;
         StencilPass = KEEP;
 
-        VertexShader = compile vs_2_a vsDx9_OneTexcoord();
-        PixelShader = compile ps_2_a psDx9_GlowMaterial();
+        VertexShader = compile vs_3_0 vsDx9_OneTexcoord();
+        PixelShader = compile ps_3_0 psDx9_GlowMaterial();
     }
 }
 
@@ -167,8 +165,8 @@ technique Glow
         SrcBlend = SRCCOLOR;
         DestBlend = ONE;
 
-        VertexShader = compile vs_2_a vsDx9_OneTexcoord();
-        PixelShader = compile ps_2_a psDx9_Glow();
+        VertexShader = compile vs_3_0 vsDx9_OneTexcoord();
+        PixelShader = compile ps_3_0 psDx9_Glow();
     }
 }
 
@@ -197,7 +195,7 @@ technique Fog
         StencilZFail = KEEP;
         StencilPass = KEEP;
 
-        VertexShader = compile vs_2_a vsDx9_OneTexcoord();
-        PixelShader = compile ps_2_a psDx9_Fog();
+        VertexShader = compile vs_3_0 vsDx9_OneTexcoord();
+        PixelShader = compile ps_3_0 psDx9_Fog();
     }
 }

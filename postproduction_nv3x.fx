@@ -83,21 +83,10 @@ struct VS2PS_Quad3
     float2 TexCoord2 : TEXCOORD2;
 };
 
-struct VS2PS_Quad4
+struct vs2ps_tinnitus
 {
-    float4 Pos       : POSITION;
-    float2 TexCoord0 : TEXCOORD0;
-    float2 TexCoord1 : TEXCOORD1;
-    float2 TexCoord2 : TEXCOORD2;
-    float2 TexCoord3 : TEXCOORD3;
-};
-
-struct VS2PS_Quad5
-{
-    float4 Pos       : POSITION;
-    float2 Color0    : COLOR0;
-    float2 TexCoord0 : TEXCOORD0;
-    float2 TexCoord1 : TEXCOORD1;
+    float4 vpos  : POSITION;
+    float4 uv[5] : TEXCOORD0;
 };
 
 struct PS2FB_Combine
@@ -105,53 +94,54 @@ struct PS2FB_Combine
     float4 Col0 : COLOR0;
 };
 
-const float4 filterkernel[8] =
-{
-    -1.0,  1.0, 0.0, 0.125,
-     0.0,  1.0, 0.0, 0.125,
-     1.0,  1.0, 0.0, 0.125,
-    -1.0,  0.0, 0.0, 0.125,
-     1.0,  0.0, 0.0, 0.125,
-    -1.0, -1.0, 0.0, 0.125,
-     0.0, -1.0, 0.0, 0.125,
-     1.0, -1.0, 0.0, 0.125,
-};
-
 VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
 {
     VS2PS_Quad outdata;
-    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+    outdata.Pos = float4(indata.Pos.xy, 0.0, 1.0);
     outdata.TexCoord0 = indata.TexCoord0;
     return outdata;
 }
 
-VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)
+vs2ps_tinnitus vsDx9_Tinnitus(APP2VS_Quad input)
 {
-    VS2PS_Quad2 outdata;
-    outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-    outdata.TexCoord0 = indata.TexCoord0;
-    outdata.TexCoord1 = float2(indata.TexCoord0.x - sampleoffset.x, indata.TexCoord0.y - sampleoffset.y);
-    return outdata;
+    vs2ps_tinnitus o;
+    o.vpos = float4(input.Pos, 0.0, 1.0);
+    float2 coord = input.TexCoord0;
+    o.uv[0]    = coord.xyxy;
+    o.uv[1].xy = coord + 0.02 * float2(-1.0,  1.0);
+    o.uv[1].zw = coord + 0.02 * float2( 0.0,  1.0);
+    o.uv[2].xy = coord + 0.02 * float2( 1.0,  1.0);
+    o.uv[2].zw = coord + 0.02 * float2(-1.0,  0.0);
+    o.uv[3].xy = coord + 0.02 * float2( 1.0,  0.0);
+    o.uv[3].zw = coord + 0.02 * float2(-1.0, -1.0);
+    o.uv[4].xy = coord + 0.02 * float2( 0.0, -1.0);
+    o.uv[4].zw = coord + 0.02 * float2( 1.0, -1.0);
+    return o;
 }
 
-PS2FB_Combine psDx9_Tinnitus(VS2PS_Quad2 indata)
+PS2FB_Combine psDx9_Tinnitus(vs2ps_tinnitus input)
 {
     PS2FB_Combine outdata;
-    float4 blur = float4(0,0,0,0);
-    for(int i=0;i<8;i++)
-        blur += filterkernel[i].w * tex2D(sampler0bilin, float2(indata.TexCoord0.x + 0.02 * filterkernel[i].x, indata.TexCoord0.y + 0.02 * filterkernel[i].y));
-    float4 color = tex2D(sampler0bilin, indata.TexCoord0);
-    float2 tcxy = float2(indata.TexCoord0.x, indata.TexCoord0.y);
+    float4 blur = 0.0;
 
-    //parabolic function for x opacity to darken the edges, exponential function for yopacity to darken the lower part of the screen
-    float darkness = max(4 * tcxy.x * tcxy.x - 4 * tcxy.x + 1, saturate((pow(2.5,tcxy.y) - tcxy.y/2 - 1)));
+    for(int i = 1; i <= 4; i++) {
+        blur += 0.125 * tex2D(sampler0bilin, input.uv[i].xy);
+        blur += 0.125 * tex2D(sampler0bilin, input.uv[i].zw);
+    }
 
-    //weight the blurred version more heavily as you go lower on the screen
-    float4 finalcolor = lerp(color, blur, saturate(2 * (pow(4,tcxy.y) - tcxy.y - 1)));
+    float4 color = tex2D(sampler0bilin, input.uv[0].xy);
+    float2 tcxy = input.uv[0].xy;
 
-    //darken the left, right, and bottom edges of the final product
-    finalcolor = lerp(finalcolor, float4(0,0,0,1), darkness);
-    float4 outcolor = float4(finalcolor.rgb,saturate(2*backbufferLerpbias));
+    // parabolic function for x opacity to darken the edges
+    // exponential function for yopacity to darken the lower part of the screen
+    float darkness = max(4.0 * tcxy.x * tcxy.x - 4.0 * tcxy.x + 1.0, saturate((pow(2.5, tcxy.y) - tcxy.y / 2.0 - 1.0)));
+
+    // weight the blurred version more heavily as you go lower on the screen
+    float4 finalcolor = lerp(color, blur, saturate(2.0 * (pow(4.0, tcxy.y) - tcxy.y - 1.0)));
+
+    // darken the left, right, and bottom edges of the final product
+    finalcolor = lerp(finalcolor, float4(0.0, 0.0, 0.0, 1.0), darkness);
+    float4 outcolor = float4(finalcolor.rgb, saturate(2.0 * backbufferLerpbias));
     outdata.Col0 = outcolor;
     return outdata;
 }
@@ -166,8 +156,8 @@ technique Tinnitus
         DestBlend = INVSRCALPHA;
         StencilEnable = FALSE;
 
-        VertexShader = compile vs_2_a vsDx9_Tinnitus();
-        PixelShader = compile ps_2_a psDx9_Tinnitus();
+        VertexShader = compile vs_3_0 vsDx9_Tinnitus();
+        PixelShader = compile ps_3_0 psDx9_Tinnitus();
     }
 }
 
@@ -199,8 +189,8 @@ technique GlowMaterial
         StencilZFail = KEEP;
         StencilPass = KEEP;
 
-        VertexShader = compile vs_2_a vsDx9_OneTexcoord();
-        PixelShader = compile ps_2_a psDx9_GlowMaterial();
+        VertexShader = compile vs_3_0 vsDx9_OneTexcoord();
+        PixelShader = compile ps_3_0 psDx9_GlowMaterial();
     }
 }
 
@@ -213,17 +203,17 @@ technique Glow
         SrcBlend = SRCCOLOR;
         DestBlend = ONE;
 
-        VertexShader = compile vs_2_a vsDx9_OneTexcoord();
-        PixelShader = compile ps_2_a psDx9_Glow();
+        VertexShader = compile vs_3_0 vsDx9_OneTexcoord();
+        PixelShader = compile ps_3_0 psDx9_Glow();
     }
 }
 
 float4 psDx9_Fog(VS2PS_Quad indata) : COLOR
 {
     float3 wPos = tex2D(sampler0, indata.TexCoord0);
-    float uvCoord =  saturate((wPos.zzzz-fogStartAndEnd.r)/fogStartAndEnd.g);//fogColorAndViewDistance.a);
-    return saturate(float4(fogColor.rgb,uvCoord));
-    return tex2D(sampler1, float2(uvCoord, 0.0))*fogColor.rgbb;
+    float uvCoord =  saturate((wPos.zzzz - fogStartAndEnd.r) / fogStartAndEnd.g); // fogColorAndViewDistance.a);
+    return saturate(float4(fogColor.rgb, uvCoord));
+    return tex2D(sampler1, float2(uvCoord, 0.0)) * fogColor.rgbb;
 }
 
 // TVEffect specific...
@@ -241,13 +231,13 @@ float tvAmbient : TVAMBIENT; // = 0.15
 
 float3 tvColor : TVCOLOR;
 
-VS2PS_Quad3 vs_TVEffect( APP2VS_Quad indata )
+VS2PS_Quad3 vs_TVEffect(APP2VS_Quad indata)
 {
     VS2PS_Quad3 output;
     indata.Pos.xy = sign(indata.Pos.xy);
     output.Pos = float4(indata.Pos.xy, 0.0, 1.0);
     output.TexCoord0 = indata.Pos.xy * granularity + displacement;
-    output.TexCoord1 = float2(indata.Pos.x * 0.25 - 0.35 * sin_time_0_X, indata.Pos.y * 0.25 + 0.25 * sin_time_0_X);
+    output.TexCoord1 = indata.Pos.xy * 0.25 + float2(-0.35, 0.25) * sin_time_0_X;
     output.TexCoord2 = indata.TexCoord0;
     return output;
 }
@@ -326,8 +316,8 @@ technique TVEffect
         AlphaBlendEnable = FALSE;
         StencilEnable = FALSE;
 
-        VertexShader = compile vs_2_a vs_TVEffect();
-        PixelShader = compile ps_2_a ps_TVEffect();
+        VertexShader = compile vs_3_0 vs_TVEffect();
+        PixelShader = compile ps_3_0 ps_TVEffect();
     }
 }
 
@@ -339,8 +329,8 @@ technique TVEffect_Gradient_Tex
         AlphaBlendEnable = FALSE;
         StencilEnable = FALSE;
 
-        VertexShader = compile vs_2_a vs_TVEffect();
-        PixelShader = compile ps_2_a ps_TVEffect_Gradient_Tex();
+        VertexShader = compile vs_3_0 vs_TVEffect();
+        PixelShader = compile ps_3_0 ps_TVEffect_Gradient_Tex();
     }
 }
 
@@ -373,8 +363,8 @@ technique WaveDistortion
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
 
-        VertexShader = compile vs_2_a vs_WaveDistortion();
-        PixelShader = compile ps_2_a ps_WaveDistortion();
+        VertexShader = compile vs_3_0 vs_WaveDistortion();
+        PixelShader = compile ps_3_0 ps_WaveDistortion();
     }
 }
 
@@ -410,7 +400,7 @@ technique Flashbang
         DestBlend = INVSRCALPHA;
         StencilEnable = FALSE;
 
-        VertexShader = compile vs_2_a vsDx9_Flashbang();
-        PixelShader = compile ps_2_a psDx9_Flashbang();
+        VertexShader = compile vs_3_0 vsDx9_Flashbang();
+        PixelShader = compile ps_3_0 psDx9_Flashbang();
     }
 }

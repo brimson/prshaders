@@ -1,8 +1,7 @@
 
 struct vs2ps_optics {
-    float4 vpos    : POSITION;
-    float2 uv_a    : TEXCOORD0;
-    float4 uv_b[8] : TEXCOORD1;
+    float4 vpos  : POSITION;
+    float4 uv[9] : TEXCOORD0;
 };
 
 vs2ps_optics vsDx9_tr_opticsBlurH(APP2VS_blit input) {
@@ -13,56 +12,55 @@ vs2ps_optics vsDx9_tr_opticsBlurH(APP2VS_blit input) {
     o.vpos = float4(input.Pos.xy, 0.0, 1.0);
 
     float2 coord = input.TexCoord0;
-    o.uv_a = coord;
+    o.uv[0] = coord.xyxy;
 
     for(int i = 1; i < 9; i++) {
-        o.uv_b[i - 1].xy = float2(coord.x + (i * kBlurSize), coord.y);
-        o.uv_b[i - 1].zw = float2(coord.x - (i * kBlurSize), coord.y);
+        o.uv[i].xy = float2(coord.x + (i * kBlurSize), coord.y);
+        o.uv[i].zw = float2(coord.x - (i * kBlurSize), coord.y);
     }
 
     return o;
 }
 
 vs2ps_optics vsDx9_tr_opticsBlurV(APP2VS_blit input) {
-    float kAspectRatio = highPassGate / 1000.0f; // floor() isn't used for perfomance reasons
     float kBlurSize = 0.0033333333; // 1/300 - no ghosting for vertical resolutions up to 1200 pixels
 
     vs2ps_optics o;
     o.vpos = float4(input.Pos.xy, 0.0, 1.0);
 
     float2 coord = input.TexCoord0;
-    o.uv_a = coord;
+    o.uv[0] = coord.xyxy;
 
     for(int i = 1; i < 9; i++) {
-        o.uv_b[i - 1].xy = float2(coord.x, coord.y + (i * kBlurSize));
-        o.uv_b[i - 1].zw = float2(coord.x, coord.y - (i * kBlurSize));
+        o.uv[i].xy = float2(coord.x, coord.y + (i * kBlurSize));
+        o.uv[i].zw = float2(coord.x, coord.y - (i * kBlurSize));
     }
 
     return o;
 }
 
-const float tr_gauss[9] = {
+static const float tr_gauss[9] = {
     0.087544737, 0.085811235, 0.080813978,
     0.073123511, 0.063570527, 0.053098567,
     0.042612598, 0.032856512, 0.024340702
 };
 
 float4 psDx9_tr_opticsBlurH(vs2ps_optics input) : COLOR {
-    float4 color = tex2D(sampler0point, input.uv_a) * tr_gauss[0];
+    float4 color = tex2D(sampler0bilin, input.uv[0].xy) * tr_gauss[0];
     for (int i = 1; i < 9; i++)
     {
-        color += tex2D(sampler0bilin, input.uv_b[i - 1].xy) * tr_gauss[i];
-        color += tex2D(sampler0bilin, input.uv_b[i - 1].zw) * tr_gauss[i];
+        color += tex2D(sampler0bilin, input.uv[i].xy) * tr_gauss[i];
+        color += tex2D(sampler0bilin, input.uv[i].zw) * tr_gauss[i];
     }
     return color;
 }
 
 float4 psDx9_tr_opticsBlurV(vs2ps_optics input) : COLOR {
-    float4 color = tex2D(sampler0point, input.uv_a) * tr_gauss[0];
+    float4 color = tex2D(sampler0bilin, input.uv[0].xy) * tr_gauss[0];
     for (int i = 1; i < 9; i++)
     {
-        color += tex2D(sampler0bilin, input.uv_b[i - 1].xy) * tr_gauss[i];
-        color += tex2D(sampler0bilin, input.uv_b[i - 1].zw) * tr_gauss[i];
+        color += tex2D(sampler0bilin, input.uv[i].xy) * tr_gauss[i];
+        color += tex2D(sampler0bilin, input.uv[i].zw) * tr_gauss[i];
     }
     return color;
 }
