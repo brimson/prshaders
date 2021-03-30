@@ -289,7 +289,7 @@ float4 psBumpSpecularHemiAndSunPV(  OUT_vsBumpSpecularHemiAndSunPV indata,
                                     uniform float4 SunColor ) : COLOR
 {
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
-    float3 expandedNormal = (normalmap.xyz - 0.5) * 2;
+    float3 expandedNormal = (normalmap.xyz * 2.0) - 1.0;
     float4 diffuse = tex2D(sampler3, indata.NormalMap);
     float2 intensityuv = float2(dot(indata.LightVec,expandedNormal), dot(indata.HalfVec,expandedNormal));
 
@@ -409,7 +409,7 @@ float4 psBumpSpecularPointLight(OUT_vsBumpSpecularPointLight indata,
                                 uniform float4 LightColor) : COLOR
 {
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
-    float3 expandedNormal = (normalmap.xyz - 0.5) * 2;
+    float3 expandedNormal = (normalmap.xyz * 2.0) - 1.0;
     float4 diffuse = tex2D(sampler3, indata.NormalMap);
 
     float3 normalizedLVec = normalize(indata.LightVec);
@@ -521,7 +521,7 @@ float4 psBumpSpecularSpotLight( OUT_vsBumpSpecularSpotLight indata,
     float conicalAtt = saturate(offCenter-(1.0 - LightConeAngle))/LightConeAngle;
 
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
-    float3 expandedNormal = (normalmap.xyz - 0.5) * 2;
+    float3 expandedNormal = (normalmap.xyz * 2.0) - 1.0;
 
     float3 normalizedLVec = normalize(indata.LightVec);
     float2 intensityuv = float2(dot(normalizedLVec,expandedNormal), dot(indata.HalfVec,expandedNormal));

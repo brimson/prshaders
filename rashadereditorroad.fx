@@ -54,8 +54,9 @@ string reqVertexElement[] =
     "TBasePacked2D",
 };
 
-VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
-                            float2 tex0 : TEXCOORD0)
+VS_OUTPUT basicVertexShader(
+    float4 inPos: POSITION0,
+    float2 tex0 : TEXCOORD0)
 {
     VS_OUTPUT Out;
 

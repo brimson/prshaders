@@ -113,7 +113,7 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
     Out.lightFactorAndAlpha.b = alphaBlendFactor;
     Out.animBFactorAndLMapIntOffset.x = input.intensityAgeAnimBlendFactorAndAlpha[2];
 
-    float lightMapIntensity = saturate(clamp((input.pos.y - hemiShadowAltitude) / 10.0f, 0.0f, 1.0f) + tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
+    float lightMapIntensity = saturate(saturate((input.pos.y - hemiShadowAltitude) / 10.0f) + tParameters.m_uvRangeLMapIntensiyAndParticleMaxSize.z);
     Out.animBFactorAndLMapIntOffset.yz = lightMapIntensity;
 
     // compute texcoords for trail

@@ -70,9 +70,10 @@ string reqVertexElement[] =
     "TDetailPacked2D"
 };
 
-VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
-                            float2 tex0 : TEXCOORD0,
-                            float2 tex1: TEXCOORD1)
+VS_OUTPUT basicVertexShader(
+    float4 inPos: POSITION0,
+    float2 tex0 : TEXCOORD0,
+    float2 tex1: TEXCOORD1)
 {
     VS_OUTPUT Out;
 

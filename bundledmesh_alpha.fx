@@ -69,6 +69,7 @@ VS_OUTPUT_AlphaEnvMap vsAlphaEnvMap(appdata input, uniform float4x4 ViewProj)
     Out.TanToCubeSpace[2].x = dot(mOneBoneSkinning[IndexArray[0]][0].xyz, TanToObjectBasis[2]);
     Out.TanToCubeSpace[2].y = dot(mOneBoneSkinning[IndexArray[0]][1].xyz, TanToObjectBasis[2]);
     Out.TanToCubeSpace[2].z = dot(mOneBoneSkinning[IndexArray[0]][2].xyz, TanToObjectBasis[2]);
+
     // Transform eye pos to tangent space
     Out.EyeVecAndReflection.xyz = Pos - eyePos.xyz;
     Out.EyeVecAndReflection.w = eyePos.w;
@@ -76,26 +77,28 @@ VS_OUTPUT_AlphaEnvMap vsAlphaEnvMap(appdata input, uniform float4x4 ViewProj)
     return Out;
 }
 
-float4 psAlphaEnvMap(VS_OUTPUT_AlphaEnvMap indata) : COLOR
-{
+float4 psAlphaEnvMap(VS_OUTPUT_AlphaEnvMap indata) : COLOR {
     float4 accumLight = tex2Dproj(sampler1, indata.TexPos);
+
     float4 outCol;
     outCol = tex2D(sampler0, indata.DiffuseMap);
     outCol.rgb *= accumLight.rgb;
+
     float4 normalmap = tex2D(sampler2, indata.NormalMap);
     float3 expandedNormal = (normalmap.xyz * 2.0) - 1.0;
     float3 worldNormal;
     worldNormal.x = dot(indata.TanToCubeSpace[0], expandedNormal);
     worldNormal.y = dot(indata.TanToCubeSpace[1], expandedNormal);
     worldNormal.z = dot(indata.TanToCubeSpace[2], expandedNormal);
+
     float3 lookup = reflect(normalize(indata.EyeVecAndReflection.xyz),normalize(worldNormal));
     float3 envmapColor = texCUBE(samplerCube3,lookup)*normalmap.a*indata.EyeVecAndReflection.w;
     outCol.rgb += accumLight.a + envmapColor;
+
     return outCol;
 }
 
-VS_OUTPUT_AlphaScope vsAlphaScope(appdata input, uniform float4x4 ViewProj)
-{
+VS_OUTPUT_AlphaScope vsAlphaScope(appdata input, uniform float4x4 ViewProj) {
     VS_OUTPUT_AlphaScope Out;
 
     // Compensate for lack of UBYTE4 on Geforce3

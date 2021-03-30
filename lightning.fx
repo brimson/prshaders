@@ -40,7 +40,7 @@ VSOUT vsLightning(VSINPUT input)
 float4 psLightning(VSOUT input) : COLOR
 {
     float4 texCol = tex2D(sampler0, input.TexCoords);
-    return float4(texCol.rgb * lightningColor.rgb, texCol.a * lightningColor.a * input.Color.a);
+    return texCol * lightningColor * float4(1.0, 1.0, 1.0, input.Color.a);
 }
 
 technique Lightning

@@ -27,8 +27,7 @@ string reqVertexElement[] =
     "TBase2D"
 };
 
-VS_OUTPUT basicVertexShader(float3 inPos: POSITION0,
-                            float2 tex0 : TEXCOORD0)
+VS_OUTPUT basicVertexShader(float3 inPos: POSITION0, float2 tex0 : TEXCOORD0)
 {
     VS_OUTPUT Out;
     Out.Pos  = mul(float4(inPos, 1.0), mul(World, ViewProjection));

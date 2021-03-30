@@ -19,7 +19,6 @@ struct PS2FB
     float4 Col : COLOR;
 };
 
-
 VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
 {
     VS2PS outdata;

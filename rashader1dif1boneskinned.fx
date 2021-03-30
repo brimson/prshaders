@@ -42,9 +42,10 @@ string reqVertexElement[] =
     "Bone4Idcs"
 };
 
-VS_OUTPUT basicVertexShader(float3 pos  : POSITION0;
-                            float2 tex0 : TEXCOORD0;
-                            float4 blendIndices : BLENDINDICES;)
+VS_OUTPUT basicVertexShader(
+    float3 pos  : POSITION0;
+    float2 tex0 : TEXCOORD0;
+    float4 blendIndices : BLENDINDICES;)
 {
     VS_OUTPUT Out;
 

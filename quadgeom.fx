@@ -17,8 +17,8 @@ VS2PS vsFFP(APP2VS indata)
 {
     VS2PS outdata;
     outdata.Pos. = float4(indata.Pos.xy, 0.0f, 1.0f);
-    outdata.Tex.x = 0.5f * (indata.Pos.x + 1.0f);
-    outdata.Tex.y = 1.0f - (0.5f * (indata.Pos.y + 1.0f));
+    outdata.Tex.x = indata.Pos.x * 0.5 + 0.5;
+    outdata.Tex.y = 1.0f - (indata.Pos.y * 0.5 + 0.5);
     return outdata;
 }
 

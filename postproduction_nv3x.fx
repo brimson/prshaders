@@ -208,14 +208,6 @@ technique Glow
     }
 }
 
-float4 psDx9_Fog(VS2PS_Quad indata) : COLOR
-{
-    float3 wPos = tex2D(sampler0, indata.TexCoord0);
-    float uvCoord =  saturate((wPos.zzzz - fogStartAndEnd.r) / fogStartAndEnd.g); // fogColorAndViewDistance.a);
-    return saturate(float4(fogColor.rgb, uvCoord));
-    return tex2D(sampler1, float2(uvCoord, 0.0)) * fogColor.rgbb;
-}
-
 // TVEffect specific...
 
 float time_0_X : FRACTIME;

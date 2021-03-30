@@ -3,7 +3,6 @@
 float4x4 mvpMatrix : WorldViewProjection;// : register(vs_1_1, c0);
 float4x4 worldIMatrix : WorldI;// : register(vs_1_1, c4);
 float4x4 viewInverseMatrix : ViewI; //: register(vs_1_1, c8);
-//float4x3 mOneBoneSkinning[26]: matONEBONESKINNING; //: register(vs_1_1, c15);
 
 // Sprite parameters
 float4x4 worldViewMatrix : WorldView;
@@ -50,8 +49,6 @@ float4 lightPos : LightPosition
     string Space = "World";
 > = {0.0f, 0.0f, 1.0f, 1.f};
 
-
-
 struct appdata
 {
     float4 Pos       : POSITION;
@@ -90,7 +87,6 @@ struct VS_OUTPUT2
 sampler diffuseSampler = sampler_state
 {
     Texture = <diffuseTexture>;
-    //Target = Texture2D;
     MinFilter = Linear;
     MagFilter = Linear;
     AddressU = Wrap;
@@ -100,7 +96,6 @@ sampler diffuseSampler = sampler_state
 sampler normalSampler = sampler_state
 {
     Texture = <normalTexture>;
-    //Target = Texture2D;
     MinFilter = Linear;
     MagFilter = Linear;
     MipFilter = Linear;
@@ -110,7 +105,6 @@ sampler normalSampler = sampler_state
 
 sampler dummySampler = sampler_state
 {
-    //Target = Texture2D;
     MinFilter = Linear;
     MagFilter = Linear;
     AddressU = Clamp;
@@ -120,7 +114,6 @@ sampler dummySampler = sampler_state
 sampler colorLUTSampler = sampler_state
 {
     Texture = <colorLUT>;
-    //Target = Texture2D;
     MinFilter = Linear;
     MagFilter = Linear;
     AddressU = Clamp;
@@ -151,7 +144,7 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
-     Out.HPos = mul(input.Pos, WorldViewProj);
+    Out.HPos = mul(input.Pos, WorldViewProj);
 
     // Cross product to create BiNormal
     float3 binormal = cross(input.Tan, input.Normal);
@@ -169,8 +162,8 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
     // TANGENT SPACE LIGHT
     // This way of geting the tangent space data changes the coordinate system
     float3 tanLightVec = float3(dot(-normalizedLightVec, input.Tan),
-                    dot(-normalizedLightVec, binormal),
-                    dot(-normalizedLightVec, input.Normal));
+                                dot(-normalizedLightVec, binormal),
+                                dot(-normalizedLightVec, input.Normal));
 
     // Compress L' in tex2... don't compress, autoclamp >0
     float3 normalizedTanLightVec = normalize(tanLightVec);
@@ -191,7 +184,6 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1
     Out.HalfVec = float4((0.5f + -halfVector * 0.5f).xyz, 1.0f);
     float color = 0.8f + max(0.0f, dot(input.Normal, normalizedLightVec));
     Out.Diffuse = float4(color, color, color, 1.0f);
-
 
     return Out;
 }
@@ -224,7 +216,7 @@ VS_OUTPUT2 spriteVertexShader
     VS_OUTPUT2 Out = (VS_OUTPUT2)0;
     float4 pos =  mul(input.Pos, WorldView);
     float4 scaledPos = float4(float2(input.Width_height.xy * SpriteScale.xy), 0, 0) + (pos);
-     Out.HPos = mul(scaledPos, Proj);
+    Out.HPos = mul(scaledPos, Proj);
     Out.TexCoord = input.TexCoord;
 
     // lighting calc
@@ -265,17 +257,13 @@ technique branch
 {
     pass p0
     {
-
         ZEnable = true;
-        //ZWriteEnable = true;
         ZWriteEnable = false;
-        //FillMode = WIREFRAME;
         ColorWriteEnable = (colorWriteEnable);
         CullMode = NONE;
         AlphaBlendEnable = true;
         SrcBlend = D3DBLEND_SRCALPHA;
         DestBlend = D3DBLEND_INVSRCALPHA;
-
 
         AlphaTestEnable = false;
         AlphaRef = 0;
@@ -291,12 +279,8 @@ technique sprite
 {
     pass p0
     {
-
         ZEnable = true;
-        //ZEnable = false;
         ZWriteEnable = false;
-        //ZWriteEnable = false;
-        //FillMode = WIREFRAME;
         CullMode = NONE;
         AlphaBlendEnable = true;
         SrcBlend = D3DBLEND_SRCALPHA;
@@ -309,8 +293,6 @@ technique sprite
                                                             spriteScale, shadowSpherePoint, invBoundingBoxScale,
                                                             boundingboxScaledInvGradientMag,
                                                             shadowColor, lightColor);
-
-
         PixelShader = compile ps_2_a spritePixelShader();
     }
 }
@@ -338,7 +320,6 @@ technique alphaSprite
 {
     pass p0
     {
-
         ColorWriteEnable = (colorWriteEnable);
         AlphaBlendEnable = true;
         CullMode = NONE;
@@ -351,7 +332,6 @@ technique alphaSprite
                                                             spriteScale, shadowSpherePoint, invBoundingBoxScale,
                                                             boundingboxScaledInvGradientMag,
                                                             shadowColor, lightColor);
-
         PixelShader = compile ps_2_a spritePixelShaderAlpha();
     }
 }

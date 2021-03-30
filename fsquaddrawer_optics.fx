@@ -1,10 +1,12 @@
 
-struct vs2ps_optics {
+struct vs2ps_optics
+{
     float4 vpos  : POSITION;
     float4 uv[9] : TEXCOORD0;
 };
 
-vs2ps_optics vsDx9_tr_opticsBlurH(APP2VS_blit input) {
+vs2ps_optics vsDx9_tr_opticsBlurH(APP2VS_blit input)
+{
     float kAspectRatio = highPassGate / 1000.0f; // floor() isn't used for perfomance reasons
     float kBlurSize = 0.0033333333 / kAspectRatio;
 
@@ -22,7 +24,8 @@ vs2ps_optics vsDx9_tr_opticsBlurH(APP2VS_blit input) {
     return o;
 }
 
-vs2ps_optics vsDx9_tr_opticsBlurV(APP2VS_blit input) {
+vs2ps_optics vsDx9_tr_opticsBlurV(APP2VS_blit input)
+{
     float kBlurSize = 0.0033333333; // 1/300 - no ghosting for vertical resolutions up to 1200 pixels
 
     vs2ps_optics o;
@@ -39,13 +42,15 @@ vs2ps_optics vsDx9_tr_opticsBlurV(APP2VS_blit input) {
     return o;
 }
 
-static const float tr_gauss[9] = {
+static const float tr_gauss[9] =
+{
     0.087544737, 0.085811235, 0.080813978,
     0.073123511, 0.063570527, 0.053098567,
     0.042612598, 0.032856512, 0.024340702
 };
 
-float4 psDx9_tr_opticsBlurH(vs2ps_optics input) : COLOR {
+float4 psDx9_tr_opticsBlurH(vs2ps_optics input) : COLOR
+{
     float4 color = tex2D(sampler0bilin, input.uv[0].xy) * tr_gauss[0];
     for (int i = 1; i < 9; i++)
     {
@@ -55,7 +60,8 @@ float4 psDx9_tr_opticsBlurH(vs2ps_optics input) : COLOR {
     return color;
 }
 
-float4 psDx9_tr_opticsBlurV(vs2ps_optics input) : COLOR {
+float4 psDx9_tr_opticsBlurV(vs2ps_optics input) : COLOR
+{
     float4 color = tex2D(sampler0bilin, input.uv[0].xy) * tr_gauss[0];
     for (int i = 1; i < 9; i++)
     {
@@ -65,7 +71,8 @@ float4 psDx9_tr_opticsBlurV(vs2ps_optics input) : COLOR {
     return color;
 }
 
-float4 psDx9_tr_opticsNoBlurCircle(VS2PS_tr_blit indata) : COLOR {
+float4 psDx9_tr_opticsNoBlurCircle(VS2PS_tr_blit indata) : COLOR
+{
     float aspectRatio = highPassGate / 1000.0f; // aspect ratio (1.333 for 4:3) (floor() isn't used for perfomance reasons)
     float blurAmountMod = frac(highPassGate) / 0.9; // used for the fade-in effect
 

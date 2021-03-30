@@ -28,14 +28,11 @@ sampler diffuseSampler = sampler_state
     AddressV = Wrap;
 };
 
-VS2PS VShader(APP2VS indata,
-    uniform float4x4 wvp)
+VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
 {
     VS2PS outdata;
-
     outdata.HPos = mul(float4(indata.Pos.xyz, 1.0f), wvp);
     outdata.Tex0 = indata.Tex0;
-
     return outdata;
 }
 

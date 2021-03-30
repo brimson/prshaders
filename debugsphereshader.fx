@@ -48,11 +48,12 @@ float3 Diffuse(float3 Normal, uniform float4 lhtDir)
     return (CosTheta); // propogate float result to vector
 }
 
-VS2PS VShader(  APP2VS indata,
-                uniform float4x4 wvp,
-                uniform float4 materialAmbient,
-                uniform float4 materialDiffuse,
-                uniform float4 lhtDir)
+VS2PS VShader(
+    APP2VS indata,
+    uniform float4x4 wvp,
+    uniform float4 materialAmbient,
+    uniform float4 materialDiffuse,
+    uniform float4 lhtDir)
 {
     VS2PS outdata;
 

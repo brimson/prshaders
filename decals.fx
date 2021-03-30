@@ -4,10 +4,10 @@
 #include "shaders/RaCommon.fx"
 
 // UNIFORM INPUTS
-float4x4 worldViewProjection : WorldViewProjection;
-float4x3 instanceTransformations[10]: InstanceTransformations;
-float4x4 shadowTransformations[10] : ShadowTransformations;
-float4 shadowViewPortMaps[10] : ShadowViewPortMaps;
+float4x4 worldViewProjection         : WorldViewProjection;
+float4x3 instanceTransformations[10] : InstanceTransformations;
+float4x4 shadowTransformations[10]   : ShadowTransformations;
+float4 shadowViewPortMaps[10]        : ShadowViewPortMaps;
 
 float4 ambientColor : AmbientColor;
 float4 sunColor : SunColor;
@@ -84,11 +84,10 @@ OUT_vsDecal vsDecal(appdata input)
 
     float alpha = 1.0f - saturate((Out.HPos.z - decalFadeDistanceAndInterval.x)/decalFadeDistanceAndInterval.y);
     alpha *= input.TexCoordsInstanceIndexAndAlpha.w;
+
     Out.Alpha = alpha;
     Out.Color = input.Color;
-
     Out.Texture0 = input.TexCoordsInstanceIndexAndAlpha.xy;
-
     Out.Fog = calcFog(Out.HPos.w);
 
     return Out;
@@ -106,17 +105,14 @@ OUT_vsDecalShadowed vsDecalShadowed(appdata input)
     float3 worldNorm = mul(input.Normal.xyz, (float3x3)instanceTransformations[index]);
     Out.Diffuse = saturate(dot(worldNorm, -sunDirection)) * sunColor;
 
-    float3 color = input.Color;
     float alpha = 1.0f - saturate((Out.HPos.z - decalFadeDistanceAndInterval.x)/decalFadeDistanceAndInterval.y);
     alpha *= input.TexCoordsInstanceIndexAndAlpha.w;
+
     Out.Alpha = alpha;
-
-    Out.Color = color;
-
+    Out.Color = input.Color;
     Out.ViewPortMap = shadowViewPortMaps[index];
     Out.TexShadow =  mul(float4(Pos, 1.0), shadowTransformations[index]);
     Out.TexShadow.z -= 0.007;
-
     Out.Texture0 = input.TexCoordsInstanceIndexAndAlpha.xy;
     Out.Fog = calcFog(Out.HPos.w);
 
@@ -135,7 +131,6 @@ float4 psDecal(OUT_vsDecal indata) : COLOR
 float4 psDecalShadowed(OUT_vsDecalShadowed indata) : COLOR
 {
     float2 texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
-    float4 samples;
     float dirShadow = 1.0;
 
     float4 outColor = tex2D(sampler0, indata.Texture0);

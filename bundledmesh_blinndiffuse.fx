@@ -1,8 +1,9 @@
 
-VS_OUTPUT bumpSpecularVertexShaderBlinn1(   appdata input,
-                                            uniform float4x4 ViewProj,
-                                            uniform float4x4 ViewInv,
-                                            uniform float4 LightPos)
+VS_OUTPUT bumpSpecularVertexShaderBlinn1(
+    appdata input,
+    uniform float4x4 ViewProj,
+    uniform float4x4 ViewInv,
+    uniform float4 LightPos)
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
@@ -51,8 +52,8 @@ float4 bumpSpecularPixelShaderBlinn1(VS_OUTPUT input) : COLOR
     float4 specular = float4(1, 1, 1, 1);
 
     float4 normalmap = tex2D(normalSampler, input.NormalMap);
-    float u = dot(input.LightVec, (input.NormalMap - 0.5) * 2);
-    float v = dot(input.HalfVec, (input.NormalMap - 0.5) * 2);
+    float u = dot(input.LightVec, (input.NormalMap * 2.0) - 1.0);
+    float v = dot(input.HalfVec, (input.NormalMap * 2.0) - 1.0);
     float4 gloss = tex2D(diffuseSampler, float2(u,v));
     float4 diffusemap = tex2D(diffuseSampler, input.DiffMap);
 
@@ -64,13 +65,11 @@ float4 bumpSpecularPixelShaderBlinn1(VS_OUTPUT input) : COLOR
     return outColor;
 }
 
-VS_OUTPUT20 bumpSpecularVertexShaderBlinn20
-(
+VS_OUTPUT20 bumpSpecularVertexShaderBlinn20(
     appdata input,
     uniform float4x4 ViewProj,
     uniform float4x4 ViewInv,
-    uniform float4 LightPos
-)
+    uniform float4 LightPos)
 {
     VS_OUTPUT20 Out = (VS_OUTPUT20)0;
 
@@ -112,44 +111,37 @@ VS_OUTPUT20 bumpSpecularVertexShaderBlinn20
 }
 
 
-float4 PShade2(	VS_OUTPUT20 i) : COLOR
+float4 PShade2(VS_OUTPUT20 i) : COLOR
 {
-    float4    cosang, tDiffuse, tNormal, col, tShadow;
-    float3    tLight;
+    float4 cosang, tDiffuse, tNormal, col, tShadow;
+    float3 tLight;
 
     // Sample diffuse texture and Normal map
-    tDiffuse = tex2D( diffuseSampler, i.Tex0 );
+    tDiffuse = tex2D(diffuseSampler, i.Tex0 );
 
-    // sample tLight  (_bx2 = 2 * source � 1)
-    tNormal = 2.0 * tex2D( normalSampler, i.Tex0) - 1.0;
+    // sample tLight
+    tNormal = 2.0 * tex2D(normalSampler, i.Tex0) - 1.0;
     tLight = 2.0 * i.LightVec - 1.0;
 
     // DP Lighting in tangent space (where normal map is based)
     // Modulate with Diffuse texture
     col = dot(tNormal.xyz, tLight) * tDiffuse;
 
-    // N.H for specular term
-    cosang = dot(tNormal.xyz, i.HalfVec);
-
-    // Raise to a power for falloff
-    cosang = pow(cosang, 32) * tNormal.w; // try changing the power to 255!
-
-    // Sample shadow texture
-    tShadow = tex2D(sampler3, i.Tex0);
+    cosang = dot(tNormal.xyz, i.HalfVec); // N.H for specular term
+    cosang = pow(cosang, 32) * tNormal.w; // Raise to a power for falloff - try changing the power to 255!
+    tShadow = tex2D(sampler3, i.Tex0); // Sample shadow texture
 
     // Add to diffuse lit texture value
     float4 res = (col  + cosang)*tShadow;
-    return float4(res.xyz,tDiffuse.w);
+    return float4(res.xyz, tDiffuse.w);
 }
 
-VS_OUTPUT2 diffuseVertexShader
-(
+VS_OUTPUT2 diffuseVertexShader(
     appdata input,
     uniform float4x4 ViewProj,
     uniform float4x4 ViewInv,
     uniform float4 LightPos,
-    uniform float4 EyePos
-)
+    uniform float4 EyePos)
 {
     VS_OUTPUT2 Out = (VS_OUTPUT2)0;
 
@@ -167,10 +159,12 @@ VS_OUTPUT2 diffuseVertexShader
     // Pass-through texcoords
     Out.TexCoord = input.TexCoord;
 
-    // Need to calculate the WorldI based on each matBone skinning world matrix
-    // There must be a more efficient way to do this...
-    // Inverse is simplified to M-1 = Rt * T,
-    // where Rt is the transpose of the rotaional part and T is the translation
+    /*
+        Need to calculate the WorldI based on each matBone skinning world matrix
+        There must be a more efficient way to do this...
+        Inverse is simplified to M-1 = Rt * T,
+        where Rt is the transpose of the rotaional part and T is the translation
+    */
     float4x4 worldI;
     float3x3 R;
     R[0] = float3(mOneBoneSkinning[IndexArray[0]][0].xyz);
@@ -181,7 +175,7 @@ VS_OUTPUT2 diffuseVertexShader
     worldI[0] = float4(Rtranspose[0].xyz,T.x);
     worldI[1] = float4(Rtranspose[1].xyz,T.y);
     worldI[2] = float4(Rtranspose[2].xyz,T.z);
-    worldI[3] = float4(0.0,0.0,0.0,1.0);
+    worldI[3] = float4(0.0, 0.0, 0.0, 1.0);
 
     // Transform Light pos to Object space
     float3 matsLightDir = float3(0.2, 0.8, -0.2);
