@@ -182,7 +182,7 @@ Hi_VS2PS_FullDetail Hi_VS_FullDetail(Shared_APP2VS_Default indata)
         outdata.BlendValueAndFade.w = interpVal;
     #elif MIDTERRAIN
         //tl: optimized so we can do more advanced lerp in same number of instructions
-        //    factors are 2c and (2-2c) which equals a lerp()*2
+        //    factors are 2c and (2-2c) which equals a lerp() * 2
         //    Don't use w, it's harder to access from ps1.4
         outdata.BlendValueAndFade.xz = interpVal * float2(2, -2) + float2(0, 2);
     #endif
@@ -349,7 +349,7 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
         outdata.BlendValueAndFade.w = interpVal;
     #else
         //tl: optimized so we can do more advanced lerp in same number of instructions
-        //    factors are 2c and (2-2c) which equals a lerp()*2
+        //    factors are 2c and (2-2c) which equals a lerp() * 2
         //    Don't use w, it's harder to access from ps1.4
         //    outdata.BlendValueAndFade.xz = interpVal * float2(2, -2) + float2(0, 2);
         outdata.BlendValueAndFade.xz = interpVal * float2(1, -2) + float2(1, 2);
@@ -522,7 +522,7 @@ Hi_VS2PS_FullDetailWithEnvMap Hi_VS_FullDetailWithEnvMap(Shared_APP2VS_Default i
         outdata.BlendValueAndFade.w = interpVal;
     #elif MIDTERRAIN
         //tl: optimized so we can do more advanced lerp in same number of instructions
-        //    factors are 2c and (2-2c) which equals a lerp()*2
+        //    factors are 2c and (2-2c) which equals a lerp() * 2
         //    Don't use w, it's harder to access from ps1.4
         outdata.BlendValueAndFade.xz = interpVal * float2(2, -2) + float2(0, 2);
     #endif

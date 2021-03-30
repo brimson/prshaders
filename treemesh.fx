@@ -257,7 +257,7 @@ OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
 
     // Hemi lookup values
     float3 AlmostNormal = input.Normal.xyz;
-    Out.GroundUVAndLerp.xy = (input.Pos +(HeightmapSize/2) + AlmostNormal*1).xz / HeightmapSize;
+    Out.GroundUVAndLerp.xy = (input.Pos +(HeightmapSize/2) + AlmostNormal).xz / HeightmapSize;
     Out.GroundUVAndLerp.z = (AlmostNormal.y+1)/2;
 
     // Cross product to create BiNormal

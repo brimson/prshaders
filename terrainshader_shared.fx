@@ -44,7 +44,7 @@ void geoMorphPosition(inout float4 wPos, in float4 MorphDelta, in float morphDel
     float3 camVec = vCamerapos.xwz-wPos.xwz;
     float cameraDist = dot(camVec, camVec);
     interpVal = saturate(cameraDist * vNearFarMorphLimits.x - vNearFarMorphLimits.y);
-    yDelta = (dot(vMorphDeltaSelector, MorphDelta) * interpVal) + dot(vMorphDeltaAdder[morphDeltaAdderSelector*256], MorphDelta);
+    yDelta = (dot(vMorphDeltaSelector, MorphDelta) * interpVal) + dot(vMorphDeltaAdder[morphDeltaAdderSelector * 256], MorphDelta);
 
     // Only the near distance changes due to increased LOD distance. This needs to be multiplied by
     // the square of the factor by which we increased. Assuming 200m base lod this turns out to
@@ -239,7 +239,7 @@ float4 Shared_PS_LowDetail(Shared_VS2PS_LowDetail indata) : COLOR
 
         float3 outColor = colormap * light * 2;
         outColor = outColor * lerp(yplaneLowDetailmap.x, yplaneLowDetailmap.z, indata.BlendValueAndWater.y);
-        return float4(lerp(outColor*2, terrainWaterColor, indata.BlendValueAndWater.w),1);
+        return float4(lerp(outColor * 2, terrainWaterColor, indata.BlendValueAndWater.w),1);
     #endif
 }
 

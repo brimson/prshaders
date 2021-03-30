@@ -470,10 +470,10 @@ float4 psFullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed indata) : COLOR
     samples.w = tex2D(sampler2point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z);
@@ -508,10 +508,10 @@ float4 psFullMRTskinpreshadowedNV(VS2PS_fullMRTskinpreshadowed indata) : COLOR
     float avgShadowValue = tex2Dproj(sampler2, indata.ShadowTex); // HW percentage closer filtering.
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float totShadow = avgShadowValue.x*staticSamples.x;

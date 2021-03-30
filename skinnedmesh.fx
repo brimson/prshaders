@@ -526,10 +526,10 @@ float4 PShader_HemiAndSunAndShadowPP(VS2PS_PP_Shadow indata) : COLOR
     samples.w = tex2Dproj(sampler3point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler2, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler2, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler2, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler2, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler2, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler2, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler2, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler2, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z/indata.ShadowTex.w);
@@ -582,10 +582,10 @@ float4 PShader_HemiAndSunAndShadowAndColorPP(VS2PS_PP_Shadow indata) : COLOR
     samples.w = tex2Dproj(sampler4point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z/indata.ShadowTex.w);
@@ -681,7 +681,7 @@ VS2PS_PP VShader_HemiAndSunPPtangent(APP2VStangent indata, uniform int NumBones)
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
     // Hemi lookup values
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
     outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
     outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
@@ -705,7 +705,7 @@ VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPPtangent(APP2VStangent indata, unifo
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
     // Hemi lookup values
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
     outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
     outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
@@ -804,7 +804,7 @@ VS2PS_PV VShader_HemiAndSunPV(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUV.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    outdata.GroundUV.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy) / hemiMapInfo.z;
     outdata.GroundUV.y = 1.0 - outdata.GroundUV.y;
     outdata.Lerp = Normal.y * 0.5 + 0.5;
     outdata.Lerp -= hemiMapInfo.w;
@@ -880,7 +880,7 @@ VS2PS_PVCOLOR VShader_HemiAndSunAndColorPV(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy) / hemiMapInfo.z;
     outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
     outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
@@ -941,7 +941,7 @@ VS2PS_PVCOLOR_SHADOW VShader_HemiAndSunAndShadowAndColorPV(APP2VS indata, unifor
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy) / hemiMapInfo.z;
     outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
     outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
@@ -973,10 +973,10 @@ float4 PShader_HemiAndSunAndShadowAndColorPV(VS2PS_PVCOLOR_SHADOW indata) : COLO
     samples.w = tex2Dproj(sampler4point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z);
@@ -1431,7 +1431,7 @@ VS2PS_Skinpre vsSkinpre(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(Pos, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
     outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
     outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
@@ -1509,10 +1509,10 @@ float4 psSkinpreshadowed(VS2PS_Skinpreshadowed indata) : COLOR
     samples.w = tex2D(sampler2point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z);
@@ -1539,10 +1539,10 @@ float4 psSkinpreshadowedNV(VS2PS_Skinpreshadowed indata) : COLOR
     float avgShadowValue = tex2Dproj(sampler2, indata.ShadowTex); // HW percentage closer filtering.
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float totShadow = avgShadowValue.x*staticSamples.x;

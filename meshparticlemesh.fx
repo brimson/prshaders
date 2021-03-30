@@ -51,7 +51,7 @@ OUT_vsDiffuse vsDiffuse(appdata input, uniform float4x4 ViewProj)
 
     // Compute Cubic polynomial factors.
     float age = ageAndAlphaArray[IndexArray[0]][0];
-    float4 pc = { pow(age, 3.0), pow(age, 2.0), age, 1.0f};
+    float4 pc = { age * age * age, age * age, age, 1.0f };
 
     float colorBlendFactor = min(dot(m_colorBlendGraph, pc), 1.0);
     float3 color = colorBlendFactor * m_color2.rgb;
@@ -65,7 +65,7 @@ OUT_vsDiffuse vsDiffuse(appdata input, uniform float4x4 ViewProj)
     Out.DiffuseMap = input.TexCoord;
     // hemi lookup coords
     Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z * 0.5)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    Out.LerpAndLMapIntOffset = saturate(saturate((Pos.y - hemiShadowAltitude) * 0.1) + lightmapIntensityOffset);
+    Out.LerpAndLMapIntOffset = saturate(saturate((Pos.y - hemiShadowAltitude) / 10.0f) + lightmapIntensityOffset);
     Out.Fog = calcFog(Out.HPos.w);
     return Out;
 }

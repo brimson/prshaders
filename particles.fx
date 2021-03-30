@@ -47,7 +47,8 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
     VS_PARTICLE_OUTPUT Out = (VS_PARTICLE_OUTPUT)0;
 
     // Compute Cubic polynomial factors.
-    float4 pc = { pow(input.ageFactorAndGraphIndex[0], 3.0), pow(input.ageFactorAndGraphIndex[0], 2.0), input.ageFactorAndGraphIndex[0], 1.0f};
+	float4 pc = {   input.ageFactorAndGraphIndex[0] * input.ageFactorAndGraphIndex[0] * input.ageFactorAndGraphIndex[0],
+                    input.ageFactorAndGraphIndex[0] * input.ageFactorAndGraphIndex[0], input.ageFactorAndGraphIndex[0], 1.0f};
 
     float colorBlendFactor = min(dot(templ[input.ageFactorAndGraphIndex.y].m_colorBlendGraph, pc), 1.0);
     float3 color = colorBlendFactor * templ[input.ageFactorAndGraphIndex.y].m_color2.rgb;
@@ -58,7 +59,7 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
     Out.lightFactorAndAlphaBlend.b = alphaBlendFactor * input.randomSizeAlphaAndIntensityBlendFactor[1];
 
     Out.animBFactorAndLMapIntOffset.a = input.randomSizeAlphaAndIntensityBlendFactor[2];
-    Out.animBFactorAndLMapIntOffset.b = saturate(saturate((input.pos.y - hemiShadowAltitude) * 0.1f) + templ[input.ageFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.z);
+    Out.animBFactorAndLMapIntOffset.b = saturate(saturate((input.pos.y - hemiShadowAltitude) / 10.0f) + templ[input.ageFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.z);
 
     // comput size of particle using the constants of the templ[input.ageFactorAndGraphIndex.y]ate (mSizeGraph)
     float size = min(dot(templ[input.ageFactorAndGraphIndex.y].m_sizeGraph, pc), 1.0) * templ[input.ageFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.w;

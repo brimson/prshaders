@@ -109,7 +109,7 @@ VS2PS_ZOnly VShader_ZOnly(APP2VS indata)
     VS2PS_ZOnly outdata = (VS2PS_ZOnly)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w), 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
     pos.xyz += posOffsetAndScale.xyz;
 
      float3 vec = pos - cameraPos;
@@ -136,7 +136,7 @@ VS2PS VShader(
     VS2PS outdata = (VS2PS)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w), 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
     pos.xyz += posOffsetAndScale.xyz;
 
      float3 vec = pos - cameraPos;
@@ -225,7 +225,7 @@ VS2PS_Simple VShader_Simple(
     VS2PS_Simple outdata = (VS2PS_Simple)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
 
      float3 vec = pos - cameraPos;
      float dist = sqrt(dot(vec, vec));
@@ -279,7 +279,7 @@ VS2PS_ZOnly VShader_ZOnly_Simple(APP2VS_Simple indata)
     VS2PS_ZOnly outdata = (VS2PS_ZOnly)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
 
      float3 vec = pos - cameraPos;
      float dist = sqrt(dot(vec, vec));

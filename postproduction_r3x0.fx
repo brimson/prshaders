@@ -86,7 +86,8 @@ PS2FB_Combine psDx9_Tinnitus(vs2ps_tinnitus input)
     PS2FB_Combine outdata;
     float4 blur = 0.0;
 
-    for(int i = 1; i <= 4; i++) {
+    for(int i = 1; i <= 4; i++)
+    {
         blur += 0.125 * tex2D(sampler0bilin, input.uv[i].xy);
         blur += 0.125 * tex2D(sampler0bilin, input.uv[i].zw);
     }
