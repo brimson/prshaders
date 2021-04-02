@@ -1,3 +1,4 @@
+
 VS2PS_Quad vsDx9_SunLightDynamicObjects(APP2VS_Quad indata)
 {
     VS2PS_Quad outdata;

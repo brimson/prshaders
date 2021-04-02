@@ -1,3 +1,4 @@
+
 texture texture0 : TEXLAYER0;
 texture texture1 : TEXLAYER1;
 texture texture2 : TEXLAYER2;
@@ -5,11 +6,6 @@ texture texture3 : TEXLAYER3;
 texture texture4 : TEXLAYER4;
 texture texture5 : TEXLAYER5;
 texture texture6 : TEXLAYER6;
-
-float backbufferLerpbias : BACKBUFFERLERPBIAS;
-float2 sampleoffset : SAMPLEOFFSET;
-float2 fogStartAndEnd : FOGSTARTANDEND;
-float3 fogColor : FOGCOLOR;
 
 #define dSampler AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT
 sampler sampler0 = sampler_state { Texture = (texture0); dSampler; };
@@ -27,6 +23,11 @@ sampler sampler2bilin = sampler_state { Texture = (texture2); dSamplerBilin; };
 sampler sampler3bilin = sampler_state { Texture = (texture3); dSamplerBilin; };
 sampler sampler4bilin = sampler_state { Texture = (texture4); dSamplerBilin; };
 sampler sampler5bilin = sampler_state { Texture = (texture5); dSamplerBilin; };
+
+float backbufferLerpbias : BACKBUFFERLERPBIAS;
+float2 deltaU : SAMPLEOFFSET;
+float2 fogStartAndEnd : FOGSTARTANDEND;
+float3 fogColor : FOGCOLOR;
 
 float NPixels : NPIXLES = 1.0;
 float2 ScreenSize : VIEWPORTSIZE = { 800.0, 600.0 };

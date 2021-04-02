@@ -228,8 +228,8 @@ float4 Shared_PS_LowDetail(Shared_VS2PS_LowDetail indata) : COLOR
         float4 zplaneLowDetailmap = tex2D(sampler4Wrap3, indata.Tex2b);
 
         float mounten = (xplaneLowDetailmap.y * indata.BlendValueAndWater.x) +
-                (yplaneLowDetailmap.x * indata.BlendValueAndWater.y) +
-                (zplaneLowDetailmap.y * indata.BlendValueAndWater.z);
+                        (yplaneLowDetailmap.x * indata.BlendValueAndWater.y) +
+                        (zplaneLowDetailmap.y * indata.BlendValueAndWater.z);
 
         float4 outColor = colormap * light * 2 * lerp(0.5, yplaneLowDetailmap.z, lowComponent.x) * lerp(0.5, mounten, lowComponent.z);
 
@@ -634,4 +634,3 @@ technique TerrainOccludershadow
         PixelShader = compile ps_2_a Hi_PS_OccluderShadow();
     }
 }
-

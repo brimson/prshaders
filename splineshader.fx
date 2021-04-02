@@ -1,3 +1,4 @@
+
 #line 2 "SplineShader.fx"
 
 float4x4 mWorldViewProj : WorldViewProjection;
@@ -41,12 +42,10 @@ technique spline
     {
         CullMode = NONE;
         AlphaBlendEnable = FALSE;
-
         DepthBias = -0.0003;
         AlphaBlendEnable = TRUE;
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
-
         VertexShader = compile vs_2_a SplineVS();
         PixelShader = compile ps_2_a SplinePS();
     }
@@ -74,3 +73,4 @@ technique controlpoint
         PixelShader = compile ps_2_a ControlPointPS();
     }
 }
+

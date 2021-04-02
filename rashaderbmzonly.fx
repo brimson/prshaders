@@ -1,29 +1,18 @@
 
 // ZOnlyShader
 
-#define NUM_LIGHTS 1
-#define NUM_TEXSETS 1
-#define TexBasePackedInd 0
-
-#include "shaders/RaCommon.fx"
-#include "shaders/RaDefines.fx"
-#include "shaders/RaShaderBMCommon.fx"
-
-string reqVertexElement[] =
-{
+string reqVertexElement[] = {
     "PositionPacked",
     "NormalPacked8",
     "Bone4Idcs",
     "TBasePacked2D"
 };
 
-string GlobalParameters[] =
-{
+string GlobalParameters[] = {
     "ViewProjection",
 };
 
-string InstanceParameters[] =
-{
+string InstanceParameters[] = {
     "World",
     "AlphaBlendEnable",
     "DepthWrite",
@@ -35,6 +24,14 @@ string InstanceParameters[] =
     "TexUnpack",
     "NormalUnpack"
 };
+
+#define NUM_LIGHTS 1
+#define NUM_TEXSETS 1
+#define TexBasePackedInd 0
+
+#include "shaders/RaCommon.fx"
+#include "shaders/RaDefines.fx"
+#include "shaders/RaShaderBMCommon.fx"
 
 struct BMVariableVSInput
 {
@@ -61,13 +58,13 @@ float4x3 getSkinnedWorldMatrix(BMVariableVSInput input)
 float4 getWorldPos(BMVariableVSInput input)
 {
     float4 unpackedPos = input.Pos * PosUnpack;
-    return float4(mul(unpackedPos, getSkinnedWorldMatrix(input)), 1.0);
+    return float4(mul(unpackedPos, getSkinnedWorldMatrix(input)), 1);
 }
 
 BMVariableVSOutput vs(BMVariableVSInput input)
 {
-    BMVariableVSOutput Out;
-    Out.HPos = mul(getWorldPos(input), ViewProjection);
+    BMVariableVSOutput Out = (BMVariableVSOutput)0;
+    Out.HPos = mul(getWorldPos(input), ViewProjection);	// output HPOS
     return Out;
 }
 
@@ -76,13 +73,13 @@ technique Variable
     pass p0
     {
         VertexShader = compile vs_2_a vs();
-        PixelShader  = NULL;
+        PixelShader = NULL;
 
         AlphaBlendEnable = FALSE;
-        AlphaTestEnable  = FALSE;
-        ZWriteEnable     = TRUE;
-        ZFunc            = LESSEQUAL;
+        AlphaTestEnable = FALSE;
+        ZWriteEnable = TRUE;
+        ZFunc = LESSEQUAL;
         ColorWriteEnable = 0;
-        CullMode         = CCW;
+        CullMode = CCW;
     }
 }

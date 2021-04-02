@@ -1,26 +1,26 @@
 #line 2 "TreeMesh.fx"
 
-float4x4 mvpMatrix : WorldViewProjection; // : register(vs_1_1, c0);
-float4x4 worldIMatrix : WorldI; // : register(vs_1_1, c4);
+float4x4 mvpMatrix         : WorldViewProjection; // : register(vs_1_1, c0);
+float4x4 worldIMatrix      : WorldI; // : register(vs_1_1, c4);
 float4x4 viewInverseMatrix : ViewI; //: register(vs_1_1, c8);
 
 // Sprite parameters
-float4x4 worldViewMatrix : WorldView;
-float4x4 projMatrix : Projection;
-float4 spriteScale :  SpriteScale;
-float4 shadowSpherePoint : ShadowSpherePoint;
+float4x4 worldViewMatrix               : WorldView;
+float4x4 projMatrix                    : Projection;
+float4 spriteScale                     :  SpriteScale;
+float4 shadowSpherePoint               : ShadowSpherePoint;
 float4 boundingboxScaledInvGradientMag : BoundingboxScaledInvGradientMag;
-float4 invBoundingBoxScale : InvBoundingBoxScale;
-float4 shadowColor : ShadowColor;
+float4 invBoundingBoxScale             : InvBoundingBoxScale;
+float4 shadowColor                     : ShadowColor;
 
 float4 ambColor  : Ambient  = { 0.0f, 0.0f, 0.0f, 1.0f };
 float4 diffColor : Diffuse  = { 1.0f, 1.0f, 1.0f, 1.0f };
 float4 specColor : Specular = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-texture texture0: TEXLAYER0;
-texture texture1: TEXLAYER1;
-texture texture2: TEXLAYER2;
-texture texture3: TEXLAYER3;
+texture texture0 : TEXLAYER0;
+texture texture1 : TEXLAYER1;
+texture texture2 : TEXLAYER2;
+texture texture3 : TEXLAYER3;
 
 sampler sampler0 = sampler_state { Texture = (texture0); };
 sampler sampler1 = sampler_state { Texture = (texture1); };
@@ -36,17 +36,17 @@ float4 lightPos : LightPosition
     string Space = "World";
 > = {0.0f, 0.0f, 1.0f, 1.f};
 
-float4 lightDir : LightDirection;
-float heightmapSize : HeightmapSize;
-float normalOffsetScale : NormalOffsetScale;
-float hemiLerpBias : HemiLerpBias;
-float4 skyColor : SkyColor;
-float4 ambientColor : AmbientColor;
-float4 sunColor : SunColor;
+float4 lightDir          : LightDirection;
+float  heightmapSize     : HeightmapSize;
+float  normalOffsetScale : NormalOffsetScale;
+float  hemiLerpBias      : HemiLerpBias;
+float4 skyColor          : SkyColor;
+float4 ambientColor      : AmbientColor;
+float4 sunColor          : SunColor;
 
 float attenuationSqrInv : AttenuationSqrInv;
-float4 lightColor : LightColor;
-float coneAngle : ConeAngle;
+float4 lightColor       : LightColor;
+float coneAngle         : ConeAngle;
 
 sampler diffuseSampler = sampler_state
 {
@@ -198,8 +198,7 @@ float4 spritePixelShader(VS_OUTPUT2 indata) : COLOR
     return diffuseMap * indata.Diffuse;
 }
 
-VS_OUTPUT2 spriteVertexShader
-(
+VS_OUTPUT2 spriteVertexShader(
     appdata2 input,
     uniform float4x4 WorldView,
     uniform float4x4 Proj,
@@ -208,8 +207,7 @@ VS_OUTPUT2 spriteVertexShader
     uniform float4 InvBoundingBoxScale,
     uniform float4 BoundingboxScaledInvGradientMag,
     uniform float4 ShadowColor,
-    uniform float4 LightColor
-)
+    uniform float4 LightColor)
 {
     VS_OUTPUT2 Out = (VS_OUTPUT2)0;
     float4 pos =  mul(input.Pos, WorldView);
@@ -241,15 +239,13 @@ struct OUT_vsBumpSpecularHemiAndSunPV
     float2 DiffuseAlpha    : TEXCOORD4;
 };
 
-OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
-(
+OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV(
     appdata input,
     uniform float4x4 ViewProj,
     uniform float4x4 ViewInv,
     uniform float4 LightDir,
     uniform float HeightmapSize,
-    uniform float NormalOffsetScale
-)
+    uniform float NormalOffsetScale)
 {
     OUT_vsBumpSpecularHemiAndSunPV Out = (OUT_vsBumpSpecularHemiAndSunPV)0;
 
@@ -258,7 +254,7 @@ OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
     // Hemi lookup values
     float3 AlmostNormal = input.Normal.xyz;
     Out.GroundUVAndLerp.xy = (input.Pos +(HeightmapSize/2) + AlmostNormal).xz / HeightmapSize;
-    Out.GroundUVAndLerp.z = (AlmostNormal.y+1)/2;
+    Out.GroundUVAndLerp.z = AlmostNormal.y * 0.5 + 0.5;
 
     // Cross product to create BiNormal
     float3 binormal = normalize(cross(input.Tan, input.Normal));
@@ -283,10 +279,11 @@ OUT_vsBumpSpecularHemiAndSunPV vsBumpSpecularHemiAndSunPV
     return Out;
 }
 
-float4 psBumpSpecularHemiAndSunPV(  OUT_vsBumpSpecularHemiAndSunPV indata,
-                                    uniform float4 SkyColor,
-                                    uniform float4 AmbientColor,
-                                    uniform float4 SunColor ) : COLOR
+float4 psBumpSpecularHemiAndSunPV(
+    OUT_vsBumpSpecularHemiAndSunPV indata,
+    uniform float4 SkyColor,
+    uniform float4 AmbientColor,
+    uniform float4 SunColor) : COLOR
 {
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
     float3 expandedNormal = (normalmap.xyz * 2.0) - 1.0;
@@ -305,7 +302,8 @@ float4 psBumpSpecularHemiAndSunPV(  OUT_vsBumpSpecularHemiAndSunPV indata,
 }
 
 
-technique HemiAndSun_States <bool Restore = true;> {
+technique HemiAndSun_States <bool Restore = true;>
+{
     pass BeginStates {
         AlphaTestEnable = TRUE;
         AlphaRef = 0;
@@ -340,8 +338,7 @@ technique HemiAndSun_States <bool Restore = true;> {
         MagFilter[3] = LINEAR;
     }
 
-    pass EndStates {
-    }
+    pass EndStates {}
 }
 
 technique HemiAndSun
@@ -367,13 +364,11 @@ struct OUT_vsBumpSpecularPointLight
     float3 ObjectLightVec : TEXCOORD3;
 };
 
-OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight
-(
+OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight(
     appdata input,
     uniform float4x4 ViewProj,
     uniform float4x4 ViewInv,
-    uniform float4 LightPos
-)
+    uniform float4 LightPos)
 {
     OUT_vsBumpSpecularPointLight Out = (OUT_vsBumpSpecularPointLight)0;
 
@@ -404,9 +399,10 @@ OUT_vsBumpSpecularPointLight vsBumpSpecularPointLight
     return Out;
 }
 
-float4 psBumpSpecularPointLight(OUT_vsBumpSpecularPointLight indata,
-                                uniform float AttenuationSqrInv,
-                                uniform float4 LightColor) : COLOR
+float4 psBumpSpecularPointLight(
+    OUT_vsBumpSpecularPointLight indata,
+    uniform float AttenuationSqrInv,
+    uniform float4 LightColor) : COLOR
 {
     float4 normalmap = tex2D(sampler0, indata.NormalMap);
     float3 expandedNormal = (normalmap.xyz * 2.0) - 1.0;
@@ -471,14 +467,12 @@ struct OUT_vsBumpSpecularSpotLight
     float3 LightDir  : TEXCOORD3;
 };
 
-OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
-(
+OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight(
     appdata input,
     uniform float4x4 ViewProj,
     uniform float4x4 ViewInv,
     uniform float4 LightPos,
-    uniform float4 LightDir
-)
+    uniform float4 LightDir)
 {
     OUT_vsBumpSpecularSpotLight Out = (OUT_vsBumpSpecularSpotLight)0;
 
@@ -512,10 +506,11 @@ OUT_vsBumpSpecularSpotLight vsBumpSpecularSpotLight
     return Out;
 }
 
-float4 psBumpSpecularSpotLight( OUT_vsBumpSpecularSpotLight indata,
-                                uniform float AttenuationSqrInv,
-                                uniform float4 LightColor,
-                                uniform float LightConeAngle) : COLOR
+float4 psBumpSpecularSpotLight(
+    OUT_vsBumpSpecularSpotLight indata,
+    uniform float AttenuationSqrInv,
+    uniform float4 LightColor,
+    uniform float LightConeAngle) : COLOR
 {
     float offCenter = dot(normalize(indata.LightVec), indata.LightDir);
     float conicalAtt = saturate(offCenter-(1.0 - LightConeAngle))/LightConeAngle;
@@ -576,12 +571,10 @@ struct OUT_vsBumpSpecularMulDiffuse
     float2 DiffuseMap : TEXCOORD0;
 };
 
-OUT_vsBumpSpecularMulDiffuse vsBumpSpecularMulDiffuse
-(
+OUT_vsBumpSpecularMulDiffuse vsBumpSpecularMulDiffuse(
     appdata input,
     uniform float4x4 ViewProj,
-    uniform float4x4 ViewInv
-)
+    uniform float4x4 ViewInv)
 {
     OUT_vsBumpSpecularMulDiffuse Out = (OUT_vsBumpSpecularMulDiffuse)0;
     // Compensate for lack of UBYTE4 on Geforce3

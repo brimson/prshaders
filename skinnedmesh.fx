@@ -1,12 +1,16 @@
-
+//
 // Description: 1,2 bone skinning
+//
 // Author: Mats Dal
 
 // Note: obj space light vectors
 float4 sunLightDir : SunLightDirection;
 float4 lightDir : LightDirection;
+// float hemiMapInfo.z : hemiMapInfo.z;
 float normalOffsetScale : NormalOffsetScale;
+// float hemiMapInfo.w : hemiMapInfo.w;
 
+// offset x/y hemiMapInfo.z z / hemiMapInfo.w w
 float4 hemiMapInfo : HemiMapInfo;
 
 float4 skyColor : SkyColor;
@@ -25,7 +29,7 @@ float4 worldEyePos : WorldEyePos;
 
 float4 objectEyePos : ObjectEyePos;
 
-float4x4 mLightVP : LIGHTVIEWPROJ;
+float4x4 mLightVP  : LIGHTVIEWPROJ;
 float4x4 mLightVP2 : LIGHTVIEWPROJ2;
 float4x4 mLightVP3 : LIGHTVIEWPROJ3;
 float4 vViewportMap : VIEWPORTMAP;
@@ -64,7 +68,7 @@ sampler sampler4point = sampler_state { Texture = (texture4); MinFilter = POINT;
 struct APP2VS
 {
     float4 Pos          : POSITION;
-    float3 Normal 		: NORMAL;
+    float3 Normal       : NORMAL;
     float  BlendWeights : BLENDWEIGHT;
     float4 BlendIndices : BLENDINDICES;
     float2 TexCoord0    : TEXCOORD0;
@@ -196,16 +200,17 @@ void skinSoldierForSpotPP(uniform int NumBones, in APP2VS indata, in float3 ligh
     SkinnedLDir = normalize(SkinnedLDir);
 }
 
+
 // tangent based lighting
 
 struct APP2VStangent
 {
-    float4 Pos          : POSITION;
-    float3 Normal       : NORMAL;
-    float  BlendWeights : BLENDWEIGHT;
-    float4 BlendIndices : BLENDINDICES;
-    float2 TexCoord0    : TEXCOORD0;
-    float3 Tan          : TANGENT;
+    float4	Pos 		: POSITION;
+    float3	Normal 		: NORMAL;
+    float	BlendWeights	: BLENDWEIGHT;
+    float4	BlendIndices 	: BLENDINDICES;
+    float2	TexCoord0 	: TEXCOORD0;
+    float3  Tan : TANGENT;
 };
 
 void skinSoldierForPPtangent(uniform int NumBones, in APP2VStangent indata, in float3 lightVec, out float3 Pos, out float3 Normal, out float3 SkinnedLVec, out float4 wPos, out float3 HalfVec)
@@ -438,11 +443,13 @@ VS2PS_PP VShader_HemiAndSunPP(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos + (hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
+    //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
+    //outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     outdata.SkinnedLVec = normalize(SkinnedLVec);
 
@@ -479,11 +486,13 @@ VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPP(APP2VS indata, uniform int NumBone
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos + (hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
+    //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
+    //outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     outdata.SkinnedLVec = normalize(SkinnedLVec);
 
@@ -502,7 +511,7 @@ float4 PShader_HemiAndSunPP(VS2PS_PP indata) : COLOR
     float3 suncol = saturate(dot(expnormal.rgb, indata.SkinnedLVec)) * sunColor;
     float specular = pow(dot(expnormal.rgb, indata.HalfVec), 36)*normal.a;
 
-    float4 totalcolor = float4(suncol, specular); // Do something with spec-alpha later on
+    float4 totalcolor = float4(suncol, specular);	// Do something with spec-alpha later on
     totalcolor *= groundcolor.a*groundcolor.a;
     totalcolor.rgb += ambientColor*hemicolor;
     return totalcolor;
@@ -526,10 +535,10 @@ float4 PShader_HemiAndSunAndShadowPP(VS2PS_PP_Shadow indata) : COLOR
     samples.w = tex2Dproj(sampler3point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler2, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
-    staticSamples.y = tex2D(sampler2, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
-    staticSamples.z = tex2D(sampler2, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
-    staticSamples.w = tex2D(sampler2, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
+    staticSamples.x = tex2D(sampler2, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
+    staticSamples.y = tex2D(sampler2, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
+    staticSamples.z = tex2D(sampler2, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
+    staticSamples.w = tex2D(sampler2, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z/indata.ShadowTex.w);
@@ -537,7 +546,7 @@ float4 PShader_HemiAndSunAndShadowPP(VS2PS_PP_Shadow indata) : COLOR
 
     float totShadow = avgShadowValue.x*staticSamples.x;
 
-    float4 totalcolor = float4(suncol, specular*totShadow*totShadow); // Do something with spec-alpha later on
+    float4 totalcolor = float4(suncol, specular*totShadow*totShadow);	// Do something with spec-alpha later on
     totalcolor.rgb *= totShadow;
     totalcolor.rgb += ambientColor*hemicolor;
 
@@ -576,16 +585,17 @@ float4 PShader_HemiAndSunAndShadowAndColorPP(VS2PS_PP_Shadow indata) : COLOR
 
     float4 texel = float4(0.5/1024.0, 0.5/1024.0, 0, 0);
     float4 samples;
+    //indata.ShadowTex.xy = clamp(indata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
     samples.x = tex2Dproj(sampler4point, indata.ShadowTex);
     samples.y = tex2Dproj(sampler4point, indata.ShadowTex + float4(texel.x, 0, 0, 0));
     samples.z = tex2Dproj(sampler4point, indata.ShadowTex + float4(0, texel.y, 0, 0));
     samples.w = tex2Dproj(sampler4point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
-    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
-    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
-    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
+    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
+    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
+    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
+    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z/indata.ShadowTex.w);
@@ -600,6 +610,7 @@ float4 PShader_HemiAndSunAndShadowAndColorPP(VS2PS_PP_Shadow indata) : COLOR
 
     return totalcolor;
 }
+
 
 // Max 2 bones skinning supported!
 VertexShader vsArray_HemiAndSunPP[2] = { compile vs_2_a VShader_HemiAndSunPP(1), compile vs_2_a VShader_HemiAndSunPP(2) };
@@ -667,7 +678,7 @@ technique t0_HemiAndSunAndColorPP
     }
 }
 
-//----------- pp tangent based lighting
+// pp tangent based lighting
 
 VS2PS_PP VShader_HemiAndSunPPtangent(APP2VStangent indata, uniform int NumBones)
 {
@@ -681,9 +692,9 @@ VS2PS_PP VShader_HemiAndSunPPtangent(APP2VStangent indata, uniform int NumBones)
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
     // Hemi lookup values
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.SkinnedLVec = normalize(SkinnedLVec);
@@ -705,9 +716,9 @@ VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPPtangent(APP2VStangent indata, unifo
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
     // Hemi lookup values
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     // Shadow
@@ -715,6 +726,7 @@ VS2PS_PP_Shadow VShader_HemiAndSunAndShadowPPtangent(APP2VStangent indata, unifo
     float2 TexShadow2 = mul(float4(Pos, 1), vpLightMat).zw;
     TexShadow2.x -= 0.007;
     outdata.ShadowTex.z = (TexShadow2.x*outdata.ShadowTex.w)/TexShadow2.y; 	// (zL*wT)/wL == zL/wL post homo
+
 
     outdata.SkinnedLVec = normalize(SkinnedLVec);
 
@@ -787,7 +799,7 @@ technique t0_HemiAndSunAndColorPPtangent
 struct VS2PS_PV
 {
     float4 Pos         : POSITION;
-    float2 GroundUV    : TEXCOORD0;
+    float2 GroundUV	   : TEXCOORD0;
     float4 DiffAndSpec : COLOR0;
     float  Lerp        : COLOR1;
 };
@@ -804,9 +816,9 @@ VS2PS_PV VShader_HemiAndSunPV(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUV.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    outdata.GroundUV.y = 1.0 - outdata.GroundUV.y;
-    outdata.Lerp = Normal.y * 0.5 + 0.5;
+    outdata.GroundUV.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    outdata.GroundUV.y = 1-outdata.GroundUV.y;
+    outdata.Lerp = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.Lerp -= hemiMapInfo.w;
 
     float diff = dot(Normal, -sunLightDir);
@@ -830,7 +842,11 @@ float4 PShader_HemiAndSunPV(VS2PS_PV indata) : COLOR
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArray_HemiAndSunPV[2] = { compile vs_2_a VShader_HemiAndSunPV(1),  compile vs_2_a VShader_HemiAndSunPV(2) };
+VertexShader vsArray_HemiAndSunPV[2] =
+{
+    compile vs_2_a VShader_HemiAndSunPV(1),
+    compile vs_2_a VShader_HemiAndSunPV(2)
+};
 
 technique t0_HemiAndSunPV
 {
@@ -880,9 +896,9 @@ VS2PS_PVCOLOR VShader_HemiAndSunAndColorPV(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -897,7 +913,6 @@ VS2PS_PVCOLOR VShader_HemiAndSunAndColorPV(APP2VS indata, uniform int NumBones)
     return outdata;
 }
 
-
 float4 PShader_HemiAndSunAndColorPV(VS2PS_PVCOLOR indata) : COLOR
 {
     float4 groundcolor = tex2D(sampler0, indata.GroundUVAndLerp.xy);
@@ -907,9 +922,7 @@ float4 PShader_HemiAndSunAndColorPV(VS2PS_PVCOLOR indata) : COLOR
     float4 color = tex2D(sampler1, indata.Tex0);
     totalcolor.rgb *= color.rgb;
     totalcolor.rgb += indata.DiffAndSpec.a;
-
     totalcolor.a = color.a;
-
     return totalcolor;
 }
 
@@ -921,7 +934,6 @@ struct VS2PS_PVCOLOR_SHADOW
     float4 ShadowTex       : TEXCOORD2;
     float4 DiffAndSpec     : COLOR;
 };
-
 
 VS2PS_PVCOLOR_SHADOW VShader_HemiAndSunAndShadowAndColorPV(APP2VS indata, uniform int NumBones)
 {
@@ -941,9 +953,9 @@ VS2PS_PVCOLOR_SHADOW VShader_HemiAndSunAndShadowAndColorPV(APP2VS indata, unifor
 
     // Hemi lookup values
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy) / hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1).xz - hemiMapInfo.xy) / hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -958,7 +970,6 @@ VS2PS_PVCOLOR_SHADOW VShader_HemiAndSunAndShadowAndColorPV(APP2VS indata, unifor
     return outdata;
 }
 
-
 float4 PShader_HemiAndSunAndShadowAndColorPV(VS2PS_PVCOLOR_SHADOW indata) : COLOR
 {
     float4 groundcolor = tex2D(sampler0, indata.GroundUVAndLerp.xy);
@@ -967,16 +978,17 @@ float4 PShader_HemiAndSunAndShadowAndColorPV(VS2PS_PVCOLOR_SHADOW indata) : COLO
     float4 texel = float4(1.0/1024.0, 1.0/1024.0, 0, 0);
     float4 samples;
 
+    // indata.ShadowTex.xy = clamp(indata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
     samples.x = tex2Dproj(sampler4point, indata.ShadowTex);
     samples.y = tex2Dproj(sampler4point, indata.ShadowTex + float4(texel.x, 0, 0, 0));
     samples.z = tex2Dproj(sampler4point, indata.ShadowTex + float4(0, texel.y, 0, 0));
     samples.w = tex2Dproj(sampler4point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
-    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
-    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
-    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
+    staticSamples.x = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
+    staticSamples.y = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
+    staticSamples.z = tex2D(sampler3, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
+    staticSamples.w = tex2D(sampler3, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z);
@@ -988,15 +1000,22 @@ float4 PShader_HemiAndSunAndShadowAndColorPV(VS2PS_PVCOLOR_SHADOW indata) : COLO
     float4 color = tex2D(sampler1, indata.Tex0);
     totalcolor.rgb *= color.rgb;
     totalcolor.rgb += indata.DiffAndSpec.a *totShadow*totShadow;
-
     totalcolor.a = color.a;
-
     return totalcolor;
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArray_HemiAndSunAndColorPV[2] = { compile vs_2_a VShader_HemiAndSunAndColorPV(1),  compile vs_2_a VShader_HemiAndSunAndColorPV(2) };
-VertexShader vsArray_HemiAndSunAndShadowAndColorPV[2] = { compile vs_2_a VShader_HemiAndSunAndShadowAndColorPV(1),  compile vs_2_a VShader_HemiAndSunAndShadowAndColorPV(2) };
+VertexShader vsArray_HemiAndSunAndColorPV[2] =
+{
+    compile vs_2_a VShader_HemiAndSunAndColorPV(1),
+    compile vs_2_a VShader_HemiAndSunAndColorPV(2)
+};
+
+VertexShader vsArray_HemiAndSunAndShadowAndColorPV[2] =
+{
+    compile vs_2_a VShader_HemiAndSunAndShadowAndColorPV(1),
+    compile vs_2_a VShader_HemiAndSunAndShadowAndColorPV(2)
+};
 
 technique t0_HemiAndSunAndColorPV
 {
@@ -1023,7 +1042,6 @@ technique t0_HemiAndSunAndColorPV
     }
 }
 
-
 struct VS2PS_PointLight_PV
 {
     float4 Pos     : POSITION;
@@ -1042,10 +1060,11 @@ VS2PS_PointLight_PV VShader_PointLightPV(APP2VS indata, uniform int NumBones)
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
     // Lighting. Shade (Ambient + etc.)
+    //float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
     float3 lvec = lightPos - Pos.xyz;
     float3 lvecNormalized = normalize(lvec);
 
-    float radialAtt = 1.0 - saturate(dot(lvec,lvec)*attenuationSqrInv);
+    float radialAtt = 1-saturate(dot(lvec,lvec)*attenuationSqrInv);
 
     outdata.Diffuse = dot(lvecNormalized, Normal);
     outdata.Diffuse *= lightColor * radialAtt;
@@ -1057,13 +1076,15 @@ VS2PS_PointLight_PV VShader_PointLightPV(APP2VS indata, uniform int NumBones)
 
 float4 PShader_PointLightPV(VS2PS_PointLight_PV indata) : COLOR
 {
-    return float4(indata.Diffuse,0);
+    return float4(indata.Diffuse, 0);
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArray_PointLightPV[2] = { compile vs_2_a VShader_PointLightPV(1),
-                            compile vs_2_a VShader_PointLightPV(2) };
-
+VertexShader vsArray_PointLightPV[2] =
+{
+    compile vs_2_a VShader_PointLightPV(1),
+    compile vs_2_a VShader_PointLightPV(2)
+};
 
 technique t0_PointLightPV
 {
@@ -1081,7 +1102,7 @@ technique t0_PointLightPV
     }
 }
 
-//----------- pp object based lighting
+// pp object based lighting
 
 struct VS2PS_PointLight_PP
 {
@@ -1102,13 +1123,14 @@ VS2PS_PointLight_PP VShader_PointLightPP(APP2VS indata, uniform int NumBones)
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
 
-    //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
+    // [TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
+    // outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     float3 nrmSkinnedLVec = normalize(SkinnedLVec);
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     outdata.SkinnedLVec.w = radialAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1122,14 +1144,16 @@ float4 PShader_PointLightPP(VS2PS_PointLight_PP indata) : COLOR
     expandedNormal.xyz = ((expandedNormal.xyz * 2) - 1);
     float2 intensityuv = float2(dot(indata.SkinnedLVec.xyz,expandedNormal.xyz), dot(indata.HalfVec,expandedNormal));
     float4 realintensity = float4(intensityuv.rrr,pow(intensityuv.g,36)*expandedNormal.a);
-    realintensity *= lightColor * indata.SkinnedLVec.w;//radialAtt;
+    realintensity *= lightColor * indata.SkinnedLVec.w;
     return realintensity;
 }
 
-
 // Max 2 bones skinning supported!
-
-VertexShader vsArray_PointLightPP[2] = { compile vs_2_a VShader_PointLightPP(1), compile vs_2_a VShader_PointLightPP(2) };
+VertexShader vsArray_PointLightPP[2] =
+{
+    compile vs_2_a VShader_PointLightPP(1),
+    compile vs_2_a VShader_PointLightPP(2)
+};
 
 technique t0_PointLightPP
 {
@@ -1163,7 +1187,7 @@ VS2PS_PointLight_PP VShader_PointLightPPtangent(APP2VStangent indata, uniform in
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     outdata.SkinnedLVec.w = radialAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1172,9 +1196,11 @@ VS2PS_PointLight_PP VShader_PointLightPPtangent(APP2VStangent indata, uniform in
 }
 
 // Max 2 bones skinning supported!
-
-VertexShader vsArray_PointLightPPtangent[2] = { compile vs_2_a VShader_PointLightPPtangent(1), compile vs_2_a VShader_PointLightPPtangent(2) };
-
+VertexShader vsArray_PointLightPPtangent[2] =
+{
+    compile vs_2_a VShader_PointLightPPtangent(1),
+    compile vs_2_a VShader_PointLightPPtangent(2)
+};
 
 technique t0_PointLightPPtangent
 {
@@ -1212,13 +1238,15 @@ VS2PS_SpotLight_PV VShader_SpotLightPV(APP2VS indata, uniform int NumBones)
     float3 lvec = lightPos - Pos.xyz;
     float3 lvecnorm = normalize(lvec);
 
-    float radialAtt = 1.0 - saturate(dot(lvec,lvec)*attenuationSqrInv);
+    float radialAtt = 1-saturate(dot(lvec,lvec)*attenuationSqrInv);
     float offCenter = dot(lvecnorm, lightDir);
-    float conicalAtt = saturate(offCenter - (1.0 - coneAngle)) / coneAngle;
+    float conicalAtt = saturate(offCenter-(1-coneAngle))/coneAngle;
 
     outdata.Diffuse = dot(lvecnorm,Normal) * lightColor;
-    outdata.Diffuse *= conicalAtt * radialAtt;
+    outdata.Diffuse *= conicalAtt*radialAtt;
+
     outdata.Tex0 = indata.TexCoord0;
+
     return outdata;
 }
 
@@ -1227,10 +1255,12 @@ float4 PShader_SpotLightPV(VS2PS_SpotLight_PV indata) : COLOR
     return float4(indata.Diffuse,0);
 }
 
-
 // Max 2 bones skinning supported!
-VertexShader vsArray_SpotLightPV[2] = { compile vs_2_a VShader_SpotLightPV(1), compile vs_2_a VShader_SpotLightPV(2) };
-
+VertexShader vsArray_SpotLightPV[2] =
+{
+    compile vs_2_a VShader_SpotLightPV(1),
+    compile vs_2_a VShader_SpotLightPV(2)
+};
 
 technique t0_SpotLightPV
 {
@@ -1268,14 +1298,16 @@ VS2PS_SpotLight_PP VShader_SpotLightPP(APP2VS indata, uniform int NumBones)
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
 
     //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
+    //outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     float3 nrmSkinnedLVec = normalize(SkinnedLVec);
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
+    //outdata.SkinnedLDir = SkinnedLDir;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     float offCenter = dot(nrmSkinnedLVec, SkinnedLDir);
-    float conicalAtt = saturate(offCenter-(1.0 - coneAngle))/coneAngle;
+    float conicalAtt = saturate(offCenter-(1-coneAngle))/coneAngle;
     outdata.SkinnedLVec.w = radialAtt * conicalAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1290,11 +1322,15 @@ float4 PShader_SpotLightPP(VS2PS_SpotLight_PP indata) : COLOR
     float2 intensityuv = float2(dot(indata.SkinnedLVec,expandedNormal), dot(indata.HalfVec,expandedNormal));
     float4 realintensity = float4(intensityuv.rrr,pow(intensityuv.g,36)*expandedNormal.a);
     realintensity.rgb *= lightColor;
-    return realintensity * indata.SkinnedLVec.w;//* conicalAtt * radialAtt;
+    return realintensity * indata.SkinnedLVec.w;
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArray_SpotLightPP[2] = { compile vs_2_a VShader_SpotLightPP(1), compile vs_2_a VShader_SpotLightPP(2) };
+VertexShader vsArray_SpotLightPP[2] =
+{
+    compile vs_2_a VShader_SpotLightPP(1),
+    compile vs_2_a VShader_SpotLightPP(2)
+};
 
 technique t0_SpotLightPP
 {
@@ -1326,14 +1362,16 @@ VS2PS_SpotLight_PP VShader_SpotLightPPtangent(APP2VStangent indata, uniform int 
     float4 wPos = mul(float4(Pos.xyz, 1.0), mWorld);
 
     //[TS:040201] Please note that "normalize(worldEyePos-wPos") is in worldspace while "SkinnedLVec" is in SkinnedSpace/ObjectSpace can this be correct??
+    //outdata.HalfVec = normalize(normalize(worldEyePos-wPos) + SkinnedLVec);
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + SkinnedLVec);
     float3 nrmSkinnedLVec = normalize(SkinnedLVec);
     outdata.SkinnedLVec.xyz = nrmSkinnedLVec;
+    //outdata.SkinnedLDir = SkinnedLDir;
 
     // Skinnedmeshes are highly tesselated, so..
-    float radialAtt = 1.0 - saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
+    float radialAtt = 1-saturate(dot(SkinnedLVec,SkinnedLVec)*attenuationSqrInv);
     float offCenter = dot(nrmSkinnedLVec, SkinnedLDir);
-    float conicalAtt = saturate(offCenter-(1.0 - coneAngle))/coneAngle;
+    float conicalAtt = saturate(offCenter-(1-coneAngle))/coneAngle;
     outdata.SkinnedLVec.w = radialAtt * conicalAtt;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1342,8 +1380,11 @@ VS2PS_SpotLight_PP VShader_SpotLightPPtangent(APP2VStangent indata, uniform int 
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArray_SpotLightPPtangent[2] = { compile vs_2_a VShader_SpotLightPPtangent(1), compile vs_2_a VShader_SpotLightPPtangent(2) };
-
+VertexShader vsArray_SpotLightPPtangent[2] =
+{
+    compile vs_2_a VShader_SpotLightPPtangent(1),
+    compile vs_2_a VShader_SpotLightPPtangent(2)
+};
 
 technique t0_SpotLightPPtangent
 {
@@ -1371,6 +1412,7 @@ VS2PS_MulDiffuse VShader_MulDiffuse(APP2VS indata, uniform int NumBones)
 {
     VS2PS_MulDiffuse outdata;
     float3 Pos, Normal;
+
     skinSoldierForPV(NumBones, indata, Pos, Normal);
 
     // Transform position into view and then projection space
@@ -1385,8 +1427,11 @@ float4 PShader_MulDiffuse(VS2PS_MulDiffuse indata) : COLOR
 }
 
 // Max 2 bones skinning supported!
-
-VertexShader vsArray_MulDiffuse[2] = { compile vs_2_a VShader_MulDiffuse(1), compile vs_2_a VShader_MulDiffuse(2) };
+VertexShader vsArray_MulDiffuse[2] =
+{
+    compile vs_2_a VShader_MulDiffuse(1),
+    compile vs_2_a VShader_MulDiffuse(2)
+};
 
 technique t0_MulDiffuse
 {
@@ -1431,9 +1476,9 @@ VS2PS_Skinpre vsSkinpre(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(Pos, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
@@ -1444,7 +1489,6 @@ VS2PS_Skinpre vsSkinpre(APP2VS indata, uniform int NumBones)
 
 float4 psSkinpre(VS2PS_Skinpre indata) : COLOR
 {
-    //return float4(indata.ObjEyeVec,0);
     float4 expnormal = tex2D(sampler0, indata.Tex0);
     float4 groundcolor = tex2D(sampler1, indata.GroundUVAndLerp.xy);
 
@@ -1452,10 +1496,11 @@ float4 psSkinpre(VS2PS_Skinpre indata) : COLOR
     float wrapDiff = dot(expnormal, indata.SkinnedLVec) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1.0 - dot(expnormal, indata.ObjEyeVec);
+    float rimDiff = 1-dot(expnormal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
 
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, indata.SkinnedLVec)));
+    //rimDiff *= saturate(0.1-saturate(dot(indata.ObjEyeVec, normalize(indata.SkinnedLVec))));
 
     return float4((wrapDiff.rrr + rimDiff)*groundcolor.a*groundcolor.a, expnormal.a);
 }
@@ -1497,22 +1542,23 @@ float4 psSkinpreshadowed(VS2PS_Skinpreshadowed indata) : COLOR
     float wrapDiff = dot(expnormal, indata.SkinnedLVec) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1.0 - dot(expnormal, indata.ObjEyeVec);
+    float rimDiff = 1-dot(expnormal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, indata.SkinnedLVec)));
 
     float2 texel = float2(1.0/1024.0, 1.0/1024.0);
     float4 samples;
+    //indata.ShadowTex.xy = clamp(indata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
     samples.x = tex2D(sampler2point, indata.ShadowTex);
     samples.y = tex2D(sampler2point, indata.ShadowTex + float2(texel.x, 0));
     samples.z = tex2D(sampler2point, indata.ShadowTex + float2(0, texel.y));
     samples.w = tex2D(sampler2point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z);
@@ -1531,7 +1577,7 @@ float4 psSkinpreshadowedNV(VS2PS_Skinpreshadowed indata) : COLOR
     float wrapDiff = dot(expnormal, indata.SkinnedLVec) + 0.5;
     wrapDiff = saturate(wrapDiff / 1.5);
 
-    float rimDiff = 1.0 - dot(expnormal, indata.ObjEyeVec);
+    float rimDiff = 1-dot(expnormal, indata.ObjEyeVec);
     rimDiff = pow(rimDiff,3);
     rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, indata.SkinnedLVec)));
 
@@ -1539,10 +1585,11 @@ float4 psSkinpreshadowedNV(VS2PS_Skinpreshadowed indata) : COLOR
     float avgShadowValue = tex2Dproj(sampler2, indata.ShadowTex); // HW percentage closer filtering.
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
+    //indata.ShadowTex.xy = clamp(indata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float totShadow = avgShadowValue.x*staticSamples.x;
@@ -1563,15 +1610,14 @@ VS2PS_PP vsSkinapply(APP2VS indata, uniform int NumBones)
 
     // Hemi lookup values
     float4 wPos = mul(Pos, mWorld);
-    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z * 0.5) + Normal).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-    outdata.GroundUVAndLerp.y = 1.0 - outdata.GroundUVAndLerp.y;
-    outdata.GroundUVAndLerp.z = Normal.y * 0.5 + 0.5;
+    outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
+    outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
+    outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
     outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
 
     outdata.Tex0 = indata.TexCoord0;
     outdata.HalfVec = normalize(normalize(objectEyePos-Pos) + outdata.SkinnedLVec);
     outdata.SkinnedLVec = normalize(outdata.SkinnedLVec);
-
 
     return outdata;
 }
@@ -1589,7 +1635,7 @@ float4 psSkinapply(VS2PS_PP indata) : COLOR
     float specular = pow(dot(expnormal.rgb, indata.HalfVec), 16)*diffuse.a;
 
     float4 totalcolor = saturate(ambientColor*hemicolor + diffuseLight.r*diffuseLight.b*sunColor);
-    totalcolor *= diffuse; // + specular;
+    totalcolor *= diffuse;//+specular;
 
     // what to do what the shadow???
     float shadowIntensity = saturate(diffuseLight.g/*+ShadowIntensityBias*/);
@@ -1597,7 +1643,6 @@ float4 psSkinapply(VS2PS_PP indata) : COLOR
 
     return totalcolor;
 }
-
 
 technique humanskinNV
 {
@@ -1681,13 +1726,11 @@ technique humanskin
         ZEnable = TRUE;
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
-        //FillMode = WIREFRAME;
 
         VertexShader = compile vs_2_a vsSkinapply(2);
         PixelShader = compile ps_2_a psSkinapply();
     }
 }
-
 
 struct VS2PS_ShadowMap
 {
@@ -1707,18 +1750,18 @@ VS2PS_ShadowMap vsShadowMap(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
 
-     outdata.Pos = mul(float4(Pos.xyz, 1.0), vpLightTrapezMat);
-     float2 lightZW = mul(float4(Pos.xyz, 1.0), vpLightMat).zw;
-    outdata.Pos.z = (lightZW.x*outdata.Pos.w)/lightZW.y;			// (zL*wT)/wL == zL/wL post homo
-     outdata.PosZW = outdata.Pos.zw;
+    outdata.Pos = mul(float4(Pos.xyz, 1.0), vpLightTrapezMat);
+    float2 lightZW = mul(float4(Pos.xyz, 1.0), vpLightMat).zw;
+    outdata.Pos.z = (lightZW.x*outdata.Pos.w)/lightZW.y; // (zL*wT)/wL == zL/wL post homo
+    outdata.PosZW = outdata.Pos.zw;
 
-     return outdata;
+    return outdata;
 
     //SHADOW
-        outdata.Pos = mul( float4(Pos.xyz, 1.0), vpLightMat );
-        outdata.PosZW = outdata.Pos.zw;
+    outdata.Pos = mul( float4(Pos.xyz, 1.0), vpLightMat );
+    outdata.PosZW = outdata.Pos.zw;
     //SHADOW
     return outdata;
 }
@@ -1751,8 +1794,7 @@ VS2PS_ShadowMapAlpha vsShadowMapAlpha(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
-
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
 
     outdata.Pos = mul(float4(Pos.xyz, 1.0), vpLightTrapezMat);
     float2 lightZW = mul(float4(Pos.xyz, 1.0), vpLightMat).zw;
@@ -1777,11 +1819,11 @@ float4 psShadowMapAlpha(VS2PS_ShadowMapAlpha indata) : COLOR
 
 float4 psShadowMapAlphaNV(VS2PS_ShadowMapAlpha indata) : COLOR
 {
-// spot-shadows
+    // spot-shadows
     clip(tex2D(sampler0, indata.Tex0PosZW.xy).a-shadowAlphaThreshold);
-//SHADOW
-;;	return indata.Tex0PosZW.z / indata.Tex0PosZW.w;
-//\SHADOW
+    // SHADOW
+    return indata.Tex0PosZW.z / indata.Tex0PosZW.w;
+    // SHADOW
     return tex2D(sampler0, indata.Tex0PosZW.xy).a-shadowAlphaThreshold;
 }
 
@@ -1797,7 +1839,7 @@ VS2PS_ShadowMap vsShadowMapPoint(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
 
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
@@ -1817,7 +1859,7 @@ VS2PS_ShadowMap vsShadowMapPoint(APP2VS indata)
     return outdata;
 
     // SHADOW
-    outdata.Pos = mul( float4(Pos.xyz, 1.0), vpLightMat );
+	outdata.Pos = mul( float4(Pos.xyz, 1.0), vpLightMat );
     outdata.PosZW = outdata.Pos.zw;
 
     return outdata;
@@ -1835,7 +1877,7 @@ VS2PS_ShadowMap vsShadowMapPointNV(APP2VS indata)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1.0 - BlendWeightsArray[0]);
+    Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
 
     outdata.Pos = mul(float4(Pos.xyz, 1.0), mWorldViewProj);
 
@@ -1853,8 +1895,8 @@ VS2PS_ShadowMap vsShadowMapPointNV(APP2VS indata)
 
     return outdata;
 
-    // SHADOW
-    outdata.Pos = mul( float4(Pos.xyz, 1.0), vpLightMat );
+    // Shadow
+	outdata.Pos = mul( float4(Pos.xyz, 1.0), vpLightMat );
     outdata.PosZW = outdata.Pos.zw;
 
     return outdata;
@@ -1863,10 +1905,7 @@ VS2PS_ShadowMap vsShadowMapPointNV(APP2VS indata)
 float4 psShadowMapNV(VS2PS_ShadowMap indata) : COLOR
 {
     // directional-shadows
-
-    //SHADOW
-    ;; return indata.PosZW.x / indata.PosZW.y;
-    //\SHADOW
+	return indata.PosZW.x / indata.PosZW.y;
     return 0;
 }
 
@@ -1904,7 +1943,7 @@ technique DrawShadowMap
     pass directionalspotalpha
     {
         #if NVIDIA
-            ColorWriteEnable = 0; // 0x0000000F;
+            ColorWriteEnable = 0;
         #endif
 
         #if NVIDIA
@@ -1929,7 +1968,7 @@ technique DrawShadowMap
     pass point_
     {
         #if NVIDIA
-            ColorWriteEnable = 0;//0x0000000F;
+            ColorWriteEnable = 0;
         #endif
 
         AlphaBlendEnable = FALSE;
@@ -1954,7 +1993,7 @@ technique DrawShadowMapNV
     pass directionalspot
     {
         #if NVIDIA
-            ColorWriteEnable = 0;//0x0000000F;
+            ColorWriteEnable = 0;
         #endif
 
         AlphaBlendEnable = FALSE;
@@ -1974,7 +2013,7 @@ technique DrawShadowMapNV
     pass directionalspotalpha
     {
         #if NVIDIA
-            ColorWriteEnable = 0;
+            ColorWriteEnable = 0;//0x0000000F;
         #endif
 
         #if NVIDIA
@@ -2015,5 +2054,6 @@ technique DrawShadowMapNV
         CullMode = None;
     }
 }
+//#endif
 
 #include "shaders/SkinnedMesh_r3x0.fx"

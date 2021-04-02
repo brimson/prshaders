@@ -167,7 +167,11 @@ PS2FB_fullMRT psFullMRT(VS2PS_fullMRT indata)
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArrayFullMRT[2] = { compile vs_2_a vsFullMRT(1), compile vs_2_a vsFullMRT(2) };
+VertexShader vsArrayFullMRT[2] =
+{
+    compile vs_2_a vsFullMRT(1),
+    compile vs_2_a vsFullMRT(2)
+};
 
 technique fullMRT
 {
@@ -215,7 +219,6 @@ struct APP2VS_fullMRTtangent
     float2 TexCoord0    : TEXCOORD0;
     float3 Tan          : TANGENT;
 };
-
 
 VS2PS_fullMRT vsFullMRTtangent(APP2VS_fullMRTtangent indata, uniform int NumBones)
 {
@@ -289,7 +292,11 @@ VS2PS_fullMRT vsFullMRTtangent(APP2VS_fullMRTtangent indata, uniform int NumBone
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArrayFullMRTtangent[2] = { compile vs_2_a vsFullMRTtangent(1), compile vs_2_a vsFullMRTtangent(2) };
+VertexShader vsArrayFullMRTtangent[2] =
+{
+    compile vs_2_a vsFullMRTtangent(1),
+    compile vs_2_a vsFullMRTtangent(2)
+};
 
 technique fullMRTtangent
 {

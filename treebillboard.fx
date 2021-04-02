@@ -4,7 +4,7 @@ float4x4 mViewProj : matVIEWPROJ;
 
 bool bAlphaBlend  : ALPHABLEND = true;
 dword dwSrcBlend  : SRCBLEND   = D3DBLEND_SRCALPHA;
-dword dwDestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
+dword dwDestBlend : DESTBLEND  = D3DBLEND_INVSRCALPHA;
 
 bool bAlphaTest   : ALPHATEST = true;
 dword dwAlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
@@ -29,13 +29,14 @@ sampler sampler0 = sampler_state
 texture texture1: TEXLAYER1;
 sampler sampler1 = sampler_state
 {
-    Texture = (texture1);
+    Texture = (texture0);
     AddressU = WRAP;
     AddressV = CLAMP;
     MipFilter = LINEAR;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
 };
+
 
 struct APP2VS
 {
@@ -55,6 +56,7 @@ struct VS2PS
     float2 Tex2 : TEXCOORD1;
 };
 
+
 float4 psFFP(VS2PS indata) : COLOR
 {
     float4 col0 = tex2D(sampler0, indata.Tex);
@@ -72,6 +74,7 @@ VS2PS vsFFP(APP2VS indata)
     outdata.Tex2 = indata.Tex2;
     return outdata;
 }
+
 
 technique QuadWithTexture
 <
@@ -93,13 +96,15 @@ technique QuadWithTexture
         AlphaBlendEnable = (bAlphaBlend);
         SrcBlend = (dwSrcBlend);
         DestBlend = (dwDestBlend);
-        AlphaTestEnable = true;
+        AlphaTestEnable = true;//(bAlphaTest);
         AlphaFunc = (dwAlphaFunc);
         AlphaRef = (dwAlphaRef);
         ZWriteEnable = (bZWriteEnable);
+        //TextureFactor = (dwTexFactor);
         CullMode = NONE;
 
         VertexShader = compile vs_2_a vsFFP();
         PixelShader = compile ps_2_a psFFP();
     }
 }
+

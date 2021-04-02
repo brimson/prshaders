@@ -8,8 +8,12 @@ float4 vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
 float4 vViewportMap : VIEWPORTMAP;
 
 texture	texture2 : TEXLAYER2;
-
-sampler sampler2Point = sampler_state { Texture = (texture2); MinFilter = POINT; MagFilter = POINT; };
+sampler sampler2Point = sampler_state
+{
+    Texture = (texture2);
+    MinFilter = POINT;
+    MagFilter = POINT;
+};
 
 struct APP2VS_BM_Dx9
 {
@@ -76,4 +80,3 @@ technique Dx9Style_BM
         PixelShader = compile ps_2_a psDynamicShadowmap();
     }
 }
-

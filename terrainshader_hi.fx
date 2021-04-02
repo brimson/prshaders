@@ -1,6 +1,6 @@
 #line 2 "TerrainShader_Hi.fx"
 
-// -- Hi Terrain
+// Hi Terrain
 
 // Special samplers for dynamic filtering types
 sampler dsampler3Wrap = sampler_state
@@ -134,12 +134,12 @@ Hi_VS2PS_FullDetail Hi_VS_FullDetail(Shared_APP2VS_Default indata)
 
     #if DEBUGTERRAIN
         outdata.Pos = mul(wPos, mViewProj);
-        outdata.Tex0 = float4(0,0,0,0);
-        outdata.Tex1 = float4(0,0,0,0);
-        outdata.BlendValueAndFade = float4(0,0,0,0);
-        outdata.Tex3 = float4(0,0,0,0);
-        outdata.Tex5.xy = float2(0,0);
-        outdata.FogAndFade2 = float4(0,0,0,0);
+        outdata.Tex0 = 0.0;
+        outdata.Tex1 = 0.0;
+        outdata.BlendValueAndFade = 0.0;
+        outdata.Tex3 = 0.0;
+        outdata.Tex5.xy = 0.0;
+        outdata.FogAndFade2 = 0.0;
         return outdata;
     #endif
 
@@ -303,13 +303,13 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
 
     #if DEBUGTERRAIN
         outdata.Pos = mul(wPos, mViewProj);
-        outdata.Tex0 = float4(0,0,0,0);
-        outdata.Tex1 = float4(0,0,0,0);
-        outdata.BlendValueAndFade = float4(0,0,0,0);
-        outdata.Tex3 = float4(0,0,0,0);
-        outdata.Tex5.xy = float2(0,0);
-        outdata.Tex6 = float4(0,0,0,0);
-        outdata.FogAndFade2 = float4(0,0,0,0);
+        outdata.Tex0 = 0.0;
+        outdata.Tex1 = 0.0;
+        outdata.BlendValueAndFade = 0.0;
+        outdata.Tex3 = 0.0;
+        outdata.Tex5.xy = 0.0;
+        outdata.Tex6 = 0.0;
+        outdata.FogAndFade2 = 0.0;
         return outdata;
     #endif
 
@@ -474,13 +474,13 @@ Hi_VS2PS_FullDetailWithEnvMap Hi_VS_FullDetailWithEnvMap(Shared_APP2VS_Default i
 
     #if DEBUGTERRAIN
         outdata.Pos = mul(wPos, mViewProj);
-        outdata.Tex0 = float4(0,0,0,0);
-        outdata.Tex1 = float4(0,0,0,0);
-        outdata.BlendValueAndFade = float4(0,0,0,0);
-        outdata.Tex3 = float4(0,0,0,0);
-        outdata.Tex5.xy = float2(0,0);
-        outdata.EnvMap = float3(0,0,0);
-        outdata.FogAndFade2 = float4(0,0,0,0);
+        outdata.Tex0 = 0.0;
+        outdata.Tex1 = 0.0;
+        outdata.BlendValueAndFade = 0.0;
+        outdata.Tex3 = 0.0;
+        outdata.Tex5.xy = 0.0;
+        outdata.EnvMap = 0.0;
+        outdata.FogAndFade2 = 0.0;
         return outdata;
     #endif
 
