@@ -77,7 +77,8 @@ VS_OUTPUT_AlphaEnvMap vsAlphaEnvMap(appdata input, uniform float4x4 ViewProj)
     return Out;
 }
 
-float4 psAlphaEnvMap(VS_OUTPUT_AlphaEnvMap indata) : COLOR {
+float4 psAlphaEnvMap(VS_OUTPUT_AlphaEnvMap indata) : COLOR
+{
     float4 accumLight = tex2Dproj(sampler1, indata.TexPos);
 
     float4 outCol;

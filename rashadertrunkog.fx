@@ -31,9 +31,10 @@ struct VS_OUTPUT
     float  Fog   : FOG;
 };
 
-VS_OUTPUT basicVertexShader(float4 inPos : POSITION0,
-                            float3 normal: NORMAL,
-                            float2 tex0  : TEXCOORD0)
+VS_OUTPUT basicVertexShader(
+    float4 inPos : POSITION0,
+    float3 normal: NORMAL,
+    float2 tex0  : TEXCOORD0)
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 

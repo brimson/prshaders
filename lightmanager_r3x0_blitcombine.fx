@@ -1,3 +1,4 @@
+
 VS2PS_D3DXMesh vsDx9_BlitBackLightContribPoint(APP2VS_D3DXMesh indata)
 {
     VS2PS_D3DXMesh outdata;

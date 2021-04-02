@@ -1,10 +1,11 @@
-float4x4 mWorldViewProj : WorldViewProjection;
 
 texture basetex: TEXLAYER0
 <
     string File = "aniso2.dds";
     string TextureType = "2D";
 >;
+
+float4x4 mWorldViewProj : WorldViewProjection;
 
 struct APP2VS
 {
@@ -38,7 +39,8 @@ VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
 
 technique t0_States <bool Restore = true;>
 {
-    pass BeginStates {
+    pass BeginStates
+	{
         ZEnable = true;
         // MatsD 030903: Due to transparent isn't sorted yet. Write Z values
         ZWriteEnable = true;

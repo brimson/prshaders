@@ -167,7 +167,11 @@ PS2FB_fullMRT psFullMRT(VS2PS_fullMRT indata)
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArrayFullMRT[2] = { compile vs_2_a vsFullMRT(1), compile vs_2_a vsFullMRT(2) };
+VertexShader vsArrayFullMRT[2] =
+{
+    compile vs_2_a vsFullMRT(1),
+    compile vs_2_a vsFullMRT(2)
+};
 
 technique fullMRT
 {
@@ -215,7 +219,6 @@ struct APP2VS_fullMRTtangent
     float2 TexCoord0    : TEXCOORD0;
     float3 Tan          : TANGENT;
 };
-
 
 VS2PS_fullMRT vsFullMRTtangent(APP2VS_fullMRTtangent indata, uniform int NumBones)
 {
@@ -289,7 +292,11 @@ VS2PS_fullMRT vsFullMRTtangent(APP2VS_fullMRTtangent indata, uniform int NumBone
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArrayFullMRTtangent[2] = { compile vs_2_a vsFullMRTtangent(1), compile vs_2_a vsFullMRTtangent(2) };
+VertexShader vsArrayFullMRTtangent[2] =
+{
+    compile vs_2_a vsFullMRTtangent(1),
+    compile vs_2_a vsFullMRTtangent(2)
+};
 
 technique fullMRTtangent
 {
@@ -470,10 +477,10 @@ float4 psFullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed indata) : COLOR
     samples.w = tex2D(sampler2point, indata.ShadowTex + texel);
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float4 cmpbits = samples > saturate(indata.ShadowTex.z);
@@ -508,10 +515,10 @@ float4 psFullMRTskinpreshadowedNV(VS2PS_fullMRTskinpreshadowed indata) : COLOR
     float avgShadowValue = tex2Dproj(sampler2, indata.ShadowTex); // HW percentage closer filtering.
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1, -texel.y*2)).b;
-    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1, -texel.y*2)).b;
-    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x*1,  texel.y*2)).b;
-    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x*1,  texel.y*2)).b;
+    staticSamples.x = tex2D(sampler1, indata.ShadowTex + float2(-texel.x, -texel.y * 2)).b;
+    staticSamples.y = tex2D(sampler1, indata.ShadowTex + float2( texel.x, -texel.y * 2)).b;
+    staticSamples.z = tex2D(sampler1, indata.ShadowTex + float2(-texel.x,  texel.y * 2)).b;
+    staticSamples.w = tex2D(sampler1, indata.ShadowTex + float2( texel.x,  texel.y * 2)).b;
     staticSamples.x = dot(staticSamples.xyzw, 0.25);
 
     float totShadow = avgShadowValue.x*staticSamples.x;

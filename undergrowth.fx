@@ -1,24 +1,24 @@
-float4x4	worldViewProj					: WorldViewProjection;
-float4x4	worldView						: WorldView;
-float4		posOffsetAndScale				: PosOffsetAndScale;
-float2		sinCos							: SinCos;
-float4		terrainTexCoordScaleAndOffset	: TerrainTexCoordScaleAndOffset;
-float3		cameraPos						: CameraPos;
-float4		fadeAndHeightScaleOffset		: FadeAndHeightScaleOffset;
-float4		swayOffsets[16]					: SwayOffset;
-float4		vShadowTexCoordScaleAndOffset	: ShadowTexCoordScaleAndOffset;
-float4		vSunColor						: SunColor;
-float4		vGIColor						: GIColor;
-float4      pointLightPosAtten[4]           : PointLightPosAtten;
-float4      pointLightColor[4]              : PointLightColor;
-int         alphaRefValue                   : AlphaRef;
-float1		lightingScale					: LightingScale;
+float4x4 worldViewProj                 : WorldViewProjection;
+float4x4 worldView                     : WorldView;
+float4   posOffsetAndScale             : PosOffsetAndScale;
+float2   sinCos                        : SinCos;
+float4   terrainTexCoordScaleAndOffset : TerrainTexCoordScaleAndOffset;
+float3   cameraPos                     : CameraPos;
+float4   fadeAndHeightScaleOffset      : FadeAndHeightScaleOffset;
+float4   swayOffsets[16]               : SwayOffset;
+float4   vShadowTexCoordScaleAndOffset : ShadowTexCoordScaleAndOffset;
+float4   vSunColor                     : SunColor;
+float4   vGIColor                      : GIColor;
+float4   pointLightPosAtten[4]         : PointLightPosAtten;
+float4   pointLightColor[4]            : PointLightColor;
+int      alphaRefValue                 : AlphaRef;
+float1   lightingScale                 : LightingScale;
 
-float4		Transparency_x8	: TRANSPARENCY_X8;
+float4 Transparency_x8	: TRANSPARENCY_X8;
 
 #if NVIDIA
-#define _CUSTOMSHADOWSAMPLER_ s3
-#define _CUSTOMSHADOWSAMPLERINDEX_ 3
+    #define _CUSTOMSHADOWSAMPLER_ s3
+    #define _CUSTOMSHADOWSAMPLERINDEX_ 3
 #endif
 
 #define FH2_ALPHAREF 127
@@ -27,9 +27,6 @@ string Category = "Effects\\Lighting";
 #include "shaders\racommon.fx"
 
 texture texture0 : TEXLAYER0;
-texture texture1 : TEXLAYER1;
-texture texture2 : TEXLAYER2;
-
 sampler2D sampler0 = sampler_state
 {
     Texture = <texture0>;
@@ -40,6 +37,7 @@ sampler2D sampler0 = sampler_state
     AddressV = CLAMP;
 };
 
+texture texture1 : TEXLAYER1;
 sampler2D sampler1 = sampler_state
 {
     Texture = <texture1>;
@@ -50,6 +48,7 @@ sampler2D sampler1 = sampler_state
     AddressV = CLAMP;
 };
 
+texture texture2 : TEXLAYER2;
 sampler2D sampler2 = sampler_state
 {
     Texture = <texture2>;
@@ -109,20 +108,20 @@ VS2PS_ZOnly VShader_ZOnly(APP2VS indata)
     VS2PS_ZOnly outdata = (VS2PS_ZOnly)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w), 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
     pos.xyz += posOffsetAndScale.xyz;
 
-     float3 vec = pos - cameraPos;
-     float dist = sqrt(dot(vec, vec));
+    float3 vec = pos - cameraPos;
+    float dist = sqrt(dot(vec, vec));
 
-     float viewDistance = fadeAndHeightScaleOffset.x;
+    float viewDistance = fadeAndHeightScaleOffset.x;
     float fadeFactor = fadeAndHeightScaleOffset.y;
 
     float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
     pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
 
     outdata.Pos = mul(pos, worldViewProj);
-     outdata.Tex0 = indata.TexCoord / 32767.0;
+    outdata.Tex0 = indata.TexCoord / 32767.0;
 
     return outdata;
 }
@@ -136,36 +135,36 @@ VS2PS VShader(
     VS2PS outdata = (VS2PS)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w), 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
     pos.xyz += posOffsetAndScale.xyz;
 
-     float3 vec = pos - cameraPos;
-     float dist = sqrt(dot(vec, vec));
+    float3 vec = pos - cameraPos;
+    float dist = sqrt(dot(vec, vec));
 
-     float viewDistance = fadeAndHeightScaleOffset.x;
+    float viewDistance = fadeAndHeightScaleOffset.x;
     float fadeFactor = fadeAndHeightScaleOffset.y;
 
     float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
     pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
 
-     outdata.LightAndScale.w = indata.Packed.w * 0.5;
+    outdata.LightAndScale.w = indata.Packed.w * 0.5;
 
     outdata.Pos = mul(pos, worldViewProj);
-     outdata.Tex0 = indata.TexCoord / 32767.0;
-     outdata.Tex1.xy = pos.xz*terrainTexCoordScaleAndOffset.xy + terrainTexCoordScaleAndOffset.zw;
-     outdata.Tex2 = outdata.Tex1;
+    outdata.Tex0 = indata.TexCoord / 32767.0;
+    outdata.Tex1.xy = pos.xz*terrainTexCoordScaleAndOffset.xy + terrainTexCoordScaleAndOffset.zw;
+    outdata.Tex2 = outdata.Tex1;
 
-     if (shadowmapEnable)
-     {
-         outdata.TexShadow = calcShadowProjection(pos);
-     }
+    if (shadowmapEnable)
+    {
+        outdata.TexShadow = calcShadowProjection(pos);
+    }
 
-     outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.LightAndScale.rgb = 0;
 
-     outdata.LightAndScale.rgb = 0;
-     for (int i=0; i<lightCount; i++)
-     {
-         float3 lightVec = pos - pointLightPosAtten[i].xyz;
+    for (int i=0; i<lightCount; i++)
+    {
+        float3 lightVec = pos - pointLightPosAtten[i].xyz;
         outdata.LightAndScale.rgb  += saturate(1.0 - length(lightVec)*length(lightVec)*pointLightPosAtten[i].w) * pointLightColor[i];
     }
 
@@ -178,7 +177,7 @@ float4 PShader(
     uniform bool shadowmapEnable,
     uniform sampler2D colormap,
     uniform sampler2D terrainColormap,
-    uniform sampler2D terrainLightmap ) : COLOR
+    uniform sampler2D terrainLightmap) : COLOR
 {
     float4 base = tex2D(colormap, indata.Tex0);
     float4 terrainColor;
@@ -225,51 +224,51 @@ VS2PS_Simple VShader_Simple(
     VS2PS_Simple outdata = (VS2PS_Simple)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
 
-     float3 vec = pos - cameraPos;
-     float dist = sqrt(dot(vec, vec));
+    float3 vec = pos - cameraPos;
+    float dist = sqrt(dot(vec, vec));
 
-     float viewDistance = fadeAndHeightScaleOffset.x;
+    float viewDistance = fadeAndHeightScaleOffset.x;
     float fadeFactor = fadeAndHeightScaleOffset.y;
 
     float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
     pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
 
     outdata.Pos = mul(pos, worldViewProj);
-     outdata.Tex0 = indata.TexCoord / 32767.0;
+    outdata.Tex0 = indata.TexCoord / 32767.0;
 
-     if (shadowmapEnable)
-     {
-         outdata.TexShadow = calcShadowProjection(pos);
-     }
+    if (shadowmapEnable)
+    {
+    outdata.TexShadow = calcShadowProjection(pos);
+    }
 
-     outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Fog = calcFog(outdata.Pos.w);
 
     float3 light = 0;
 
     light += indata.TerrainLightmap.z * vGIColor;
 
-     for (int i=0; i<lightCount; i++)
-     {
-         float3 lightVec = pos - pointLightPosAtten[i].xyz;
+    for (int i=0; i<lightCount; i++)
+    {
+        float3 lightVec = pos - pointLightPosAtten[i].xyz;
         light += saturate(1.0 - length(lightVec)*length(lightVec)*pointLightPosAtten[i].w) * pointLightColor[i];
     }
 
     if (shadowmapEnable)
     {
         outdata.LightAndScale.rgb = light;
-         outdata.LightAndScale.w = indata.Packed.w;
+        outdata.LightAndScale.w = indata.Packed.w;
         outdata.SunLight = indata.TerrainLightmap.y * vSunColor * 2;
         outdata.TerrainColor = lerp(indata.TerrainColormap, float4(1,1,1,1), indata.Packed.w);
-     }
-     else
-     {
+    }
+    else
+    {
         light += indata.TerrainLightmap.y * vSunColor * 2;
 
         outdata.TerrainColor = lerp(indata.TerrainColormap, float4(1,1,1,1), indata.Packed.w);
         outdata.TerrainColor *= light;
-     }
+    }
 
     return outdata;
 }
@@ -279,23 +278,22 @@ VS2PS_ZOnly VShader_ZOnly_Simple(APP2VS_Simple indata)
     VS2PS_ZOnly outdata = (VS2PS_ZOnly)0;
 
     float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
-    pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+    pos.xz += swayOffsets[indata.Packed.z * 255].xy * indata.Packed.y * 3.0f;
 
-     float3 vec = pos - cameraPos;
-     float dist = sqrt(dot(vec, vec));
+    float3 vec = pos - cameraPos;
+    float dist = sqrt(dot(vec, vec));
 
-     float viewDistance = fadeAndHeightScaleOffset.x;
+    float viewDistance = fadeAndHeightScaleOffset.x;
     float fadeFactor = fadeAndHeightScaleOffset.y;
 
     float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
     pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
 
     outdata.Pos = mul(pos, worldViewProj);
-     outdata.Tex0 = indata.TexCoord / 32767.0;
+    outdata.Tex0 = indata.TexCoord / 32767.0;
 
     return outdata;
 }
-
 
 float4 PShader_Simple(
     VS2PS_Simple indata,
@@ -359,15 +357,15 @@ technique t0_l0
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(0, false);
-        PixelShader			= compile ps_2_a PShader(false, false, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(0, false);
+        PixelShader = compile ps_2_a PShader(false, false, sampler0, sampler1, sampler2);
     }
 }
 
@@ -385,15 +383,15 @@ technique t0_l1
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(1, false);
-        PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(1, false);
+        PixelShader = compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
     }
 }
 
@@ -411,15 +409,15 @@ technique t0_l2
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(2, false);
-        PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(2, false);
+        PixelShader = compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
     }
 }
 
@@ -437,15 +435,15 @@ technique t0_l3
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(3, false);
-        PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(3, false);
+        PixelShader = compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
     }
 }
 
@@ -463,15 +461,15 @@ technique t0_l4
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(4, false);
-        PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(4, false);
+        PixelShader = compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
     }
 }
 
@@ -489,15 +487,15 @@ technique t0_l0_ds
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(0, true);
-        PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(0, true);
+        PixelShader = compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
     }
 }
 
@@ -515,15 +513,15 @@ technique t0_l1_ds
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(1, true);
-        PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(1, true);
+        PixelShader = compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
     }
 }
 
@@ -541,15 +539,15 @@ technique t0_l2_ds
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(2, true);
-        PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(2, true);
+        PixelShader = compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
     }
 }
 
@@ -567,15 +565,15 @@ technique t0_l3_ds
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(3, true);
-        PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(3, true);
+        PixelShader = compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
     }
 }
 
@@ -593,19 +591,17 @@ technique t0_l4_ds
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader(4, true);
-        PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+        VertexShader = compile vs_2_a VShader(4, true);
+        PixelShader = compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
     }
 }
-
-////////////////////////
 
 technique t0_l0_simple
 <
@@ -623,15 +619,15 @@ technique t0_l0_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(0, false);
-        PixelShader			= compile ps_2_a PShader_Simple(false, false, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(0, false);
+        PixelShader = compile ps_2_a PShader_Simple(false, false, sampler0);
     }
 }
 
@@ -651,15 +647,15 @@ technique t0_l1_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(1, false);
-        PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(1, false);
+        PixelShader = compile ps_2_a PShader_Simple(true, false, sampler0);
     }
 }
 
@@ -679,15 +675,15 @@ technique t0_l2_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(2, false);
-        PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(2, false);
+        PixelShader = compile ps_2_a PShader_Simple(true, false, sampler0);
     }
 }
 
@@ -707,15 +703,15 @@ technique t0_l3_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(3, false);
-        PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(3, false);
+        PixelShader = compile ps_2_a PShader_Simple(true, false, sampler0);
     }
 }
 
@@ -735,15 +731,15 @@ technique t0_l4_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(4, false);
-        PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(4, false);
+        PixelShader = compile ps_2_a PShader_Simple(true, false, sampler0);
     }
 }
 
@@ -763,15 +759,15 @@ technique t0_l0_ds_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(0, true);
-        PixelShader			= compile ps_2_a PShader_Simple(false, true, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(0, true);
+        PixelShader = compile ps_2_a PShader_Simple(false, true, sampler0);
     }
 }
 
@@ -791,15 +787,15 @@ technique t0_l1_ds_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(1, true);
-        PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(1, true);
+        PixelShader = compile ps_2_a PShader_Simple(true, true, sampler0);
     }
 }
 
@@ -819,15 +815,15 @@ technique t0_l2_ds_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(2, true);
-        PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(2, true);
+        PixelShader = compile ps_2_a PShader_Simple(true, true, sampler0);
     }
 }
 
@@ -847,15 +843,15 @@ technique t0_l3_ds_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(3, true);
-        PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(3, true);
+        PixelShader = compile ps_2_a PShader_Simple(true, true, sampler0);
     }
 }
 
@@ -875,15 +871,15 @@ technique t0_l4_ds_simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= true;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = true;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_Simple(4, true);
-        PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+        VertexShader = compile vs_2_a VShader_Simple(4, true);
+        PixelShader = compile ps_2_a PShader_Simple(true, true, sampler0);
     }
 }
 
@@ -901,16 +897,16 @@ technique ZOnly
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= false;
-        ColorWriteEnable	= 0;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = false;
+        ColorWriteEnable = 0;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_ZOnly();
-        PixelShader			= compile ps_2_a PShader_ZOnly(sampler0);
+        VertexShader = compile vs_2_a VShader_ZOnly();
+        PixelShader = compile ps_2_a PShader_ZOnly(sampler0);
     }
 }
 
@@ -928,15 +924,15 @@ technique ZOnly_Simple
 {
     pass Normal
     {
-        CullMode			= CW;
-        AlphaTestEnable		= true;
-        AlphaRef			= FH2_ALPHAREF;
-        AlphaFunc			= GREATER;
-        FogEnable			= false;
-        ColorWriteEnable	= 0;
-        ZFunc				= Less;
+        CullMode = CW;
+        AlphaTestEnable = true;
+        AlphaRef = FH2_ALPHAREF;
+        AlphaFunc = GREATER;
+        FogEnable = false;
+        ColorWriteEnable = 0;
+        ZFunc = Less;
 
-        VertexShader		= compile vs_2_a VShader_ZOnly_Simple();
-        PixelShader			= compile ps_2_a PShader_ZOnly(sampler0);
+        VertexShader = compile vs_2_a VShader_ZOnly_Simple();
+        PixelShader  = compile ps_2_a PShader_ZOnly(sampler0);
     }
 }

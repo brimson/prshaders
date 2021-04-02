@@ -84,7 +84,8 @@ VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input,
     Out.texCoords1 = (input.pos.xyz + (myHeightmapSize * 0.5)).xz / myHeightmapSize;
 
     // Compute Cubic polynomial factors.
-    float4 pc = { pow(input.ageFactor, 3.0), pow(input.ageFactor, 2.0), input.ageFactor, 1.0f};
+	float4 pc = {   input.ageFactor * input.ageFactor * input.ageFactor,
+                    input.ageFactor * input.ageFactor,  input.ageFactor, 1.0f};
 
     // compute size of particle using the constants of the template (mSizeGraph)
     float pointSize = min(dot(templ[input.graphIndex.x].m_sizeGraph, pc), 1.0) * templ[input.graphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.w;

@@ -1,3 +1,26 @@
+
+float4 ObjectSpaceCamPos;
+float4 WorldSpaceCamPos;
+
+int  AlphaTestRef = 0;
+bool DepthWrite   = 1;
+bool DoubleSided  = 2;
+
+float4 DiffuseColor;
+float4 SpecularColor;
+float  SpecularPower;
+float  StaticGloss;
+float4 Ambient;
+
+float4 HemiMapSkyColor;
+float  HeightOverTerrain = 0;
+
+float Reflectivity;
+
+float4x3 MatBones[26];
+
+Light Lights[1];
+
 // common StaticMesh samplers
 
 // Fallback stuff
@@ -57,25 +80,3 @@ sampler NormalMapSampler = sampler_state
     AddressV  = CLAMP;
     MipMapLodBias = 0;
 };
-
-float4 ObjectSpaceCamPos;
-float4 WorldSpaceCamPos;
-
-int  AlphaTestRef = 0;
-bool DepthWrite   = 1;
-bool DoubleSided  = 2;
-
-float4 DiffuseColor;
-float4 SpecularColor;
-float  SpecularPower;
-float  StaticGloss;
-float4 Ambient;
-
-float4 HemiMapSkyColor;
-float  HeightOverTerrain = 0;
-
-float Reflectivity;
-
-float4x3 MatBones[26];
-
-Light Lights[1];

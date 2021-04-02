@@ -46,7 +46,8 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
     VS_PARTICLE_OUTPUT Out = (VS_PARTICLE_OUTPUT)0;
 
     // Compute Cubic polynomial factors.
-    float4 pc = { pow(input.ageFactorAndGraphIndex[0], 3.0), pow(input.ageFactorAndGraphIndex[0], 2.0), input.ageFactorAndGraphIndex[0], 1.0f};
+	float4 pc = {   input.ageFactorAndGraphIndex[0] * input.ageFactorAndGraphIndex[0] * input.ageFactorAndGraphIndex[0],
+                    input.ageFactorAndGraphIndex[0] * input.ageFactorAndGraphIndex[0],  input.ageFactorAndGraphIndex[0], 1.0f};
 
     float colorBlendFactor = min(dot(templ[input.ageFactorAndGraphIndex.y].m_colorBlendGraph, pc), 1.0);
     float3 color = colorBlendFactor * templ[input.ageFactorAndGraphIndex.y].m_color2.rgb;

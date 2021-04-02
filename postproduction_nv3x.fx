@@ -1,23 +1,4 @@
 
-float backbufferLerpbias : BACKBUFFERLERPBIAS;
-float2 sampleoffset : SAMPLEOFFSET;
-float2 fogStartAndEnd : FOGSTARTANDEND;
-float3 fogColor : FOGCOLOR;
-float glowStrength : GLOWSTRENGTH;
-
-float nightFilter_noise_strength : NIGHTFILTER_NOISE_STRENGTH;
-float nightFilter_noise : NIGHTFILTER_NOISE;
-float nightFilter_blur : NIGHTFILTER_BLUR;
-float nightFilter_mono : NIGHTFILTER_MONO;
-
-float2 displacement : DISPLACEMENT;
-
-float PI = 3.1415926535897932384626433832795;
-
-// one pixel in screen texture units
-float deltaU : DELTAU;
-float deltaV : DELTAV;
-
 texture texture0 : TEXLAYER0;
 texture texture1 : TEXLAYER1;
 texture texture2 : TEXLAYER2;
@@ -50,6 +31,25 @@ sampler sampler2bilinwrap = sampler_state { Texture = (texture2); dSamplerBilinW
 sampler sampler3bilinwrap = sampler_state { Texture = (texture3); dSamplerBilinWrap; };
 sampler sampler4bilinwrap = sampler_state { Texture = (texture4); dSamplerBilinWrap; };
 sampler sampler5bilinwrap = sampler_state { Texture = (texture5); dSamplerBilinWrap; };
+
+float  backbufferLerpbias : BACKBUFFERLERPBIAS;
+float2 sampleoffset : SAMPLEOFFSET;
+float2 fogStartAndEnd : FOGSTARTANDEND;
+float3 fogColor : FOGCOLOR;
+float  glowStrength : GLOWSTRENGTH;
+
+float nightFilter_noise_strength : NIGHTFILTER_NOISE_STRENGTH;
+float nightFilter_noise : NIGHTFILTER_NOISE;
+float nightFilter_blur : NIGHTFILTER_BLUR;
+float nightFilter_mono : NIGHTFILTER_MONO;
+
+float2 displacement : DISPLACEMENT;
+
+float PI = 3.1415926535897932384626433832795;
+
+// one pixel in screen texture units
+float deltaU : DELTAU;
+float deltaV : DELTAV;
 
 float NPixels : NPIXLES = 1.0;
 float2 ScreenSize : VIEWPORTSIZE = { 800.0, 600.0 };

@@ -1,5 +1,5 @@
 
-// -- New, better, "cleaner" skinning code.
+// New, better, "cleaner" skinning code.
 
 #include "shaders/RaCommon.fx"
 #include "shaders/RaShaderSMCommon.fx"
@@ -10,6 +10,7 @@
     #define _USEHEMIMAP_ 0
     #define _HASSHADOW_ 0
 #endif
+
 
 #define NUMOCCLUSIONSAMPLES 4
 
@@ -84,7 +85,7 @@ float getBinormalFlipping(SMVariableVSInput input)
 {
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
     int IndexArray[4] = (int[4])IndexVector;
-    return 1.0f + IndexArray[2] * -2.0f;
+    return 1.f + IndexArray[2] * -2.f;
 }
 
 float3x3 getTangentBasis(SMVariableVSInput input)
@@ -147,7 +148,7 @@ float3 skinVecToTan(SMVariableVSInput input, float3 Vec, uniform int numBones = 
 
 float4 skinPosition(SMVariableVSInput input)
 {
-    return float4(skinPos(input, input.Pos), 1.0);
+    return float4(skinPos(input, input.Pos), 1);
 }
 
 float3 skinNormal(SMVariableVSInput input, uniform int numBones = NUMBONES)
@@ -175,16 +176,16 @@ float4 calcGroundUVAndLerp(float3 wPos, float3 wNormal)
 {
     // HemiMapConstants: offset x/y heightmapsize z / hemilerpbias w
 
-    float4 GroundUVAndLerp = 0.0;
+    float4 GroundUVAndLerp = 0;
     GroundUVAndLerp.xy = ((wPos + (HemiMapConstants.z/2) + wNormal).xz - HemiMapConstants.xy) / HemiMapConstants.z;
-    GroundUVAndLerp.y = 1.0 - GroundUVAndLerp.y;
+    GroundUVAndLerp.y = 1 - GroundUVAndLerp.y;
 
     // localHeight scale, 1 for top and 0 for bottom
-    float localHeight = (wPos.y - (World[3][1] - 0.5)) * 0.5;
+    float localHeight = (wPos.y - (World[3][1] - 0.5)) * 0.5/*InvHemiHeightScale*/;
 
-    float offset = (localHeight * 2.0 - 1.0) + HeightOverTerrain;
-    offset       = clamp(offset, -2.0 * (1.0 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
-    GroundUVAndLerp.z = clamp((wNormal.y + offset) * 0.5 + 0.5, 0.0, 0.9);
+    float offset      = (localHeight * 2 - 1) + HeightOverTerrain;
+    offset            = clamp(offset, -2 * (1 - HeightOverTerrain), 0.8); // For TL: seems like taking this like away doesn't change much, take it out?
+    GroundUVAndLerp.z = clamp((wNormal.y + offset) * 0.5 + 0.5, 0, 0.9);
 
     return GroundUVAndLerp;
 }
@@ -249,9 +250,9 @@ SMVariableVSOutput vs(SMVariableVSInput input)
         float4 lighting = lit(dot(normalize(lVec), input.Normal), dot(normalize(hVec), input.Normal), SpecularPower);
         Out.DiffuseAndHemiLerp.rgb = (lighting.y * Lights[0].color) * 0.5;
         #if _POINTLIGHT_
-            Out.Specular = (lighting.z * Lights[0].color * 0.15) * 0.5;
+            Out.Specular = (lighting.z * Lights[0].color * /*StaticGloss*/0.15) * 0.5;
         #else
-            Out.Specular = (lighting.z * Lights[0].specularColor * 0.15) * 0.5;
+            Out.Specular = (lighting.z * Lights[0].specularColor * /*StaticGloss*/0.15) * 0.5;
             Out.Fog = calcFog(Out.Pos.w);
         #endif
     #endif
@@ -271,20 +272,20 @@ float4 ps(SMVariableVSOutput input) : COLOR
 {
     #if _HASNORMALMAP_
         float4 normal = tex2D(NormalMapSampler, input.Tex0);
-        normal.xyz = normal.xyz * 2.0 - 1.0;
+        normal.xyz = normal.xyz * 2 - 1;
         #if _USERENORMALIZEDTEXTURES_
             normal.xyz = normalize(normal.xyz);
         #endif
 
-    #ifdef NORMAL_CHANNEL
-        return float4(normal.xyz * 0.5 + 0.5, 1.0);
-    #endif
+        #ifdef NORMAL_CHANNEL
+            return float4(normal.xyz*0.5+0.5, 1);
+        #endif
 
         float gloss = normal.a;
 
         float3 lightVec = input.LightVec;
         #if _POINTLIGHT_
-            float attenuation = 1.0 - saturate(length(lightVec) * Lights[0].attenuation);
+            float attenuation = 1 - saturate(length(lightVec) * Lights[0].attenuation);
             lightVec = normalize(lightVec);
         #else
             const float attenuation = 1.0;
@@ -314,19 +315,19 @@ float4 ps(SMVariableVSOutput input) : COLOR
     #endif
 
     #if (_USEHEMIMAP_ && !_USEPERPIXELHEMIMAP_) || (_USEHEMIMAP_ && !_HASNORMALMAP_)
-        float4 groundcolor = tex2D(HemiMapSampler, input.GroundUVOrWPos.xy);
-        float3 hemicolor = lerp(groundcolor, HemiMapSkyColor, input.DiffuseAndHemiLerp.w);
+        float4 groundcolor	= tex2D(HemiMapSampler, input.GroundUVOrWPos.xy);
+        float3 hemicolor		= lerp(groundcolor, HemiMapSkyColor, input.DiffuseAndHemiLerp.w);
     #elif _USEPERPIXELHEMIMAP_ && !_NOTHING_
         float3 wNormal;
         wNormal.x = dot(input.TexToWorld0, normal);
         wNormal.y = dot(input.TexToWorld1, normal);
         wNormal.z = dot(input.TexToWorld2, normal);
         float3 GroundUVAndLerp = calcGroundUVAndLerp(input.GroundUVOrWPos, wNormal);
-        float4 groundcolor = tex2D(HemiMapSampler, GroundUVAndLerp.xy);
-        float3 hemicolor = lerp(groundcolor, HemiMapSkyColor, GroundUVAndLerp.z);
+        float4 groundcolor	= tex2D(HemiMapSampler, GroundUVAndLerp.xy);
+        float3 hemicolor		= lerp(groundcolor, HemiMapSkyColor, GroundUVAndLerp.z);
     #else
-        const float3 hemicolor = float3(0.425, 0.425, 0.4); // "old"  -- expose a per-level "static hemi" value (ambient mod)
-        float4 groundcolor = 1.0;
+        const float3 hemicolor = float3(0.425,0.425,0.4); //"old"  -- expose a per-level "static hemi" value (ambient mod)
+        float4 groundcolor = 1;
     #endif
 
     #if _HASHEMIOCCLUSION_
@@ -361,24 +362,25 @@ float4 ps(SMVariableVSOutput input) : COLOR
         #endif
     #else
         #if _POINTLIGHT_
-            outColor.rgb = input.DiffuseAndHemiLerp * 2.0;
+            outColor.rgb = input.DiffuseAndHemiLerp * 2;
         #else
-            outColor.rgb = (input.DiffuseAndHemiLerp * 2.0) * dirShadow + hemicolor;
+            outColor.rgb = (input.DiffuseAndHemiLerp * 2) * dirShadow + hemicolor;
         #endif
         outColor.rgb *= diffuseTex;
-        outColor.rgb += (input.Specular * 2.0) * dirShadow;
+        outColor.rgb += (input.Specular * 2) * dirShadow;
     #endif
 
     outColor.a = diffuseTex.a*Transparency.a;
 
+    //if (FogColor.r < 0.01) outColor.rgb = float3(lerp(0.62f, 0.40f, diffuseTex.b),0,1); // M
     if (FogColor.r < 0.01)
     {
         #if _HASENVMAP_
             // If EnvMap enabled, then should be hot on thermals
-            outColor.rgb = float3(lerp(0.6, 0.3, diffuseTex.b), 1.0, 0.0); // M // 0.61, 0.25
+            outColor.rgb = float3(lerp(0.6,0.3,diffuseTex.b),1,0); // M //0.61,0.25
         #else
             // Else cold
-            outColor.rgb = float3(lerp(0.43, 0.17, diffuseTex.b), 1.0, 0.0);
+            outColor.rgb = float3(lerp(0.43,0.17,diffuseTex.b),1,0);
         #endif
     }
 
@@ -390,19 +392,19 @@ technique VariableTechnique
     pass
     {
         AlphaTestEnable = (AlphaTest);
-        AlphaRef        = (AlphaTestRef);
+        AlphaRef = (AlphaTestRef);
 
         #if _POINTLIGHT_
             AlphaBlendEnable = TRUE;
-            SrcBlend         = ONE;
-            DestBlend        = ONE;
-            fogenable        = false;
+            SrcBlend = ONE;
+            DestBlend = ONE;
+            fogenable = false;
         #else
             AlphaBlendEnable = FALSE;
-            FogEnable        = TRUE;
+            FogEnable = TRUE;
         #endif
 
         VertexShader = compile vs_2_a vs();
-        PixelShader  = compile ps_2_a ps();
+        PixelShader = compile ps_2_a ps();
     }
 }

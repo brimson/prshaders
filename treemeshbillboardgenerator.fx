@@ -14,9 +14,9 @@ float4 invBoundingBoxScale : InvBoundingBoxScale;
 float4 shadowColor : ShadowColor;
 float4 lightColor : LightColor;
 
-float4 ambColor : Ambient = {0.0f, 0.0f, 0.0f, 1.0f};
-float4 diffColor : Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
-float4 specColor : Specular = {0.0f, 0.0f, 0.0f, 1.0f};
+float4 ambColor  : Ambient  = { 0.0f, 0.0f, 0.0f, 1.0f };
+float4 diffColor : Diffuse  = { 1.0f, 1.0f, 1.0f, 1.0f };
+float4 specColor : Specular = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 dword colorWriteEnable : ColorWriteEnable;
 
@@ -38,9 +38,6 @@ texture colorLUT: TEXLAYER2
     string TextureType = "2D";
 >;
 
-//texture normalTexture: NormalMap;
-
-//texture colorLUT: LUTMap;
 float4 eyePos : EyePosition = {0.0f, 0.0f, 1.0f, 0.0f};
 
 float4 lightPos : LightPosition
@@ -132,15 +129,13 @@ float4 bumpSpecularPixelShaderBlinn1Alpha(VS_OUTPUT indata) : COLOR
     return 1 - diffuseMap.a;
 }
 
-VS_OUTPUT bumpSpecularVertexShaderBlinn1
-(
+VS_OUTPUT bumpSpecularVertexShaderBlinn1(
     appdata input,
     uniform float4x4 WorldViewProj,
     uniform float4x4 WorldIT,
     uniform float4x4 ViewInv,
     uniform float4 LightPos,
-    uniform float4 EyePos
-)
+    uniform float4 EyePos)
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
@@ -200,8 +195,7 @@ float4 spritePixelShaderAlpha(VS_OUTPUT2 indata) : COLOR
     return 1 - diffuseMap.a;
 }
 
-VS_OUTPUT2 spriteVertexShader
-(
+VS_OUTPUT2 spriteVertexShader(
     appdata2 input,
     uniform float4x4 WorldView,
     uniform float4x4 Proj,
@@ -210,8 +204,7 @@ VS_OUTPUT2 spriteVertexShader
     uniform float4 InvBoundingBoxScale,
     uniform float4 BoundingboxScaledInvGradientMag,
     uniform float4 ShadowColor,
-    uniform float4 LightColor
-)
+    uniform float4 LightColor)
 {
     VS_OUTPUT2 Out = (VS_OUTPUT2)0;
     float4 pos =  mul(input.Pos, WorldView);
@@ -239,7 +232,6 @@ technique trunk
     pass p0
     {
         ZEnable = true;
-        //ZWriteEnable = true;
         ZWriteEnable = false;
         ColorWriteEnable = (colorWriteEnable);
         AlphaBlendEnable = false;
@@ -309,8 +301,8 @@ technique alpha
         DestBlend = D3DBLEND_ZERO;
         AlphaTestEnable = false;
 
-        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(mvpMatrix, worldIMatrix, viewInverseMatrix,
-                                                                    lightPos, eyePos);
+        VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix, worldIMatrix, viewInverseMatrix,
+                                                                     	lightPos, eyePos);
         PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1Alpha();
     }
 }

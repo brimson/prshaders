@@ -16,7 +16,7 @@ float4 ParallaxScaleBias;
 float  StaticGloss;
 
 // common staticMesh samplers
-texture	LightMap;
+texture LightMap;
 sampler LightMapSampler = sampler_state
 {
     Texture = (LightMap);
@@ -28,7 +28,7 @@ sampler LightMapSampler = sampler_state
     MipMapLodBias = 0;
 };
 
-texture	DetailMap;
+texture DetailMap;
 sampler DetailMapSampler = sampler_state
 {
     Texture   = (DetailMap);
@@ -42,7 +42,7 @@ sampler DetailMapSampler = sampler_state
     AddressV = WRAP;
 };
 
-texture	DirtMap;
+texture DirtMap;
 sampler DirtMapSampler = sampler_state
 {
     Texture = (DirtMap);
@@ -67,7 +67,7 @@ sampler CrackMapSampler = sampler_state
     AddressV = WRAP;
 };
 
-texture	CrackNormalMap;
+texture CrackNormalMap;
 sampler CrackNormalMapSampler = sampler_state
 {
     Texture = (CrackNormalMap);
@@ -78,7 +78,7 @@ sampler CrackNormalMapSampler = sampler_state
     AddressV = WRAP;
 };
 
-texture	DiffuseMap;
+texture DiffuseMap;
 sampler DiffuseMapSampler = sampler_state
 {
     Texture = (DiffuseMap);
@@ -89,7 +89,7 @@ sampler DiffuseMapSampler = sampler_state
     AddressV = WRAP;
 };
 
-texture	NormalMap;
+texture NormalMap;
 sampler NormalMapSampler = sampler_state
 {
     Texture = (NormalMap);

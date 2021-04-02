@@ -1,11 +1,9 @@
-
 /*
     Global variables we use to hold the view matrix, projection matrix,
     ambient material, diffuse material, and the light vector that
     describes the direction to the light source. These variables are
     initialized from the application.
 */
-
 #include "shaders/RaCommon.fx"
 
 bool AlphaBlendEnable = false;
@@ -26,13 +24,13 @@ sampler DiffuseMapSampler = sampler_state
     MipMapLodBias = 0;
 };
 
-// VS - PS
+// VS PS
 
 struct VS_OUTPUT
 {
-    float4 Pos : POSITION0;
-    float2 Tex : TEXCOORD0;
-    float  Fog : FOG;
+    float4 Pos	: POSITION0;
+    float2 Tex	: TEXCOORD0;
+    float  Fog	: FOG;
 };
 
 string reqVertexElement[] =
@@ -43,19 +41,20 @@ string reqVertexElement[] =
 };
 
 VS_OUTPUT basicVertexShader(
-    float3 pos  : POSITION0;
-    float2 tex0 : TEXCOORD0;
-    float4 blendIndices : BLENDINDICES;)
+    float3 inPos: POSITION0,
+    float2 tex0	: TEXCOORD0,
+    float4 blendIndices : BLENDINDICES)
 {
-    VS_OUTPUT Out;
+    VS_OUTPUT Out = (VS_OUTPUT)0;
 
     // Compensate for lack of UBYTE4 on Geforce3
     int4 indexVector = D3DCOLORtoUBYTE4(blendIndices);
     int indexArray[4] = (int[4])indexVector;
 
-    Out.Pos = mul(float4(pos, 1.0), mul(Bones[indexArray[0]], ViewProjection));
+    Out.Pos = mul(float4(inPos, 1.0), mul(Bones[indexArray[0]], ViewProjection));
     Out.Fog = calcFog(Out.Pos.w);
     Out.Tex = tex0;
+
     return Out;
 }
 
@@ -81,16 +80,16 @@ technique defaultTechnique
     pass P0
     {
         vertexShader = compile vs_2_a basicVertexShader();
-        pixelShader  = compile ps_2_a PixelShader();
+        pixelShader = compile ps_2_a PixelShader();
 
         #ifdef ENABLE_WIREFRAME
             FillMode = WireFrame;
         #endif
 
-        AlphaTestEnable  = < AlphaTest >;
+        AlphaTestEnable = < AlphaTest >;
         AlphaBlendEnable = < AlphaBlendEnable >;
-        AlphaRef         = < alphaRef >;
-        SrcBlend         = < srcBlend >;
-        DestBlend        = < destBlend >;
+        AlphaRef = < alphaRef >;
+        SrcBlend = < srcBlend >;
+        DestBlend = < destBlend >;
     }
 }
