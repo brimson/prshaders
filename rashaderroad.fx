@@ -46,7 +46,6 @@ sampler DiffuseMapSampler = sampler_state
     AddressV = WRAP;
 };
 
-
 // INPUTS TO THE VERTEX SHADER FROM THE APP
 string reqVertexElement[] =
 {

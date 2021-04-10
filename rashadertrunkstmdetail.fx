@@ -76,7 +76,7 @@ VS_OUTPUT basicVertexShader
     Out.Tex0 = tex0 * TexUnpack;
 
     #ifndef BASEDIFFUSEONLY
-        Out.Tex1	= tex1 * TexUnpack;
+        Out.Tex1 = tex1 * TexUnpack;
     #endif
 
     normal = normal * NormalUnpack.x + NormalUnpack.y;
@@ -151,8 +151,8 @@ technique defaultTechnique
 {
     pass P0
     {
+        // TextureTransFormFlags[2] = PROJECTED;
         vertexShader = compile vs_2_a basicVertexShader();
-        TextureTransFormFlags[2] = PROJECTED;
         pixelShader = compile ps_2_a basicPixelShader();
 
         #ifdef ENABLE_WIREFRAME

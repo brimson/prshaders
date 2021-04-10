@@ -58,7 +58,6 @@ struct appdata
     float2 intensityAndRandomIntensity : TEXCOORD3;
 };
 
-
 struct VS_POINTSPRITE_OUTPUT
 {
     float4 HPos                   : POSITION;
@@ -69,11 +68,12 @@ struct VS_POINTSPRITE_OUTPUT
     float  pointSize              : PSIZE0;
 };
 
-VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input,
-                                    uniform float4x4 myWVP,
-                                    uniform TemplateParameters templ[10],
-                                    uniform float scale,
-                                    uniform float myHeightmapSize)
+VS_POINTSPRITE_OUTPUT vsPointSprite(
+    appdata input,
+    uniform float4x4 myWVP,
+    uniform TemplateParameters templ[10],
+    uniform float scale,
+    uniform float myHeightmapSize)
 {
     VS_POINTSPRITE_OUTPUT Out;
     Out.HPos = mul(float4(input.pos.xyz, 1.0f), myWVP);

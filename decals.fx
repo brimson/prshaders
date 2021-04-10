@@ -6,8 +6,6 @@
 // UNIFORM INPUTS
 float4x4 worldViewProjection         : WorldViewProjection;
 float4x3 instanceTransformations[10] : InstanceTransformations;
-float4x4 shadowTransformations[10]   : ShadowTransformations;
-float4 shadowViewPortMaps[10]        : ShadowViewPortMaps;
 
 float4 ambientColor : AmbientColor;
 float4 sunColor : SunColor;
@@ -16,7 +14,7 @@ float4 sunDirection : SunDirection;
 float2 decalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0f, 30.0f);
 
 texture texture0: TEXLAYER0;
-sampler sampler0 = sampler_state
+sampler decalSampler = sampler_state
 {
     Texture = (texture0);
     AddressU = CLAMP;
@@ -25,19 +23,6 @@ sampler sampler0 = sampler_state
     MagFilter = LINEAR;
     MipFilter = LINEAR;
 };
-
-texture texture1: HemiMapTexture;
-sampler sampler1 = sampler_state
-{
-    Texture = (texture1);
-    AddressU = CLAMP;
-    AddressV = CLAMP;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    MipFilter = LINEAR;
-};
-
-texture shadowMapTex: ShadowMapTex;
 
 struct appdata
 {
@@ -93,54 +78,12 @@ OUT_vsDecal vsDecal(appdata input)
     return Out;
 }
 
-OUT_vsDecalShadowed vsDecalShadowed(appdata input)
-{
-    OUT_vsDecalShadowed Out;
-
-    int index = input.TexCoordsInstanceIndexAndAlpha.z;
-
-    float3 Pos = mul(input.Pos, instanceTransformations[index]);
-    Out.HPos = mul(float4(Pos.xyz, 1.0f), worldViewProjection);
-
-    float3 worldNorm = mul(input.Normal.xyz, (float3x3)instanceTransformations[index]);
-    Out.Diffuse = saturate(dot(worldNorm, -sunDirection)) * sunColor;
-
-    float alpha = 1.0f - saturate((Out.HPos.z - decalFadeDistanceAndInterval.x)/decalFadeDistanceAndInterval.y);
-    alpha *= input.TexCoordsInstanceIndexAndAlpha.w;
-
-    Out.Alpha = alpha;
-    Out.Color = input.Color;
-    Out.ViewPortMap = shadowViewPortMaps[index];
-    Out.TexShadow =  mul(float4(Pos, 1.0), shadowTransformations[index]);
-    Out.TexShadow.z -= 0.007;
-    Out.Texture0 = input.TexCoordsInstanceIndexAndAlpha.xy;
-    Out.Fog = calcFog(Out.HPos.w);
-
-    return Out;
-}
-
 float4 psDecal(OUT_vsDecal indata) : COLOR
 {
     float3 lighting =  ambientColor + indata.Diffuse;
-    float4 outColor = tex2D(sampler0, indata.Texture0); // * indata.Color;
+    float4 outColor = tex2D(decalSampler, indata.Texture0); // * indata.Color;
     outColor.rgb *= indata.Color * lighting;
     outColor.a *= indata.Alpha;
-    return outColor;
-}
-
-float4 psDecalShadowed(OUT_vsDecalShadowed indata) : COLOR
-{
-    float2 texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
-    float dirShadow = 1.0;
-
-    float4 outColor = tex2D(sampler0, indata.Texture0);
-    outColor.rgb *=  indata.Color;
-    outColor.a *= indata.Alpha;
-
-    float3 lighting =  ambientColor.rgb + indata.Diffuse*dirShadow;
-
-    outColor.rgb *= lighting;
-
     return outColor;
 }
 

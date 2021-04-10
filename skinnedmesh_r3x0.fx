@@ -208,6 +208,15 @@ technique fullMRT
     }
 }
 
+
+
+
+
+
+
+
+
+
 //----------- pp tangent based lighting
 
 struct APP2VS_fullMRTtangent

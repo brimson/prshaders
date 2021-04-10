@@ -16,19 +16,6 @@ sampler dsampler3Wrap = sampler_state
     #endif
 };
 
-sampler dsampler4Wrap = sampler_state
-{
-    Texture = (texture4);
-    AddressU = WRAP;
-    AddressV = WRAP;
-    MipFilter = FILTER_TRN_MIP;
-    MinFilter = FILTER_TRN_DIFF_MIN;
-    MagFilter = FILTER_TRN_DIFF_MAG;
-    #ifdef FILTER_TRN_DIFF_MAX_ANISOTROPY
-        MaxAnisotropy = FILTER_TRN_DIFF_MAX_ANISOTROPY;
-    #endif
-};
-
 sampler dsampler6Wrap = sampler_state
 {
     Texture = (texture6);
@@ -353,8 +340,6 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
         //    Don't use w, it's harder to access from ps1.4
         //    outdata.BlendValueAndFade.xz = interpVal * float2(2, -2) + float2(0, 2);
         outdata.BlendValueAndFade.xz = interpVal * float2(1, -2) + float2(1, 2);
-        // outdata.BlendValueAndFade = interpVal * float4(2, 0, -2, 0) + float4(0, 0, 2, 0);
-        // outdata.BlendValueAndFade.w = interpVal;
     #endif
 
     #if HIGHTERRAIN
@@ -364,11 +349,7 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
     #else
         //tl: use squared yNormal as blend val. pre-multiply with fade value.
         //    outdata.BlendValueAndFade.yw = indata.Normal.y * indata.Normal.y * outdata.FogAndFade2.y;
-        outdata.BlendValueAndFade.yw = pow(indata.Normal.y,8);
-
-        //tl: pre calculate half-lerp against constant, result is 2 ps instruction lerp distributed
-        //    to 1 vs MAD and 1 ps MAD
-        //    outdata.FogAndFade2.z = outdata.BlendValueAndFade.y*-0.5 + 0.5;
+        outdata.BlendValueAndFade.yw = pow(indata.Normal.y, 8);
     #endif
 
     outdata.Tex1 = projToLighting(outdata.Pos);

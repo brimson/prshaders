@@ -678,6 +678,15 @@ technique t0_HemiAndSunAndColorPP
     }
 }
 
+
+
+
+
+
+
+
+
+
 // pp tangent based lighting
 
 VS2PS_PP VShader_HemiAndSunPPtangent(APP2VStangent indata, uniform int NumBones)
@@ -875,6 +884,15 @@ technique t0_HemiAndSunPV
         PixelShader = compile ps_2_a PShader_HemiAndSunPV();
     }
 }
+
+
+
+
+
+
+
+
+
 
 struct VS2PS_PVCOLOR
 {
@@ -1102,6 +1120,15 @@ technique t0_PointLightPV
     }
 }
 
+
+
+
+
+
+
+
+
+
 // pp object based lighting
 
 struct VS2PS_PointLight_PP
@@ -1278,6 +1305,15 @@ technique t0_SpotLightPV
     }
 }
 
+
+
+
+
+
+
+
+
+
 struct VS2PS_SpotLight_PP
 {
     float4 Pos         : POSITION;
@@ -1448,6 +1484,15 @@ technique t0_MulDiffuse
         PixelShader = compile ps_2_a PShader_MulDiffuse();
     }
 }
+
+
+
+
+
+
+
+
+
 
 //----------------
 // humanskin
@@ -1731,6 +1776,15 @@ technique humanskin
         PixelShader = compile ps_2_a psSkinapply();
     }
 }
+
+
+
+
+
+
+
+
+
 
 struct VS2PS_ShadowMap
 {
