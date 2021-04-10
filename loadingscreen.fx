@@ -31,25 +31,24 @@ VS_OUT VSScreen(
     return Out;
 }
 
+float4 PSScreen(VS_OUT input) : COLOR
+{
+    float4 tex = tex2D(TexMapSampler, input.TexCoord);
+    float4 output;
+    output.rgb = tex * input.Diffuse;
+    output.a = input.Diffuse.a;
+    return output;
+}
+
 technique Screen
 {
     pass P0
     {
         VertexShader = compile vs_2_a VSScreen();
-        PixelShader  = NULL;
-        ColorOp[0]   = Modulate;
-        ColorArg1[0] = Texture;
-        ColorArg2[0] = Diffuse;
-        AlphaOp[0]   = SelectArg1;
-        AlphaArg1[0] = Diffuse;
-        ColorOp[1] = Disable;
-        AlphaOp[1] = Disable;
+        PixelShader  = compile ps_2_a PSScreen();
         AlphaBlendEnable = false;
         StencilEnable = false;
         AlphaTestEnable = false;
         CullMode = None;
-        TexCoordIndex[0] =0;
-        TextureTransformFlags[0] = Disable;
-        Sampler[0] = <TexMapSampler>;
     }
 }

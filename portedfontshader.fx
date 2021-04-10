@@ -12,6 +12,16 @@ sampler sampler0 = sampler_state
     MipFilter = LINEAR;
 };
 
+sampler sampler0Wrap = sampler_state
+{
+    Texture = (texture0);
+    AddressU = WRAP;
+    AddressV = WRAP;
+    MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
 struct APP2VS
 {
     float4 HPos      : POSITION;
@@ -91,6 +101,12 @@ technique Overlay_States <bool Restore = true;>
     }
 }
 
+float4 HPosPS2(VS2PS input) : COLOR
+{
+    float4 tex = tex2D(sampler0Wrap, input.Tex0);
+    return tex * float4(1.0, 1.0, 1.0, alpha.a);
+}
+
 technique Overlay <
     int Declaration[] =
     {
@@ -105,23 +121,7 @@ technique Overlay <
 {
     pass p0
     {
-        TextureFactor = (alpha);
-        Texture[0] = (texture0);
-        AddressU[0] = WRAP;
-        AddressV[0] = WRAP;
-        MipFilter[0] = LINEAR;
-        MinFilter[0] = LINEAR;
-        MagFilter[0] = LINEAR;
-
-        ColorOp[0] = SELECTARG1;
-        ColorArg1[0] = TEXTURE;
-        AlphaOp[0] = MODULATE;
-        AlphaArg1[0] = TEXTURE;
-        AlphaArg2[0] = TFACTOR;
-        ColorOp[1] = DISABLE;
-        AlphaOp[1] = DISABLE;
-
         VertexShader = compile vs_2_a HPosVS();
-        PixelShader = NULL;
+        PixelShader = compile ps_2_a HPosPS2();
     }
 }

@@ -92,6 +92,14 @@ float4 psQuadWTexOneTexMasked(VS2PS indata) : COLOR
     return outcol;
 }
 
+// Note about D3DTA_DIFFUSE from https://docs.microsoft.com/en-us/windows/win32/direct3d9/d3dta
+// If the vertex does not contain a diffuse color, the default color is 0xffffffff (White)
+float4 psFFP(VS2PS input) : COLOR
+{
+    float4 tex = tex2D(sampler0Clamp, input.Tex);
+    return (tex + 1.0) * input.Col;
+}
+
 technique Menu { pass{ } }
 
 technique Menu_States <bool Restore = true;>
@@ -187,32 +195,8 @@ technique QuadCache
         ZEnable = TRUE;
         ZFunc = LESS;
         ZWriteEnable = TRUE;
-        TextureFactor = 0xFFFFFFFF;
-
-        // App pixel settings
-        ColorOp[0] = ADD;
-        ColorArg1[0] = TEXTURE;
-        ColorArg2[0] = TFACTOR;
-        ColorOp[1] = MODULATE;
-        ColorArg1[1] = CURRENT;
-        ColorArg2[1] = DIFFUSE;
-        ColorOp[2] = DISABLE;
-        AlphaOp[0] = ADD;
-        AlphaArg1[0] = TEXTURE;
-        AlphaArg2[0] = TFACTOR;
-        AlphaOp[1] = MODULATE;
-        AlphaArg1[1] = CURRENT;
-        AlphaArg2[1] = DIFFUSE;
-        AlphaOp[2] = DISABLE;
-
-        Texture[0] = (texture0);
-        AddressU[0] = CLAMP;
-        AddressV[0] = CLAMP;
-        MipFilter[0] = LINEAR;
-        MinFilter[0] = LINEAR;
-        MagFilter[0] = LINEAR;
 
         VertexShader = compile vs_2_a vsFFP();
-        PixelShader = NULL;
+        PixelShader = compile ps_2_a psFFP();
     }
 }

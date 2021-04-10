@@ -35,7 +35,6 @@ sampler lutSampler = sampler_state
     MipFilter = LINEAR;
 };
 
-
 // constant array
 struct TemplateParameters
 {
@@ -106,8 +105,8 @@ VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input,
 
 float4 psPointSprite(VS_POINTSPRITE_OUTPUT input) : COLOR
 {
-    float4 tDiffuse = tex2D( diffuseSampler, input.texCoords);
-    float4 tLut = tex2D( lutSampler, input.texCoords1);
+    float4 tDiffuse = tex2D(diffuseSampler, input.texCoords);
+    float4 tLut = tex2D(lutSampler, input.texCoords1);
 
     float4 color = input.color * tDiffuse;
     color.rgb *= tLut.a + input.lightMapIntensityOffset;
@@ -142,11 +141,6 @@ technique PointSprite
         AlphaBlendEnable = TRUE;
         SrcBlend = SRCALPHA;
         DestBlend = ONE;
-
-        Texture[0] = (texture0);
-        Texture[1] = NULL;
-        Texture[2] = NULL;
-        Texture[3] = NULL;
 
         PointSpriteEnable = TRUE;
         PointScaleEnable = TRUE;

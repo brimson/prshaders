@@ -1,6 +1,15 @@
 #line 2 "QuadGeom.fx"
 
 texture texture0: TEXLAYER0;
+sampler sampler0 = sampler_state
+{
+    Texture = (texture0);
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+    MipFilter = POINT;
+    MinFilter = POINT;
+    MagFilter = POINT;
+};
 
 struct APP2VS
 {
@@ -20,6 +29,13 @@ VS2PS vsFFP(APP2VS indata)
     outdata.Tex.x = indata.Pos.x * 0.5 + 0.5;
     outdata.Tex.y = 1.0f - (indata.Pos.y * 0.5 + 0.5);
     return outdata;
+}
+
+// Note about D3DTA_DIFFUSE from https://docs.microsoft.com/en-us/windows/win32/direct3d9/d3dta
+// If the vertex does not contain a diffuse color, the default color is 0xffffffff (White)
+float4 psFFP(VS2PS input) : COLOR
+{
+    return tex2D(sampler0, input.Tex);
 }
 
 technique TexturedQuad
@@ -46,22 +62,7 @@ technique TexturedQuad
         StencilPass = ZERO;
         StencilRef = 0;
 
-        // App pixel settings
-        ColorOp[0] = SELECTARG2;
-        ColorArg1[0] = DIFFUSE;
-        ColorArg2[0] = TEXTURE;
-        AlphaOp[0] = MODULATE;
-        AlphaArg1[0] = DIFFUSE;
-        AlphaArg2[0] = TEXTURE;
-        Texture[0] = (texture0);
-        AddressU[0] = CLAMP;
-        AddressV[0] = CLAMP;
-        MipFilter[0] = POINT;
-        MinFilter[0] = POINT;
-        MagFilter[0] = POINT;
-
         VertexShader = compile vs_2_a vsFFP();
-        PixelShader = NULL;
+        PixelShader = compile ps_2_a psFFP();
     }
 }
-

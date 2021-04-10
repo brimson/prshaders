@@ -45,12 +45,17 @@ struct VS_SHAPE
     float4 Diffuse  : COLOR0;
 };
 
+struct VS_LINE
+{
+    float4 Position : POSITION;
+    float4 Diffuse  : COLOR0;
+};
+
 struct VS_TS0
 {
     float4 Position : POSITION;
     float2 TexCoord : TEXCOORD0;
 };
-
 
 struct VS_TS3
 {
@@ -82,9 +87,9 @@ VS_SHAPE VSShape(float3 Position : POSITION, float4 VtxColor : COLOR0)
     return Out;
 }
 
-VS_SHAPE VSLine(float3 Position : POSITION)
+VS_LINE VSLine(float3 Position : POSITION, float2 TexCoord : TEXCOORD0)
 {
-    VS_SHAPE Out;
+    VS_LINE Out;
     Out.Position = float4(Position.xy, 0.0f, 1.0);
     Out.Diffuse = DiffuseColor;
     return Out;
@@ -187,6 +192,11 @@ float4 PSRegularTSX(VS_TS3 input) : COLOR
     return tex2D(TexMapSamplerWrap, input.TexCoord) * input.Diffuse;
 }
 
+float4 PSLine(VS_LINE input) : COLOR
+{
+    return input.Diffuse;
+}
+
 technique Shape
 {
     pass P0
@@ -220,11 +230,8 @@ technique Line
     pass P0
     {
         VertexShader = compile vs_2_a VSLine();
-        PixelShader  = NULL;
+        PixelShader  = compile ps_2_a PSLine();
         AlphaTestEnable = false;
-        TexCoordIndex[0] = 0;
-        TextureTransformFlags[0] = Disable;
-        Sampler[0] = <TexMapSamplerClamp>;
     }
 }
 

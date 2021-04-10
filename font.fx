@@ -73,6 +73,11 @@ VS_SELECTIONQUAD VSSelectionQuad(float3 Position : POSITION)
     return Out;
 }
 
+float4 PSSelectionQuad(VS_SELECTIONQUAD input) : COLOR
+{
+    return input.Diffuse;
+}
+
 technique Regular
 {
     pass P0
@@ -104,19 +109,10 @@ technique SelectionQuad
     pass P0
     {
         VertexShader = compile vs_2_a VSSelectionQuad();
-        PixelShader = NULL;
+        PixelShader = compile ps_2_a PSSelectionQuad();
         AlphaTestEnable = false;
         AlphaBlendEnable = true;
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
-        ColorOp[0]   = SelectArg1;
-        ColorArg1[0] = Diffuse;
-        AlphaOp[0]   = SelectArg1;
-        AlphaArg1[0] = Diffuse;
-        ColorOp[1]   = Disable;
-        AlphaOp[1]   = Disable;
-        TexCoordIndex[0] =0;
-        TextureTransformFlags[0] = Disable;
-        Sampler[0] = <TexMapSamplerClamp>;
     }
 }
