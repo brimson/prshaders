@@ -37,6 +37,11 @@ VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
     return outdata;
 }
 
+float4 PShader(VS2PS input) : COLOR
+{
+    return tex2D(diffuseSampler, input.Tex0);
+}
+
 technique t0_States <bool Restore = true;>
 {
     pass BeginStates
@@ -59,16 +64,6 @@ technique t0
     pass p0
     {
         VertexShader = compile vs_2_a VShader(mWorldViewProj);
-
-        Sampler[0] = <diffuseSampler>;
-
-        ColorOp[0] = SelectArg1;
-        ColorArg1[0] = Texture;
-        ColorArg2[0] = Current;
-        AlphaOp[0] = SelectArg1;
-        AlphaArg1[0] = Texture;
-
-        ColorOp[1] = Disable;
-        AlphaOp[1] = Disable;
+        PixelShader = compile ps_2_a PShader();
     }
 }
