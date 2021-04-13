@@ -65,7 +65,7 @@ OUT_vsDecal vsDecal(appdata input)
     Out.HPos = mul(float4(Pos.xyz, 1.0f), worldViewProjection);
 
     float3 worldNorm = mul(input.Normal.xyz, (float3x3)instanceTransformations[index]);
-    Out.Diffuse = saturate(dot(worldNorm, -sunDirection)) * sunColor;
+    Out.Diffuse = saturate(dot(worldNorm, -sunDirection.xyz)) * sunColor;
 
     float alpha = 1.0f - saturate((Out.HPos.z - decalFadeDistanceAndInterval.x)/decalFadeDistanceAndInterval.y);
     alpha *= input.TexCoordsInstanceIndexAndAlpha.w;
@@ -80,7 +80,7 @@ OUT_vsDecal vsDecal(appdata input)
 
 float4 psDecal(OUT_vsDecal indata) : COLOR
 {
-    float3 lighting =  ambientColor + indata.Diffuse;
+    float3 lighting =  ambientColor.rgb + indata.Diffuse;
     float4 outColor = tex2D(decalSampler, indata.Texture0); // * indata.Color;
     outColor.rgb *= indata.Color * lighting;
     outColor.a *= indata.Alpha;

@@ -144,7 +144,7 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
     #endif
 
     //tl: use compressed color register to avoid this being compiled as a 2.0 shader.
-    return float4(vertexColor.rgb * diffuseMap * 4.0, VsOut.Color.a * 2.0);
+    return float4(vertexColor.rgb * diffuseMap.rgb * 4.0, VsOut.Color.a * 2.0);
 };
 
 technique defaultTechnique

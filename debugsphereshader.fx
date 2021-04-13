@@ -146,7 +146,7 @@ VS2PS vsLightSource(APP2VS indata,
 {
     VS2PS outdata;
 
-    float4 Pos = float4(mul(indata.Pos, world), 1.0));
+    float4 Pos = float4(mul(indata.Pos, world).xyz, 1.0));
     outdata.Pos = mul(Pos, wvp);
 
     // Lighting. Shade (Ambient + etc.)

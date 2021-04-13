@@ -207,8 +207,8 @@ float4 bumpSpecularPixelShaderBlinn1(VS_OUTPUT input) : COLOR
     float4 specular = float4(1, 1, 1, 1);
 
     float4 normalmap = tex2D(normalSampler, input.NormalMap);
-    float u = dot(input.LightVec, (input.NormalMap * 2.0) - 1.0);
-    float v = dot(input.HalfVec, (input.NormalMap * 2.0) - 1.0);
+    float u = dot(input.LightVec.xy, (input.NormalMap * 2.0) - 1.0);
+    float v = dot(input.HalfVec.xy, (input.NormalMap * 2.0) - 1.0);
     float4 gloss = tex2D(diffuseSampler, float2(u,v));
     float4 diffusemap = tex2D(diffuseSampler, input.DiffMap);
 
@@ -545,7 +545,7 @@ VS_OUTPUT_AlphaScope vsAlphaScope(appdata input, uniform float4x4 ViewProj) {
 float4 psAlphaScope(VS_OUTPUT_AlphaScope input) : COLOR
 {
     float4 accumLight = tex2D(lightSampler, input.Tex1);
-    float4 diffuse = tex2D(diffuseSamplerClamp, input.Tex0AndTrans);
+    float4 diffuse = tex2D(diffuseSamplerClamp, input.Tex0AndTrans.xy);
 
     diffuse.rgb = diffuse * accumLight;
     diffuse.a *= (1.0 - input.Tex0AndTrans.b);
@@ -635,7 +635,7 @@ VS2PS_ShadowMap vsShadowMap(appdata input)
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
     int IndexArray[4] = (int[4])IndexVector;
 
-    float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1.0);
+    float4 unpackPos = float4(input.Pos.xyz * PosUnpack.xyz, 1.0);
     float3 Pos = mul(unpackPos, mOneBoneSkinning[IndexArray[0]]);
 
     Out.HPos = calcShadowProjCoords(float4(Pos.xyz, 1.0), vpLightTrapezMat, vpLightMat);
@@ -700,7 +700,7 @@ VS2PS_ShadowMap vsShadowMapPoint(appdata input)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 wPos = mul(input.Pos*PosUnpack, mOneBoneSkinning[IndexArray[0]]);
-    float3 hPos = wPos.xyz - lightPos;
+    float3 hPos = wPos.xyz - lightPos.xyz;
     hPos.z *= paraboloidValues.x;
 
     float d = length(hPos.xyz);
@@ -724,7 +724,7 @@ VS2PS_ShadowMapAlpha vsShadowMapPointAlpha(appdata input)
     int IndexArray[4] = (int[4])IndexVector;
 
     float3 wPos = mul(input.Pos*PosUnpack, mOneBoneSkinning[IndexArray[0]]);
-    float3 hPos = wPos.xyz - lightPos;
+    float3 hPos = wPos.xyz - lightPos.xyz;
     hPos.z *= paraboloidValues.x;
 
     float d = length(hPos.xyz);

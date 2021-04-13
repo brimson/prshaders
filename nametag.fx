@@ -117,8 +117,8 @@ VS2PS vsNametag_arrow(APP2VS input)
     VS2PS output = (VS2PS)0;
 
     // does a 2x2 matrix 2d rotation of the local vertex coordinates in screen space
-    output.Pos.x = dot(input.Pos, float3(ArrowRot.xy, 0.0));
-    output.Pos.y = dot(input.Pos, float3(ArrowRot.zw, 0.0));
+    output.Pos.x = dot(input.Pos.xyz, float3(ArrowRot.xy, 0.0));
+    output.Pos.y = dot(input.Pos.xyz, float3(ArrowRot.zw, 0.0));
     output.Pos.z = 0.0;
     output.Pos.xyz *= fAspectMul;
     output.Pos.xyz += ArrowTrans * fArrowMult;
@@ -168,7 +168,7 @@ VS2PS vsNametag_vehicleIcons(APP2VS input)
     // fix aspect again
     rotPos.y *= fAspectComp;
 
-    output.Pos.xyz = rotPos + HealthBarTrans;
+    output.Pos.xyz = rotPos + HealthBarTrans.xyz;
     output.Pos.w = 1.0;
 
     output.Tex0 = input.Tex0 + iconTexOffset;

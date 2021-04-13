@@ -8,10 +8,10 @@ float4x4 worldViewITMatrix : WorldViewIT;
 float4x4 viewInverseMatrix : ViewI;
 float4x4 worldMatrix : World;
 
-float4 ambColor : Ambient = {0.0, 0.0, 0.0, 1.0};
-float4 diffColor : Diffuse = {1.0, 1.0, 1.0, 1.0};
-float4 specColor : Specular = {0.0, 0.0, 0.0, 1.0};
-float4 fuzzyLightScaleValue : FuzzyLightScaleValue = {1.75,1.75,1.75,1};
+float4 ambColor  : Ambient  = { 0.0, 0.0, 0.0, 1.0 };
+float4 diffColor : Diffuse  = { 1.0, 1.0, 1.0, 1.0 };
+float4 specColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
+float4 fuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
 float4 lightmapOffset : LightmapOffset;
 float dropShadowClipheight : DROPSHADOWCLIPHEIGHT;
 float4 parallaxScaleBias : PARALLAXSCALEBIAS;
@@ -79,7 +79,7 @@ float4 lightPos : LightPosition  : register(vs_1_1, c12)
 <
     string Object = "PointLight";
     string Space = "World";
-> = {0.0, 0.0, 1.0, 1.0};
+> = { 0.0, 0.0, 1.0, 1.0 };
 
 float4 lightDir : LightDirection;
 float4 sunColor : SunColor;
@@ -195,8 +195,8 @@ struct VS2PS_ShadowMapAlpha
 
 float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 {
-     float4 shadowcoords = mul(Pos, matTrap);
-     float2 lightZW = mul(Pos, matLight).zw;
+    float4 shadowcoords = mul(Pos, matTrap);
+    float2 lightZW = mul(Pos, matLight).zw;
     shadowcoords.z = (lightZW.x*shadowcoords.w) / lightZW.y;			// (zL*wT)/wL == zL/wL post homo
     return shadowcoords;
 }
@@ -204,7 +204,7 @@ float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 VS2PS_ShadowMap vsShadowMap(APPDATA_ShadowMap input)
 {
     VS2PS_ShadowMap Out;
-    float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1);
+    float4 unpackPos = float4(input.Pos.xyz * PosUnpack.xyz, 1);
     float4 wPos = mul(unpackPos, worldMatrix);
     Out.Pos = calcShadowProjCoords(float4(wPos.xyz,1.0), vpLightTrapezMat, vpLightMat);
     Out.PosZW.xy = Out.Pos.zw;
@@ -214,7 +214,7 @@ VS2PS_ShadowMap vsShadowMap(APPDATA_ShadowMap input)
 VS2PS_ShadowMapAlpha vsShadowMapAlpha(APPDATA_ShadowMap input)
 {
     VS2PS_ShadowMapAlpha Out;
-    float4 unpackPos = float4(input.Pos.xyz * PosUnpack, 1);
+    float4 unpackPos = float4(input.Pos.xyz * PosUnpack.xyz, 1);
     float4 wPos = mul(unpackPos, worldMatrix);
     Out.Pos = calcShadowProjCoords(wPos, vpLightTrapezMat, vpLightMat);
     Out.PosZW.xy = Out.Pos.zw;

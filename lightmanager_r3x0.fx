@@ -233,10 +233,10 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamicObjectsNV(VS2PS_D3DXMesh indata)
 
     float texel = 1.0 / 1024.0;
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler4bilin, lightUV + float2(-texel*1, -texel*2)).r;
-    staticSamples.y = tex2D(sampler4bilin, lightUV + float2( texel*1, -texel*2)).r;
-    staticSamples.z = tex2D(sampler4bilin, lightUV + float2(-texel*1,  texel*2)).r;
-    staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
+    staticSamples.x = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1, -texel*2)).r;
+    staticSamples.y = tex2D(sampler4bilin, lightUV.xy + float2( texel*1, -texel*2)).r;
+    staticSamples.z = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1,  texel*2)).r;
+    staticSamples.w = tex2D(sampler4bilin, lightUV.xy + float2( texel*1,  texel*2)).r;
     staticSamples.x = dot(staticSamples, 0.25);
 
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
@@ -264,16 +264,16 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamicObjects(VS2PS_D3DXMesh indata)
 
     float texel = 1.0 / 1024.0;
     float4 samples;
-    samples.x = tex2D(sampler3, lightUV);
-    samples.y = tex2D(sampler3, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler3, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler3, lightUV + float2(texel, texel));
+    samples.x = tex2D(sampler3, lightUV.xy);
+    samples.y = tex2D(sampler3, lightUV.xy + float2(texel, 0));
+    samples.z = tex2D(sampler3, lightUV.xy + float2(0, texel));
+    samples.w = tex2D(sampler3, lightUV.xy + float2(texel, texel));
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler4bilin, lightUV + float2(-texel*1, -texel*2)).r;
-    staticSamples.y = tex2D(sampler4bilin, lightUV + float2( texel*1, -texel*2)).r;
-    staticSamples.z = tex2D(sampler4bilin, lightUV + float2(-texel*1,  texel*2)).r;
-    staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
+    staticSamples.x = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1, -texel*2)).r;
+    staticSamples.y = tex2D(sampler4bilin, lightUV.xy + float2( texel*1, -texel*2)).r;
+    staticSamples.z = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1,  texel*2)).r;
+    staticSamples.w = tex2D(sampler4bilin, lightUV.xy + float2( texel*1,  texel*2)).r;
 
     staticSamples.x = dot(staticSamples, 0.25);
 
@@ -302,14 +302,14 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamic1pObjectsNV(VS2PS_D3DXMesh indata)
     float4 lightUV = mul(viewPos, mLightVP);
     lightUV.xy = clamp(lightUV.xy, vViewportMap.xy, vViewportMap.zw);
 
-    float avgShadowValue = tex2D(sampler3bilin, lightUV); // HW percentage closer filtering.
+    float avgShadowValue = tex2D(sampler3bilin, lightUV.xy); // HW percentage closer filtering.
 
     float texel = 1.0 / 1024.0;
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler4bilin, lightUV + float2(-texel*1, -texel*2)).r;
-    staticSamples.y = tex2D(sampler4bilin, lightUV + float2( texel*1, -texel*2)).r;
-    staticSamples.z = tex2D(sampler4bilin, lightUV + float2(-texel*1,  texel*2)).r;
-    staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
+    staticSamples.x = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1, -texel*2)).r;
+    staticSamples.y = tex2D(sampler4bilin, lightUV.xy + float2( texel*1, -texel*2)).r;
+    staticSamples.z = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1,  texel*2)).r;
+    staticSamples.w = tex2D(sampler4bilin, lightUV.xy + float2( texel*1,  texel*2)).r;
     staticSamples.x = dot(staticSamples, 0.25);
 
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
@@ -338,10 +338,10 @@ PS2FB_DiffSpec psDx9_SunLightShadowDynamic1pObjects(VS2PS_D3DXMesh indata)
     float texel = 1.0 / 1024.0;
 
     float4 staticSamples;
-    staticSamples.x = tex2D(sampler4bilin, lightUV + float2(-texel*1, -texel*2)).r;
-    staticSamples.y = tex2D(sampler4bilin, lightUV + float2( texel*1, -texel*2)).r;
-    staticSamples.z = tex2D(sampler4bilin, lightUV + float2(-texel*1,  texel*2)).r;
-    staticSamples.w = tex2D(sampler4bilin, lightUV + float2( texel*1,  texel*2)).r;
+    staticSamples.x = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1, -texel*2)).r;
+    staticSamples.y = tex2D(sampler4bilin, lightUV.xy + float2( texel*1, -texel*2)).r;
+    staticSamples.z = tex2D(sampler4bilin, lightUV.xy + float2(-texel*1,  texel*2)).r;
+    staticSamples.w = tex2D(sampler4bilin, lightUV.xy + float2( texel*1,  texel*2)).r;
     staticSamples.x = dot(staticSamples, 0.25);
 
     float diff = saturate(dot(viewNormal.xyz, -LightDir.xyz));
@@ -419,10 +419,10 @@ PS2FB_DiffSpec psDx9_SunLightShadowStaticObjects(VS2PS_D3DXMesh indata)
 
     float texel = 1.0 / 1024.0;
     float4 samples;
-    samples.x = tex2D(sampler3, lightUV);
-    samples.y = tex2D(sampler3, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler3, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler3, lightUV + float2(texel, texel));
+    samples.x = tex2D(sampler3, lightUV.xy);
+    samples.y = tex2D(sampler3, lightUV.xy + float2(texel, 0));
+    samples.z = tex2D(sampler3, lightUV.xy + float2(0, texel));
+    samples.w = tex2D(sampler3, lightUV.xy + float2(texel, texel));
 
     const float epsilon = 0.0075;
     float4 cmpbits = (samples.xyzw + epsilon) >= saturate(lightUV.zzzz);
@@ -707,7 +707,7 @@ VS2PS_D3DXMesh vsDx9_PointLight(APP2VS_D3DXMesh indata)
 {
     VS2PS_D3DXMesh outdata;
 
-    float3 wPos = indata.Pos * LightAttenuationRange + LightWorldPos.xyz;
+    float3 wPos = indata.Pos.xyz * LightAttenuationRange + LightWorldPos.xyz;
     outdata.Pos = mul(float4(wPos, 1.0), mVP);
 
     outdata.TexCoord0.xy  = (outdata.Pos.xy / outdata.Pos.ww) * 0.5 + 0.5;
@@ -728,7 +728,7 @@ PS2FB_DiffSpec psDx9_PointLight(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
 
@@ -751,7 +751,7 @@ PS2FB_DiffSpec psDx9_PointLightNV40(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
 
@@ -778,7 +778,7 @@ PS2FB_DiffSpec psDx9_PointLight2(VS2PS_D3DXMesh indata)
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
     float4 lightmap = tex2Dproj(sampler5, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
 
@@ -804,7 +804,7 @@ PS2FB_DiffSpec psDx9_PointLightShadowNV(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -856,7 +856,7 @@ PS2FB_DiffSpec psDx9_PointLightShadow(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -878,8 +878,8 @@ PS2FB_DiffSpec psDx9_PointLightShadow(VS2PS_D3DXMesh indata)
     paraPos2.xy = paraPos2.xy * vViewportMap.wz + vViewportMap.xy;
 
     float2 paraSamples;
-    paraSamples.x = tex2D(sampler5, paraPos1);
-    paraSamples.y = tex2D(sampler6, paraPos2);
+    paraSamples.x = tex2D(sampler5, paraPos1.xy);
+    paraSamples.y = tex2D(sampler6, paraPos2.xy);
 
     const float epsilon = 0.0075;
     float2 avgPara = (paraSamples.xy + epsilon) >= paraPosZ;
@@ -902,7 +902,7 @@ PS2FB_DiffSpec psDx9_PointLightShadowNV40(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -925,8 +925,8 @@ PS2FB_DiffSpec psDx9_PointLightShadowNV40(VS2PS_D3DXMesh indata)
     paraPos2.xy = paraPos2.xy * vViewportMap.wz + vViewportMap.xy;
 
     float2 paraSamples;
-    paraSamples.x = tex2D(sampler5, paraPos1);
-    paraSamples.y = tex2D(sampler6, paraPos2);
+    paraSamples.x = tex2D(sampler5, paraPos1.xy);
+    paraSamples.y = tex2D(sampler6, paraPos2.xy);
 
     const float epsilon = 0.0075;
     float2 avgPara = (paraSamples.xy + epsilon) >= paraPosZ;
@@ -947,17 +947,17 @@ VS2PS_D3DXMesh2 vsDx9_PointLightGlow(APP2VS_D3DXMesh indata)
     VS2PS_D3DXMesh2 outdata;
 
     float scale = LightAttenuationRange;
-    float3 wPos = (indata.Pos*scale) + LightWorldPos.xyz;
+    float3 wPos = (indata.Pos.xyz * scale) + LightWorldPos.xyz;
     outdata.Pos = mul(float4(wPos, 1.0), mVP);
 
-    outdata.wPos = dot(normalize(EyePos-LightWorldPos.xyz),normalize(wPos-LightWorldPos.xyz));
+    outdata.wPos = dot(normalize(EyePos.xyz-LightWorldPos.xyz),normalize(wPos-LightWorldPos.xyz));
     outdata.wPos = outdata.wPos*outdata.wPos*outdata.wPos*outdata.wPos;
     return outdata;
 }
 
 float4 psDx9_PointLightGlow(VS2PS_D3DXMesh2 indata) : COLOR
 {
-    return float4(LightCol * indata.wPos.rgb, 1.0);
+    return float4(LightCol.rgb * indata.wPos.rgb, 1.0);
 }
 
 technique PointLight <
@@ -1259,13 +1259,13 @@ PS2FB_DiffSpec psDx9_SpotLightNV40(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
 
     float3 lightVecN = normalize(lightVec);
-    float fallOff = dot(-lightVecN, LightDir);
+    float fallOff = dot(-lightVecN, LightDir.xyz);
     float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
@@ -1288,13 +1288,13 @@ PS2FB_DiffSpec psDx9_SpotLight(VS2PS_D3DXMesh indata)
     float4 viewNormal = tex2Dproj(sampler2, indata.TexCoord0);
     float4 viewPos = tex2Dproj(sampler3, indata.TexCoord0);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
 
     float3 lightVecN = normalize(lightVec);
-    float fallOff = dot(-lightVecN, LightDir);
+    float fallOff = dot(-lightVecN, LightDir.xyz);
     float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
@@ -1321,15 +1321,15 @@ PS2FB_DiffSpec psDx9_SpotLightShadowNV(VS2PS_D3DXMesh indata)
     lightUV.xyz /= lightUV.w;
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
 
-    float4 samples = tex2D(sampler6bilin, lightUV);
+    float4 samples = tex2D(sampler6bilin, lightUV.xy);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
 
     float3 lightVecN = normalize(lightVec);
-    float fallOff = dot(-lightVecN, LightDir);
+    float fallOff = dot(-lightVecN, LightDir.xyz);
     float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
@@ -1353,15 +1353,15 @@ PS2FB_DiffSpec psDx9_SpotLightShadowNV40(VS2PS_D3DXMesh indata)
     lightUV.xyz /= lightUV.w;
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
 
-    float4 samples = tex2D(sampler6, lightUV);
+    float4 samples = tex2D(sampler6, lightUV.xy);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
 
     float3 lightVecN = normalize(lightVec);
-    float fallOff = dot(-lightVecN, LightDir);
+    float fallOff = dot(-lightVecN, LightDir.xyz);
     float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
@@ -1388,15 +1388,15 @@ PS2FB_DiffSpec psDx9_SpotLightShadow(VS2PS_D3DXMesh indata)
     lightUV.xyz /= lightUV.w;
     lightUV.xy = lightUV.xy * float2(0.5, -0.5) + 0.5;
 
-    float4 samples = tex2D(sampler6, lightUV);
+    float4 samples = tex2D(sampler6, lightUV.xy);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
 
     float3 lightVecN = normalize(lightVec);
-    float fallOff = dot(-lightVecN, LightDir);
+    float fallOff = dot(-lightVecN, LightDir.xyz);
     float4 conicalAtt = tex1D(sampler5bilin, 1.0 - (fallOff * fallOff));
 
     float diff = saturate(dot(viewNormal.xyz, lightVecN)) * radialAtt * conicalAtt;
@@ -1441,9 +1441,9 @@ PS2FB_DiffSpec psDx9_SpotProjectorNV40(VS2PS_D3DXMesh indata)
     float4 lightUV = mul(viewPos, mLightVP);
     lightUV.xy /= lightUV.w;
     lightUV.xy = lightUV.xy * 0.5 + 0.5;
-    float4 headlight = tex2D(sampler5bilin, lightUV);
+    float4 headlight = tex2D(sampler5bilin, lightUV.xy);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -1474,9 +1474,9 @@ PS2FB_DiffSpec psDx9_SpotProjector(VS2PS_D3DXMesh indata)
     float4 lightUV = mul(viewPos, mLightVP);
     lightUV.xy /= lightUV.w;
     lightUV.xy = lightUV.xy * 0.5 + 0.5;
-    float4 headlight = tex2D(sampler5bilin, lightUV);
+    float4 headlight = tex2D(sampler5bilin, lightUV.xy);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -1510,9 +1510,9 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadowNV(VS2PS_D3DXMesh indata)
     float2 headlightuv = lightUV.xy * float2(0.5, 0.5) + 0.5;
     float4 headlight = tex2D(sampler5bilin, headlightuv);
 
-    float4 avgSamples = tex2D(sampler6bilin, lightUV);
+    float4 avgSamples = tex2D(sampler6bilin, lightUV.xy);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -1551,14 +1551,14 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadowNV40(VS2PS_D3DXMesh indata)
     float texel = 1.0 / 1024.0;
     const float epsilon = 0.005;
     float4 samples;
-    samples.x = tex2D(sampler6, lightUV);
-    samples.y = tex2D(sampler6, lightUV + float2(texel, 0));
-    samples.z = tex2D(sampler6, lightUV + float2(0, texel));
-    samples.w = tex2D(sampler6, lightUV + float2(texel, texel));
+    samples.x = tex2D(sampler6, lightUV.xy);
+    samples.y = tex2D(sampler6, lightUV.xy + float2(texel, 0));
+    samples.z = tex2D(sampler6, lightUV.xy + float2(0, texel));
+    samples.w = tex2D(sampler6, lightUV.xy + float2(texel, texel));
     float4 avgSamples = (samples.xyzw+epsilon) > lightUV.zzzz;
     avgSamples = dot(avgSamples, 0.25);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -1599,14 +1599,14 @@ PS2FB_DiffSpec psDx9_SpotProjectorShadow(VS2PS_D3DXMesh indata)
     float texel = 1.0 / 1024.0;
     const float epsilon = 0.005;
     float4 samples;
-    samples.x = tex2D(sampler6, lightUV);
-    samples.y = tex2D(sampler6, lightUV + float2(texel, 0.0));
-    samples.z = tex2D(sampler6, lightUV + float2(0.0, texel));
-    samples.w = tex2D(sampler6, lightUV + float2(texel, texel));
+    samples.x = tex2D(sampler6, lightUV.xy);
+    samples.y = tex2D(sampler6, lightUV.xy + float2(texel, 0.0));
+    samples.z = tex2D(sampler6, lightUV.xy + float2(0.0, texel));
+    samples.w = tex2D(sampler6, lightUV.xy + float2(texel, texel));
     float4 avgSamples = (samples.xyzw+epsilon) > lightUV.zzzz;
     avgSamples = dot(avgSamples, 0.25);
 
-    float3 lightVec = LightPos.xyz - viewPos;
+    float3 lightVec = LightPos.xyz - viewPos.xyz;
     float lightDist = length(lightVec);
     lightDist *= LightAttenuationRangeInv;
     float4 radialAtt = tex1D(sampler4bilin, lightDist);
@@ -1910,7 +1910,7 @@ VS2PS_D3DXMesh vsDx9_BlitBackLightContribPoint(APP2VS_D3DXMesh indata)
 {
     VS2PS_D3DXMesh outdata;
 
-    float3 wPos = indata.Pos * LightAttenuationRange + LightWorldPos.xyz;
+    float3 wPos = indata.Pos.xyz * LightAttenuationRange + LightWorldPos.xyz;
     outdata.Pos = mul(float4(wPos, 1.0), mVP);
 
     outdata.TexCoord0.xy  = (outdata.Pos.xy / outdata.Pos.ww) * 0.5 + 0.5;

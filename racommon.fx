@@ -56,7 +56,7 @@ float calcFog(float3 n)
     float w = length(n);
     float2 fogVals = w * FogRange.xy + FogRange.zw;
     float close = max(fogVals.y, FogColor.w);
-    float far = exp(fogVals.x);
+    float far = pow(fogVals.x, 3.0);
     return close - far;
 }
 

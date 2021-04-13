@@ -255,10 +255,10 @@ float4 psDx9_FSBMScaleUp4x4LinearFilter(VS2PS_blit indata) : COLOR
 float4 psDx9_FSBMScaleDown2x2Filter(VS2PS_blit indata) : COLOR
 {
     float4 accum = 0.0;
-    accum  = tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[0]);
-    accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[1]);
-    accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[2]);
-    accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[3]);
+    accum  = tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[0].xy);
+    accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[1].xy);
+    accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[2].xy);
+    accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown2x2SampleOffsets[3].xy);
     return accum * 0.25; // div 4
 }
 
@@ -267,7 +267,7 @@ float4 psDx9_FSBMScaleDown4x4Filter(VS2PS_blit indata) : COLOR
     float4 accum = 0.0;
     for(int tap = 0; tap < 16; ++tap)
     {
-        accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown4x4SampleOffsets[tap]);
+        accum += tex2D(sampler0point, indata.TexCoord0 + scaleDown4x4SampleOffsets[tap].xy);
     }
     return accum * 0.0625; // div 16
 }
@@ -287,7 +287,7 @@ float4 psDx9_FSBMGaussianBlur5x5CheapFilter(VS2PS_blit indata) : COLOR
     float4 accum = 0.0;
     for(int tap = 0; tap < 13; ++tap)
     {
-        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur5x5CheapSampleOffsets[tap])
+        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur5x5CheapSampleOffsets[tap].xy)
         * gaussianBlur5x5CheapSampleWeights[tap];
     }
     return accum;
@@ -298,7 +298,7 @@ float4 psDx9_FSBMGaussianBlur5x5CheapFilterBlend(VS2PS_blit indata) : COLOR
     float4 accum = 0.0;
     for(int tap = 0; tap < 13; ++tap)
     {
-        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur5x5CheapSampleOffsets[tap])
+        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur5x5CheapSampleOffsets[tap].xy)
         * gaussianBlur5x5CheapSampleWeights[tap];
     }
     accum.a = blurStrength;
@@ -310,7 +310,7 @@ float4 psDx9_FSBMGaussianBlur15x15HorizontalFilter(VS2PS_blit indata) : COLOR
     float4 accum = 0.0;
     for(int tap = 0; tap < 15; ++tap)
     {
-        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur15x15HorizontalSampleOffsets[tap])
+        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur15x15HorizontalSampleOffsets[tap].xy)
         * gaussianBlur15x15HorizontalSampleWeights[tap];
     }
     return accum;
@@ -320,7 +320,7 @@ float4 psDx9_FSBMGaussianBlur15x15VerticalFilter(VS2PS_blit indata) : COLOR
 {
     float4 accum = 0.0;
     for(int tap = 0; tap < 15; ++tap)
-        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur15x15VerticalSampleOffsets[tap])
+        accum += tex2D(sampler0point, indata.TexCoord0 + gaussianBlur15x15VerticalSampleOffsets[tap].xy)
         * gaussianBlur15x15VerticalSampleWeights[tap];
 
     return accum;
@@ -330,7 +330,7 @@ float4 psDx9_FSBMGaussianBlur15x15HorizontalFilter2(VS2PS_blit indata) : COLOR
 {
     float4 accum = 0.0;
     for(int tap = 0; tap < 15; ++tap)
-        accum += tex2D(sampler0point, indata.TexCoord0 + 2.0 * gaussianBlur15x15HorizontalSampleOffsets[tap])
+        accum += tex2D(sampler0point, indata.TexCoord0 + 2.0 * gaussianBlur15x15HorizontalSampleOffsets[tap].xy)
         * gaussianBlur15x15HorizontalSampleWeights[tap];
 
     return accum;
@@ -340,7 +340,7 @@ float4 psDx9_FSBMGaussianBlur15x15VerticalFilter2(VS2PS_blit indata) : COLOR
 {
     float4 accum = 0.0;
     for(int tap = 0; tap < 15; ++tap)
-        accum += tex2D(sampler0point, indata.TexCoord0 + 2.0 * gaussianBlur15x15VerticalSampleOffsets[tap])
+        accum += tex2D(sampler0point, indata.TexCoord0 + 2.0 * gaussianBlur15x15VerticalSampleOffsets[tap].xy)
         * gaussianBlur15x15VerticalSampleWeights[tap];
 
     return accum;
@@ -354,7 +354,7 @@ float4 psDx9_FSBMGrowablePoisson13Filter(VS2PS_blit indata) : COLOR
 
     for(int tap = 0; tap < 11; ++tap)
     {
-        float4 v = tex2D(sampler0point, indata.TexCoord0 + growablePoisson13SampleOffsets[tap] * 0.1 * accum.a);
+        float4 v = tex2D(sampler0point, indata.TexCoord0 + growablePoisson13SampleOffsets[tap].xy * 0.1 * accum.a);
         if(v.a > 0)
         {
             accum.rgb += v;
@@ -383,7 +383,7 @@ float4 psDx9_FSBMGrowablePoisson13AndDilationFilter(VS2PS_blit indata) : COLOR
         {
             scale = 1.5;
         }
-        float4 v = tex2D(sampler0point, indata.TexCoord0 + growablePoisson13SampleOffsets[tap] * scale);
+        float4 v = tex2D(sampler0point, indata.TexCoord0 + growablePoisson13SampleOffsets[tap].xy * scale);
         if(v.a > 0)
         {
             accum.rgb += v;

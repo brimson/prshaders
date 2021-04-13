@@ -190,6 +190,7 @@ technique NSAParticleLow
         PixelShader = compile ps_2_a psParticleLow();
     }
 }
+
 technique NSAParticleMedium
 <
 >
