@@ -53,7 +53,7 @@ VS_OUT vs(VS_IN indata)
 
     Out.Pos = float4(mul(indata.Pos, GeomBones[IndexArray[0]]), 1);
     Out.Pos = mul(Out.Pos, ViewProjection);
-    Out.Fog = calcFog(Out.Pos.w);
+    Out.Fog = calcFog(Out.Pos.xyz);
     Out.Tex = indata.Tex;
 
     return Out;

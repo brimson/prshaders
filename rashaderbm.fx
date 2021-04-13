@@ -307,9 +307,9 @@ BMVariableVSOutput vs(BMVariableVSInput input)
     #endif
 
     #if _POINTLIGHT_
-        Out.SpecularLightOrPointFog = calcFog(Out.HPos.w);
+        Out.SpecularLightOrPointFog = calcFog(Out.HPos.xyz);
     #else
-        Out.Fog = calcFog(Out.HPos.w); //always fog
+        Out.Fog = calcFog(Out.HPos.xyz); //always fog
     #endif
 
     return Out;
@@ -520,13 +520,17 @@ technique Variable
             AlphaBlendEnable = true;
             SrcBlend = SRCALPHA;
             DestBlend = ONE;
-            Fogenable = false;
+            FogEnable = false;
         #else
             AlphaBlendEnable = (AlphaBlendEnable);
             SrcBlend = SRCALPHA;
             DestBlend = INVSRCALPHA;
             ZWriteEnable = (DepthWrite);
-            Fogenable = true;
+            FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         #endif
 
     }

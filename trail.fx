@@ -141,7 +141,7 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
 
     Out.lightFactorAndAlpha.a = tParameters.m_color1AndLightFactor.a;
 
-    Out.Fog = calcFog(Out.HPos.w);
+    Out.Fog = calcFog(Out.HPos.xyz);
 
     return Out;
 }
@@ -208,6 +208,10 @@ technique TrailLow
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailLow();
@@ -233,6 +237,10 @@ technique TrailMedium
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
          VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailMedium();
@@ -258,6 +266,10 @@ technique TrailHigh
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailHigh();
@@ -283,6 +295,10 @@ technique TrailShowFill
         SrcBlend = ONE;
         DestBlend = ONE;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsTrail(viewMat, projMat);
         PixelShader = compile ps_2_a psTrailShowFill();

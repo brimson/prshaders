@@ -164,8 +164,6 @@ VS_OUTPUT bumpSpecularVertexShaderBlinn1(
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
-    float4 Constants = float4(0.5, 0.5, 0.5, 1.0);
-
     // Compensate for lack of UBYTE4 on Geforce3
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
     int IndexArray[4] = (int[4])IndexVector;
@@ -229,8 +227,6 @@ VS_OUTPUT20 bumpSpecularVertexShaderBlinn20(
     uniform float4 LightPos)
 {
     VS_OUTPUT20 Out = (VS_OUTPUT20)0;
-
-    float4 Constants = float4(0.5, 0.5, 0.5, 1.0);
 
     // Compensate for lack of UBYTE4 on Geforce3
     int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);

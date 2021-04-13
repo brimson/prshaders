@@ -67,7 +67,7 @@ VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
     #endif
 
     Out.Pos  = mul(float4(inPos.xyz, 1.0), WorldViewProjection);
-    Out.Fog  = calcFog(Out.Pos.w);
+    Out.Fog  = calcFog(Out.Pos.xyz);
     Out.Tex0 = tex0;
 
     #ifdef OVERGROWTH
@@ -100,7 +100,7 @@ VS_OUTPUT basicVertexShader(float4 inPos: POSITION0,
 
     #ifdef _POINTLIGHT_
         Out.Color.rgb *= 1.0 - saturate(dot(lightVec, lightVec) * Lights[0].attenuation * 0.1);
-        Out.Color.rgb *= calcFog(Out.Pos.w);
+        Out.Color.rgb *= calcFog(Out.Pos.xyz);
     #endif
 
     Out.Color.a = Transparency;

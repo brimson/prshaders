@@ -66,7 +66,7 @@ OUT_vsDiffuse vsDiffuse(appdata input, uniform float4x4 ViewProj)
     // hemi lookup coords
     Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z * 0.5)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
     Out.LerpAndLMapIntOffset = saturate(saturate((Pos.y - hemiShadowAltitude) / 10.0f) + lightmapIntensityOffset);
-    Out.Fog = calcFog(Out.HPos.w);
+    Out.Fog = calcFog(Out.HPos.xyz);
     return Out;
 }
 
@@ -100,6 +100,10 @@ technique Diffuse
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();
@@ -140,6 +144,10 @@ technique DiffuseWithZWrite
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();

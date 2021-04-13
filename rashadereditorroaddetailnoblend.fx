@@ -92,7 +92,7 @@ VS_OUTPUT basicVertexShader(
     float cameraDist = length(WorldSpaceCamPos - wPos);
     Out.Tex0AndZFade.z = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
 
-    Out.Fog = calcFog(Out.Pos.w);
+    Out.Fog = calcFog(Out.Pos.xyz);
 
     return Out;
 }
@@ -146,6 +146,10 @@ technique defaultTechnique
         ZEnable	= true;
         ZWriteEnable = false;
 
-        fogenable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
     }
 }

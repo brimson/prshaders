@@ -73,7 +73,7 @@ OUT_vsDecal vsDecal(appdata input)
     Out.Alpha = alpha;
     Out.Color = input.Color;
     Out.Texture0 = input.TexCoordsInstanceIndexAndAlpha.xy;
-    Out.Fog = calcFog(Out.HPos.w);
+    Out.Fog = calcFog(Out.HPos.xyz);
 
     return Out;
 }
@@ -112,6 +112,10 @@ technique Decal
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDecal();
         PixelShader = compile ps_2_a psDecal();
@@ -129,6 +133,10 @@ technique Decal
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDecal();
         PixelShader = compile ps_2_a psDecal();

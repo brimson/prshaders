@@ -39,7 +39,7 @@ VS_OUTPUT basicVertexShader(
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
     Out.Pos = mul(float4(inPos.xyz, 1), WorldViewProjection);
-    Out.Fog = calcFog(Out.Pos.w);
+    Out.Fog = calcFog(Out.Pos.xyz);
     Out.Tex0 = tex0 / 32767.0f;
 
     normal = normal * 2.0f - 1.0f;
@@ -95,6 +95,10 @@ technique defaultTechnique
         #ifdef ENABLE_WIREFRAME
             FillMode = WireFrame;
         #endif
-        FogEnable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
     }
 }

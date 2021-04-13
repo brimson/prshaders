@@ -243,7 +243,7 @@ SMVariableVSOutput vs(SMVariableVSInput input)
         Out.LightVec = lVec;
         #if !_POINTLIGHT_
             Out.LightVec = normalize(Out.LightVec);
-            Out.Fog = calcFog(Out.Pos.w);
+            Out.Fog = calcFog(Out.Pos.xyz);
         #endif
         Out.HalfVecAndOccShadow.xyz = normalize(hVec);
     #else
@@ -253,7 +253,7 @@ SMVariableVSOutput vs(SMVariableVSInput input)
             Out.Specular = (lighting.z * Lights[0].color * /*StaticGloss*/0.15) * 0.5;
         #else
             Out.Specular = (lighting.z * Lights[0].specularColor * /*StaticGloss*/0.15) * 0.5;
-            Out.Fog = calcFog(Out.Pos.w);
+            Out.Fog = calcFog(Out.Pos.xyz);
         #endif
     #endif
 
@@ -398,10 +398,14 @@ technique VariableTechnique
             AlphaBlendEnable = TRUE;
             SrcBlend = ONE;
             DestBlend = ONE;
-            fogenable = false;
+            FogEnable = false;
         #else
             AlphaBlendEnable = FALSE;
             FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         #endif
 
         VertexShader = compile vs_2_a vs();

@@ -52,7 +52,11 @@ technique Low_Terrain
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         ZFunc = LESSEQUAL;
-        FogEnable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         AlphaBlendEnable = FALSE;
         VertexShader = compile vs_2_a Shared_VS_LowDetail();
         PixelShader = compile ps_2_a Shared_PS_LowDetail();
@@ -106,7 +110,11 @@ technique Low_SurroundingTerrain
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
         AlphaBlendEnable = FALSE;
-        FogEnable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         VertexShader = compile vs_2_a Shared_VS_STNormal();
         PixelShader = compile ps_2_a Shared_PS_STNormal();
     }

@@ -52,7 +52,7 @@ VS_OUTPUT basicVertexShader(
     int indexArray[4] = (int[4])indexVector;
 
     Out.Pos = mul(float4(inPos, 1.0), mul(Bones[indexArray[0]], ViewProjection));
-    Out.Fog = calcFog(Out.Pos.w);
+    Out.Fog = calcFog(Out.Pos.xyz);
     Out.Tex = tex0;
 
     return Out;

@@ -311,7 +311,7 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
     #endif
 
     outdata.Tex1 = projToLighting(outdata.Pos);
-    outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Fog = calcFog(outdata.Pos.xyz);
     return outdata;
 }
 
@@ -443,7 +443,7 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
     // - by pre-multiplying the waterHeight, we can change the (wh-wp)*c to (-wp*c)+whc i.e. from ADD+MUL to MAD
      outdata.WaterAndFog.x = (wPos.y/-3.0) + waterHeight;
 
-    outdata.WaterAndFog.yzw = calcFog(outdata.Pos.w);
+    outdata.WaterAndFog.yzw = calcFog(outdata.Pos.xyz);
 
     return outdata;
 }
@@ -497,7 +497,7 @@ Shared_VS2PS_STNormal Shared_VS_STNormal(Shared_APP2VS_STNormal indata)
     float2 zPlaneTexCord = tex.zy;
 
     outdata.Pos = mul(outdata.Pos, mViewProj);
-    outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Fog = calcFog(outdata.Pos.xyz);
 
     outdata.Tex1 = yPlaneTexCord * vSTFarTexTiling.z;
     outdata.Tex2.xy = xPlaneTexCord.xy * vSTFarTexTiling.xy;
@@ -557,7 +557,11 @@ technique Shared_SurroundingTerrain
         ZWriteEnable = TRUE;
         ZFunc = LESSEQUAL;
         AlphaBlendEnable = FALSE;
-        FogEnable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         VertexShader = compile vs_2_a Shared_VS_STNormal();
         PixelShader = compile ps_2_a Shared_PS_STNormal();
     }

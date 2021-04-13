@@ -95,7 +95,7 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
     Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z / 2.0)).xz - hemiMapInfo.xy) / hemiMapInfo.z;
     Out.texCoords2.y = 1.0 - Out.texCoords2.y;
 
-    Out.Fog = calcFog(Out.HPos.w);
+    Out.Fog = calcFog(Out.HPos.xyz);
 
     return Out;
 }
@@ -160,6 +160,10 @@ technique NSAParticleShowFill
         SrcBlend = ONE;
         DestBlend = ONE;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleShowFill();
@@ -185,6 +189,10 @@ technique NSAParticleLow
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleLow();
@@ -209,6 +217,10 @@ technique NSAParticleMedium
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleMedium();
@@ -234,6 +246,10 @@ technique NSAParticleHigh
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsParticle(viewMat, projMat, tParameters);
         PixelShader = compile ps_2_a psParticleHigh();

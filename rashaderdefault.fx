@@ -43,7 +43,7 @@ technique defaultShader
 
         SrcBlend = srcalpha;
         DestBlend = invsrcalpha;
-        fogenable = false;
+        FogEnable = false;
         CullMode = NONE;
         AlphaBlendEnable = <alphaBlendEnable>;
         AlphaTestEnable = false;

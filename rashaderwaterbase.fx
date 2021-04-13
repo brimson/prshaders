@@ -163,7 +163,7 @@ VS_OUTPUT_WATER waterVertexShader (float4 inPos : POSITION0, float2 lmtex : TEXC
     #ifndef NO_LIGHTMAP
         Out.lmtex.xy = lmtex.xy * LightMapOffset.xy + LightMapOffset.zw;
     #endif
-        Out.Fog = calcFog(Out.Pos.w);
+        Out.Fog = calcFog(Out.Pos.xyz);
 
     #ifdef USE_SHADOWS
         Out.TexShadow = calcShadowProjection(wPos);
@@ -293,7 +293,11 @@ technique defaultShader
         vertexshader = compile vs_2_a waterVertexShader();
         pixelshader  = compile ps_2_a Water();
 
-        fogenable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
 
         #ifdef ENABLE_WIREFRAME
             FillMode = WireFrame;

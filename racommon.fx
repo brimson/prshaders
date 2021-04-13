@@ -49,8 +49,9 @@ bool AlphaTest	= false;
 float4 FogRange : fogRange;
 float4 FogColor : fogColor;
 
-float calcFog(float w)
+float calcFog(float3 n)
 {
+    float w = length(n);
     half2 fogVals = w*FogRange.xy + FogRange.zw;
     half close = max(fogVals.y, FogColor.w);
     half far = pow(fogVals.x, 3);

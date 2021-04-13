@@ -31,7 +31,7 @@ VS_OUTPUT basicVertexShader(float3 inPos: POSITION0, float2 tex0 : TEXCOORD0)
 {
     VS_OUTPUT Out;
     Out.Pos  = mul(float4(inPos, 1.0), mul(World, ViewProjection));
-    Out.Fog  = calcFog(Out.Pos.w);
+    Out.Fog  = calcFog(Out.Pos.xyz);
     Out.Tex0 = tex0;
     return Out;
 }
@@ -78,6 +78,10 @@ technique defaultTechnique
 
         AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 
-        fogenable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
     }
 }

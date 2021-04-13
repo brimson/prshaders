@@ -162,7 +162,7 @@ Hi_VS2PS_FullDetail Hi_VS_FullDetail(Shared_APP2VS_Default indata)
         outdata.Tex3.z += vFarTexTiling.w;
     #endif
 
-    outdata.FogAndFade2.x = calcFog(outdata.Pos.w);
+    outdata.FogAndFade2.x = calcFog(outdata.Pos.xyz);
     outdata.FogAndFade2.yzw = 0.5+interpVal*0.5;
 
     #if HIGHTERRAIN
@@ -325,7 +325,7 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
 
     outdata.Tex5.xy = yPlaneTexCord * vFarTexTiling.z;
 
-    outdata.FogAndFade2.x = calcFog(outdata.Pos.w);
+    outdata.FogAndFade2.x = calcFog(outdata.Pos.xyz);
     outdata.FogAndFade2.yzw = 0.5+interpVal*0.5;
 
     #if HIGHTERRAIN
@@ -496,7 +496,7 @@ Hi_VS2PS_FullDetailWithEnvMap Hi_VS_FullDetailWithEnvMap(Shared_APP2VS_Default i
         outdata.Tex3.z += vFarTexTiling.w;
     #endif
 
-    outdata.FogAndFade2.x = calcFog(outdata.Pos.w);
+    outdata.FogAndFade2.x = calcFog(outdata.Pos.xyz);
     outdata.FogAndFade2.yzw = 0.5+interpVal*0.5;
 
     #if HIGHTERRAIN
@@ -655,7 +655,11 @@ technique Hi_Terrain
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         ZFunc = LESSEQUAL;
-        FogEnable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         AlphaBlendEnable = FALSE;
         AlphaTestEnable = FALSE;
 

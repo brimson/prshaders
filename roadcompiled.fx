@@ -102,7 +102,7 @@ VS2PS RoadCompiledVS(APP2VS input)
     outdata.Tex1 = input.Tex1;
     outdata.ZFade = 1 - saturate((cameraDist * vFadeoutValues.x) - vFadeoutValues.y);
     outdata.ZFade *= input.Alpha;
-    outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Fog = calcFog(outdata.Pos.xyz);
     return outdata;
 }
 
@@ -155,7 +155,7 @@ VS2PSDx9 RoadCompiledVSDx9(APP2VS input)
     outdata.ZFade = (outdata.ZFade - vFadeoutValues.x) * vFadeoutValues.y;
     outdata.ZFade = 1.0 - saturate(outdata.ZFade);
 
-    outdata.Fog = calcFog(outdata.Pos.w);
+    outdata.Fog = calcFog(outdata.Pos.xyz);
 
     return outdata;
 }
@@ -195,7 +195,11 @@ technique roadcompiledFull
         DestBlend = INVSRCALPHA;
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
-        FogEnable = true;
+        FogEnable = TRUE;
+        RangeFogEnable = TRUE;
+        FogVertexMode = 3;
+        FogStart = 0.5f;
+        FogEnd = 0.8f;
         VertexShader = compile vs_2_a RoadCompiledVS();
         PixelShader = compile ps_2_a RoadCompiledPS();
     }

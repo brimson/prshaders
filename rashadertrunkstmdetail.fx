@@ -72,7 +72,7 @@ VS_OUTPUT basicVertexShader
 
     inPos *= PosUnpack;
     Out.Pos = mul(float4(inPos.xyz, 1.0), WorldViewProjection);
-    Out.Fog  = calcFog(Out.Pos.w);
+    Out.Fog  = calcFog(Out.Pos.xyz);
     Out.Tex0 = tex0 * TexUnpack;
 
     #ifndef BASEDIFFUSEONLY
@@ -160,6 +160,6 @@ technique defaultTechnique
         #endif
         AlphaTestEnable = < AlphaTest >;
         AlphaRef        = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
-        fogenable       = true;
+        FogEnable       = true;
     }
 }
