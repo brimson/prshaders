@@ -49,13 +49,15 @@ bool AlphaTest	= false;
 float4 FogRange : fogRange;
 float4 FogColor : fogColor;
 
+// Calculate fog distance
+
 float calcFog(float3 n)
 {
     float w = length(n);
-    half2 fogVals = w*FogRange.xy + FogRange.zw;
-    half close = max(fogVals.y, FogColor.w);
-    half far = pow(fogVals.x, 3);
-    return close-far;
+    float2 fogVals = w * FogRange.xy + FogRange.zw;
+    float close = max(fogVals.y, FogColor.w);
+    float far = exp(fogVals.x);
+    return close - far;
 }
 
 #define NO_VAL float3(1, 1, 0)

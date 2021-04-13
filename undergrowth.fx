@@ -362,10 +362,6 @@ technique t0_l0
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(0, false);
@@ -392,10 +388,6 @@ technique t0_l1
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(1, false);
@@ -422,10 +414,6 @@ technique t0_l2
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(2, false);
@@ -452,10 +440,6 @@ technique t0_l3
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(3, false);
@@ -482,10 +466,6 @@ technique t0_l4
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(4, false);
@@ -512,10 +492,6 @@ technique t0_l0_ds
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(0, true);
@@ -542,10 +518,6 @@ technique t0_l1_ds
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(1, true);
@@ -572,10 +544,6 @@ technique t0_l2_ds
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(2, true);
@@ -602,10 +570,6 @@ technique t0_l3_ds
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(3, true);
@@ -632,10 +596,6 @@ technique t0_l4_ds
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader(4, true);
@@ -664,10 +624,6 @@ technique t0_l0_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(0, false);
@@ -696,10 +652,6 @@ technique t0_l1_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(1, false);
@@ -728,10 +680,6 @@ technique t0_l2_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(2, false);
@@ -760,10 +708,6 @@ technique t0_l3_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(3, false);
@@ -792,10 +736,6 @@ technique t0_l4_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(4, false);
@@ -824,10 +764,6 @@ technique t0_l0_ds_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(0, true);
@@ -856,10 +792,6 @@ technique t0_l1_ds_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(1, true);
@@ -888,10 +820,6 @@ technique t0_l2_ds_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(2, true);
@@ -920,10 +848,6 @@ technique t0_l3_ds_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(3, true);
@@ -952,10 +876,6 @@ technique t0_l4_ds_simple
         AlphaRef = FH2_ALPHAREF;
         AlphaFunc = GREATER;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         ZFunc = Less;
 
         VertexShader = compile vs_2_a VShader_Simple(4, true);

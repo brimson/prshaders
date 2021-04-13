@@ -548,10 +548,6 @@ technique defaultTechnique
             FogEnable = false;
         #else
             FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         #endif
         AlphaTestEnable = < AlphaTest >;
         AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work

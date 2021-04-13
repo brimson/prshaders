@@ -402,10 +402,6 @@ technique VariableTechnique
         #else
             AlphaBlendEnable = FALSE;
             FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         #endif
 
         VertexShader = compile vs_2_a vs();

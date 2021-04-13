@@ -196,10 +196,6 @@ technique roadcompiledFull
         ZEnable = TRUE;
         ZWriteEnable = FALSE;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         VertexShader = compile vs_2_a RoadCompiledVS();
         PixelShader = compile ps_2_a RoadCompiledPS();
     }

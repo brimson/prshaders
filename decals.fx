@@ -112,10 +112,6 @@ technique Decal
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDecal();
         PixelShader = compile ps_2_a psDecal();
@@ -133,10 +129,6 @@ technique Decal
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDecal();
         PixelShader = compile ps_2_a psDecal();

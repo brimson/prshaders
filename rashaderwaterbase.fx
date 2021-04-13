@@ -294,10 +294,6 @@ technique defaultShader
         pixelshader  = compile ps_2_a Water();
 
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
 
         #ifdef ENABLE_WIREFRAME
             FillMode = WireFrame;

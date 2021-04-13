@@ -100,10 +100,6 @@ technique Diffuse
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();
@@ -144,10 +140,6 @@ technique DiffuseWithZWrite
         SrcBlend = SRCALPHA;
         DestBlend = INVSRCALPHA;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
 
         VertexShader = compile vs_2_a vsDiffuse(viewProjMatrix);
         PixelShader = compile ps_2_a psDiffuse();

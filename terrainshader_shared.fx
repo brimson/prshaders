@@ -558,10 +558,6 @@ technique Shared_SurroundingTerrain
         ZFunc = LESSEQUAL;
         AlphaBlendEnable = FALSE;
         FogEnable = TRUE;
-        RangeFogEnable = TRUE;
-        FogVertexMode = 3;
-        FogStart = 0.5f;
-        FogEnd = 0.8f;
         VertexShader = compile vs_2_a Shared_VS_STNormal();
         PixelShader = compile ps_2_a Shared_PS_STNormal();
     }
