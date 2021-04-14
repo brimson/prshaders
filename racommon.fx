@@ -49,15 +49,19 @@ bool AlphaTest	= false;
 float4 FogRange : fogRange;
 float4 FogColor : fogColor;
 
-// Calculate fog distance
 
-float calcFog(float3 n)
+/*
+    Calculate fog distance. Unlike previous fog, this one's
+    - Cheaper: 5 instructions from 8
+    - One variable: Don't need to depend on FogRange and FogColor
+    - A more realisic approximation of fog
+*/
+
+float calcFog(float3 pos)
 {
-    float w = length(n);
-    float2 fogVals = w * FogRange.xy + FogRange.zw;
-    float close = max(fogVals.y, FogColor.w);
-    float far = pow(fogVals.x, 3.0);
-    return close - far;
+    float fdistance = length(pos);
+    float fdensity = -fdistance * (0.001 / 3.0);
+    return saturate(exp2(fdensity));
 }
 
 #define NO_VAL float3(1, 1, 0)
