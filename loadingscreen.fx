@@ -14,41 +14,56 @@ sampler TexMapSampler = sampler_state
 
 struct VS_OUT
 {
-    float4 Position : POSITION;
-    float4 Diffuse  : COLOR0;
-    float2 TexCoord : TEXCOORD0;
+	float4 Position : POSITION;
+	float4 Diffuse : COLOR0;
+	float2 TexCoord : TEXCOORD0;
 };
 
-VS_OUT VSScreen(
-    float3 Position : POSITION,
-    float4 Diffuse : COLOR0,
-    float2 TexCoord : TEXCOORD0)
+VS_OUT VSScreen(float3 Position : POSITION,float4 Diffuse : COLOR0,float2 TexCoord : TEXCOORD0)
 {
-    VS_OUT Out;
-    Out.Position = float4(Position.x, Position.y, 0.0, 1.0);
-    Out.Diffuse = Diffuse;
-    Out.TexCoord = TexCoord;
-    return Out;
+	VS_OUT Out = (VS_OUT)0;
+	Out.Position = float4(Position.x, Position.y, 0, 1);
+	Out.Diffuse = Diffuse;
+	Out.TexCoord = TexCoord;
+	return Out;
 }
 
-float4 PSScreen(VS_OUT input) : COLOR
+float4 PSScreen(VS_OUT Input) : COLOR
 {
-    float4 tex = tex2D(TexMapSampler, input.TexCoord);
-    float4 output;
-    output.rgb = tex * input.Diffuse;
-    output.a = input.Diffuse.a;
-    return output;
+	float4 InputTexture0 = tex2D(TexMapSampler, Input.TexCoord);
+	float4 OutputColor;
+	OutputColor.rgb = InputTexture0.rgb * Input.Diffuse.rgb;
+	OutputColor.a = Input.Diffuse.a;
+	return OutputColor;
 }
 
 technique Screen
 {
-    pass P0
-    {
-        VertexShader = compile vs_2_a VSScreen();
-        PixelShader  = compile ps_2_a PSScreen();
-        AlphaBlendEnable = false;
-        StencilEnable = false;
-        AlphaTestEnable = false;
-        CullMode = None;
-    }
+	pass P0
+	{
+		VertexShader = compile vs_2_a VSScreen();
+		PixelShader = compile ps_2_a PSScreen();
+
+		/*
+			PixelShader  = NULL;
+			ColorOp[0]   = Modulate;
+			ColorArg1[0] = Texture;
+			ColorArg2[0] = Diffuse;
+			AlphaOp[0]   = SelectArg1;
+			AlphaArg1[0] = Diffuse;
+			ColorOp[1] = Disable;
+			AlphaOp[1] = Disable;
+		*/
+
+		AlphaBlendEnable = false;
+		StencilEnable = false;
+		AlphaTestEnable = false;
+		CullMode = None;
+
+		/*
+			TexCoordIndex[0] =0;
+			TextureTransformFlags[0] = Disable;
+			Sampler[0] = <TexMapSampler>;
+		*/
+	}
 }

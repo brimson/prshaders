@@ -1,66 +1,77 @@
 #line 2 "TerrainShader.fx"
 #include "shaders/raCommon.fx"
 
-// Shared stuff
+	
+//
+// -- Shared stuff
+//
 
-float4x4 mViewProj: matVIEWPROJ;
-float4x4 mView: matVIEW;
-float4 vScaleTransXZ : SCALETRANSXZ;
-float4 vScaleTransY : SCALETRANSY;
-float  ScaleBaseUV : SCALEBASEUV;
-float4 vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
+float4x4		mViewProj: matVIEWPROJ;
+float4x4		mView: matVIEW;
+float4		vScaleTransXZ : SCALETRANSXZ;
+float4		vScaleTransY : SCALETRANSY;
+float		ScaleBaseUV : SCALEBASEUV;
+float4		vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
 
-float4 vMorphDeltaSelector : MORPHDELTASELECTOR;
-float2 vNearFarMorphLimits : NEARFARMORPHLIMITS;
+float4		vMorphDeltaSelector : MORPHDELTASELECTOR;
+float2		vNearFarMorphLimits : NEARFARMORPHLIMITS;
 
-float4 vDebugColor : DEBUGCELLCOLOR;
+//float2		vNearFarLowDetailMapLimits : NEARFARLOWDETAILMAPLIMITS;
 
-float4 vCamerapos : CAMERAPOS;
+float4		vDebugColor : DEBUGCELLCOLOR;
 
-float3 vComponentsel : COMPONENTSELECTOR;
 
-float4 vSunColor : SUNCOLOR;
-float4 vGIColor : GICOLOR;
+float4 		vCamerapos : CAMERAPOS;
 
-float4 vSunDirection : SUNDIRECTION;
-float4 vLightPos1 : LIGHTPOS1;
-float4 vLightCol1 : LIGHTCOL1;
-float  LightAttSqrInv1 : LIGHTATTSQRINV1;
-float4 vLightPos2 : LIGHTPOS2;
-float4 vLightCol2 : LIGHTCOL2;
-float  LightAttSqrInv2 : LIGHTATTSQRINV2;
+float3		vComponentsel : COMPONENTSELECTOR;
 
-float4 vTexProjOffset : TEXPROJOFFSET;
-float4 vTexProjScale : TEXPROJSCALE;
+float4		vSunColor : SUNCOLOR;
+float4 		vGIColor : GICOLOR;
 
-float4 vTexCordXSel : TEXCORDXSEL;
-float4 vTexCordYSel : TEXCORDYSEL;
-float4 vTexScale : TEXSCALE;
-float4 vNearTexTiling : NEARTEXTILING;
-float4 vFarTexTiling : FARTEXTILING;
+float4		vSunDirection : SUNDIRECTION;
+float4		vLightPos1 : LIGHTPOS1;
+float4		vLightCol1 : LIGHTCOL1;
+float		LightAttSqrInv1 : LIGHTATTSQRINV1;
+float4		vLightPos2 : LIGHTPOS2;
+float4		vLightCol2 : LIGHTCOL2;
+float		LightAttSqrInv2 : LIGHTATTSQRINV2;
+//float4		vLightPos3 : LIGHTPOS3;
+//float4		vLightCol3 : LIGHTCOL3;
 
-float4 vYPlaneTexScaleAndFarTile : YPLANETEXSCALEANDFARTILE;
+float4		vTexProjOffset : TEXPROJOFFSET;
+float4		vTexProjScale : TEXPROJSCALE;
 
-float3 vBlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
+float4		vTexCordXSel : TEXCORDXSEL;
+float4		vTexCordYSel : TEXCORDYSEL;
+float4		vTexScale : TEXSCALE;
+float4		vNearTexTiling : NEARTEXTILING;
+float4		vFarTexTiling : FARTEXTILING;
 
-float  waterHeight : WaterHeight;
+float4		vYPlaneTexScaleAndFarTile : YPLANETEXSCALEANDFARTILE;
+
+//float4		vlPlaneMapSel[4] = { float4(1,0,0,0), float4(0,1,0,0), float4(0,0,1,0), float4(0,0,1,0)}; // should only use 3, but have 4 for debug.
+//float4		vPlaneMapSel : PLANEMAPSEL;
+
+float3		vBlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
+
+float		waterHeight : WaterHeight;
 float4 terrainWaterColor : TerrainWaterColor;
 
 float4x4 mLightVP : LIGHTVIEWPROJ;
 float4x4 mLightVPOrtho : LIGHTVIEWPROJORTHO;
-float4   vViewportMap : VIEWPORTMAP;
+float4 vViewportMap : VIEWPORTMAP;
 
-float4x4 vSTTransXZ : STTRANSXZ;
-float4   vSTFarTexTiling : STFARTEXTILING;
-float4   vSTTexScale : STTEXSCALE;
-float4   vSTScaleTransY : STSCALETRANSY;
+float4x4	vSTTransXZ : STTRANSXZ;
+float4		vSTFarTexTiling : STFARTEXTILING;
+float4		vSTTexScale : STTEXSCALE;
+float4		vSTScaleTransY : STSCALETRANSY;
 
-float2 vColorLightTex : COLORLIGHTTEX;
-float2 vDetailTex : DETAILTEX;
-float2 vSTColorLightTex : STCOLORLIGHTTEX;
-float2 vSTLowDetailTex : STLOWDETAILTEX;
+float2		vColorLightTex : COLORLIGHTTEX;
+float2		vDetailTex : DETAILTEX;
+float2		vSTColorLightTex : STCOLORLIGHTTEX;
+float2		vSTLowDetailTex : STLOWDETAILTEX;
 
-float3 vMorphDeltaAdder[3] : MORPHDELTAADDER;
+float3	vMorphDeltaAdder[3] : MORPHDELTAADDER;
 
 texture texture0 : TEXLAYER0;
 texture texture1 : TEXLAYER1;
@@ -95,11 +106,12 @@ sampler sampler2ClampPoint = sampler_state { Texture = (texture2); AddressU = CL
 sampler sampler3ClampPoint = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
 samplerCUBE sampler6Cube = sampler_state { Texture = (texture6); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
 
+
 #include "shaders/commonVertexLight.fx"
 #include "shaders/TerrainShader_Shared.fx"
-
 #if HIGHTERRAIN || MIDTERRAIN
-    #include "shaders/TerrainShader_Hi.fx"
+	#include "shaders/TerrainShader_Hi.fx"
 #else
-    #include "shaders/TerrainShader_Low.fx"
+	#include "shaders/TerrainShader_Low.fx"
 #endif
+
