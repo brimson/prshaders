@@ -10,6 +10,7 @@ Light	Lights[1];
 float4	PosUnpack;
 float2	NormalUnpack;
 float	TexUnpack;
+float4	ObjectSpaceCamPos;
 
 struct VS_OUTPUT
 {
@@ -73,8 +74,8 @@ VS_OUTPUT basicVertexShader
 
 	inPos *= PosUnpack;
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
-
-	Out.Fog		= calcFog(Out.Pos.w);
+	float FogValue = length(inPos.xyz - ObjectSpaceCamPos.xyz);
+	Out.Fog		= calcFog(FogValue);
 	Out.Tex0	= tex0 * TexUnpack;
 #ifndef BASEDIFFUSEONLY
 	Out.Tex1	= tex1 * TexUnpack;
@@ -144,6 +145,7 @@ string InstanceParameters[] =
 #endif
 	"WorldViewProjection",
 	"Transparency",
+	"ObjectSpaceCamPos",
 	"Lights",
 	"OverGrowthAmbient"
 };

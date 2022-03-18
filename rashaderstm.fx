@@ -136,6 +136,7 @@ vsStaticMesh(VS_IN indata)
  	// output position early
  	float4 unpackedPos = float4(indata.Pos.xyz,1) * PosUnpack;
  	Out.Pos	= mul(unpackedPos, WorldViewProjection);
+	float FogValue = length(unpackedPos.xyz - ObjectSpaceCamPos.xyz);
 	float3 unpackedNormal = indata.Normal * NormalUnpack.x + NormalUnpack.y;
 	#if _POINTLIGHT_
 		float3 unpackedTan = indata.Tan * NormalUnpack.x + NormalUnpack.y;
@@ -220,9 +221,9 @@ vsStaticMesh(VS_IN indata)
 	#endif
 	 
 	 #if _POINTLIGHT_
-		Out.ColorOrPointLightFog.a = calcFog(Out.Pos.w);
+		Out.ColorOrPointLightFog.a = calcFog(FogValue);
 	#else
-		Out.Fog = calcFog(Out.Pos.w);
+		Out.Fog = calcFog(FogValue);
 	#endif
 
 	return Out;

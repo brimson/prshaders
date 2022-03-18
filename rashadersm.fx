@@ -224,6 +224,8 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 	float4 objSpacePosition = skinPosition(input);
 	
 	Out.Pos = mul(objSpacePosition, WorldViewProjection);
+	float FogValue = length(objSpacePosition.xyz - ObjectSpaceCamPos.xyz);
+
 	Out.Tex0 = input.TexCoord0;
 	
 #if (_USEHEMIMAP_ && !_USEPERPIXELHEMIMAP_) || (_USEHEMIMAP_ && !_HASNORMALMAP_)
@@ -250,7 +252,7 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 	Out.LightVec = lVec;
 	#if !_POINTLIGHT_
 		Out.LightVec = normalize(Out.LightVec);
-		Out.Fog = calcFog(Out.Pos.w);
+		Out.Fog = calcFog(FogValue);
 	#endif
 	Out.HalfVecAndOccShadow.xyz = normalize(hVec);
 #else
@@ -260,7 +262,7 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 		Out.Specular = (lighting.z * Lights[0].color * /*StaticGloss*/0.15) * 0.5;
 	#else
 		Out.Specular = (lighting.z * Lights[0].specularColor * /*StaticGloss*/0.15) * 0.5;
-		Out.Fog = calcFog(Out.Pos.w);
+		Out.Fog = calcFog(FogValue);
 	#endif
 #endif
 	

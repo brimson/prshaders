@@ -15,6 +15,7 @@ float4 	OverGrowthAmbient;
 Light	Lights[1];
 float4	PosUnpack;
 float2	NormalUnpack;
+float4	ObjectSpaceCamPos;
 float	TexUnpack;
 float	ObjRadius = 2;
 
@@ -71,7 +72,8 @@ VS_OUTPUT basicVertexShader
 #endif
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
 
-	Out.Fog		= calcFog(Out.Pos.w);
+	float FogValue = length(inPos.xyz - ObjectSpaceCamPos.xyz);
+	Out.Fog		= calcFog(FogValue);
 	Out.Tex0	= tex0;
 
 #ifdef OVERGROWTH
@@ -104,7 +106,7 @@ VS_OUTPUT basicVertexShader
 
 #ifdef _POINTLIGHT_
 	Out.Color.rgb *= 1 - saturate(dot(lightVec, lightVec) * Lights[0].attenuation * 0.1);
-	Out.Color.rgb *= calcFog(Out.Pos.w);
+	Out.Color.rgb *= calcFog(FogValue);
 #endif
 	Out.Color.a = Transparency;
 	Out.Color = Out.Color * 0.5;
@@ -175,6 +177,7 @@ string InstanceParameters[] =
 	"ShadowTrapMat",
 #endif
 	"WorldViewProjection",
+	"ObjectSpaceCamPos",
 	"Transparency",
 	"WindSpeed",
 	"Lights",

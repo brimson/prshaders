@@ -138,7 +138,7 @@ VS2PS VShader(
 	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
 	pos.xyz += posOffsetAndScale.xyz;
 
- 	float3 vec = pos.xyz - cameraPos;
+ 	float3 vec = pos.xyz - cameraPos.xyz;
  	float dist = sqrt(dot(vec, vec));
 
  	float viewDistance = fadeAndHeightScaleOffset.x;
@@ -159,7 +159,7 @@ VS2PS VShader(
  		outdata.TexShadow = calcShadowProjection(pos);
  	}
  		
- 	outdata.Fog = calcFog(outdata.Pos.w);
+ 	outdata.Fog = calcFog(dist);
  	
  	outdata.LightAndScale.rgb = 0;
  	for (int i=0; i<lightCount; i++)
@@ -226,7 +226,7 @@ VS2PS_Simple VShader_Simple(
 	float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
 	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
 
- 	float3 vec = pos.xyz - cameraPos;
+ 	float3 vec = pos.xyz - cameraPos.xyz;
  	float dist = sqrt(dot(vec, vec));
  	
  	float viewDistance = fadeAndHeightScaleOffset.x;
@@ -243,7 +243,7 @@ VS2PS_Simple VShader_Simple(
  		outdata.TexShadow = calcShadowProjection(pos);
  	}
  		
- 	outdata.Fog = calcFog(outdata.Pos.w);
+ 	outdata.Fog = calcFog(dist);
 
 	float3 light = 0;
 

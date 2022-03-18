@@ -97,7 +97,8 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
  	Out.texCoords2.xy = ((input.pos + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy) / hemiMapInfo.z;	
  	Out.texCoords2.y = 1 - Out.texCoords2.y;
  	
-	Out.Fog = calcFog(Out.HPos.w); 	 
+	float FogValue = Out.HPos.z;
+	Out.Fog = calcFog(FogValue);
 		 						 	 						
 	return Out;
 }

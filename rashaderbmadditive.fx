@@ -54,8 +54,9 @@ VS_OUT vs(VS_IN indata)
 	int IndexArray[4] = (int[4])IndexVector;
 	
 	Out.Pos	= float4(mul(indata.Pos, GeomBones[IndexArray[0]]), 1);
+	float FogValue = length(Out.Pos.xyz - WorldSpaceCamPos.xyz);
 	Out.Pos	= mul(Out.Pos, ViewProjection);
-	Out.Fog = calcFog(Out.Pos.w);
+	Out.Fog = calcFog(FogValue);
 	Out.Tex = indata.Tex;
 
 	return Out;

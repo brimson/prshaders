@@ -35,9 +35,10 @@ float2 tex0	: TEXCOORD0
 {
 	VS_OUTPUT Out = (VS_OUTPUT)0;
 
-	Out.Pos		= mul(float4(inPos, 1), mul(World, ViewProjection));
-	Out.Fog		= calcFog(Out.Pos.w);
-	Out.Tex0	= tex0;
+	Out.Pos = mul(float4(inPos, 1), mul(World, ViewProjection));
+	float FogValue = length(Out.Pos.xyz);
+	Out.Fog = calcFog(FogValue);
+	Out.Tex0 = tex0;
 
 	return Out;
 }

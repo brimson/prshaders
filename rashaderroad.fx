@@ -80,10 +80,10 @@ float2 tex0	: TEXCOORD0
  	Out.lightTex.xy = Out.lightTex.xy * Out.Pos.w;
 	Out.lightTex.zw = Out.Pos.zw;
 
-	float cameraDist = length(WorldSpaceCamPos - wPos);
+	float cameraDist = length(WorldSpaceCamPos.xyz - wPos.xyz);
 	Out.ZFade = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
 
-	Out.Fog = calcFog(Out.Pos.w);
+	Out.Fog = calcFog(cameraDist);
 
 	return Out;
 }

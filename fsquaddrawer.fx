@@ -44,40 +44,40 @@ float2 texelSize : TEXELSIZE;
 
 struct APP2VS_blit
 {
-	float2	Pos : POSITION0;
-	float2	TexCoord0 : TEXCOORD0;
+    float2	Pos : POSITION0;
+    float2	TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS_4TapFilter
 {
-	float4	Pos 		 : POSITION;
-	float2	FilterCoords[4] : TEXCOORD0;
+    float4	Pos 		 : POSITION;
+    float2	FilterCoords[4] : TEXCOORD0;
 };
 
 struct VS2PS_5SampleFilter
 {
-	float4	Pos 		    : POSITION;
-	float2	TexCoord0		: TEXCOORD0;
-	float4	FilterCoords[2] : TEXCOORD1;
+    float4	Pos 		    : POSITION;
+    float2	TexCoord0		: TEXCOORD0;
+    float4	FilterCoords[2] : TEXCOORD1;
 };
 
 struct VS2PS_blit_
 {
-	float4	Pos 		: POSITION;
-	float2	TexCoord0	: TEXCOORD0;
+    float4	Pos 		: POSITION;
+    float2	TexCoord0	: TEXCOORD0;
 };
 
 
 struct VS2PS_blit
 {
-	float4	Pos 		: POSITION;
-	float2	TexCoord0	: TEXCOORD0;
+    float4	Pos 		: POSITION;
+    float2	TexCoord0	: TEXCOORD0;
 };
 
 struct VS2PS_5SampleFilter14
 {
-	float4	Pos 		    : POSITION;
-	float2	FilterCoords[5] : TEXCOORD0;
+    float4	Pos 		    : POSITION;
+    float2	FilterCoords[5] : TEXCOORD0;
 };
 
 VS2PS_blit vsDx9_blit(APP2VS_blit indata)
@@ -98,25 +98,25 @@ VS2PS_blit vsDx9_blitCustom(APP2VS_blit indata)
 
 struct VS2PS_tr_blit
 {
-	float4	Pos 		: POSITION;
-	float2	TexCoord0	: TEXCOORD0;
+    float4	Pos 		: POSITION;
+    float2	TexCoord0	: TEXCOORD0;
 };
 
 VS2PS_tr_blit vsDx9_tr_blit(APP2VS_blit indata) // TODO: implement support for old shader versions. TODO: try to use fakeHDRWeights as variables
 {
 	VS2PS_tr_blit outdata;
-	outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
-	outdata.TexCoord0 = indata.TexCoord0;
+ 	outdata.Pos = float4(indata.Pos.x, indata.Pos.y, 0, 1);
+ 	outdata.TexCoord0 = indata.TexCoord0;
 	return outdata;
 }
 
-const float Offsets[5] =
+const float2 Offsets[5] =
 {
-	0.0,
-	1.4584295167832,
-	3.4039848066734835,
-	5.351805780136256,
-	7.302940716034593
+	float2(0.0, 0.0),
+	float2(0.0, 1.4584295167832),
+	float2(0.0, 3.4039848066734835),
+	float2(0.0, 5.351805780136256),
+	float2(0.0, 7.302940716034593)
 };
 
 const float Weights[5] =
@@ -128,43 +128,52 @@ const float Weights[5] =
 	0.012539291705835646
 };
 
-float4 OpticsBlur(sampler2D Source, float2 TexCoord, float2 Direction)
+float4 psDx9_tr_opticsBlurH(VS2PS_tr_blit indata) : COLOR
 {
 	float4 OutputColor = 0.0;
 	float4 TotalWeights = 0.0;
-	float2 PixelSize2D = float2(ddx(TexCoord.x), ddy(TexCoord.y)) * Direction;
+	float2 PixelSize2D = float2(ddx(indata.TexCoord0.x), ddy(indata.TexCoord0.y));
 
-	OutputColor += tex2D(Source, TexCoord + (Offsets[0] * PixelSize2D)) * Weights[0];
+	OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[0].yx * PixelSize2D)) * Weights[0];
 	TotalWeights += Weights[0];
 
 	for(int i = 1; i < 5; i++)
 	{
-		OutputColor += tex2D(Source, TexCoord + (Offsets[i] * PixelSize2D)) * Weights[i];
-		OutputColor += tex2D(Source, TexCoord - (Offsets[i] * PixelSize2D)) * Weights[i];
+		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[i].yx * PixelSize2D)) * Weights[i];
+		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 - (Offsets[i].yx * PixelSize2D)) * Weights[i];
 		TotalWeights += (Weights[i] * 2.0);
 	}
 
-	return OutputColor / TotalWeights;
-}
-
-float4 psDx9_tr_opticsBlurH(VS2PS_tr_blit indata) : COLOR
-{
-	return OpticsBlur(sampler0bilin, indata.TexCoord0, float2(1.0, 0.0));
+    return OutputColor / TotalWeights;
 }
 
 float4 psDx9_tr_opticsBlurV(VS2PS_tr_blit indata) : COLOR
 {
-	return OpticsBlur(sampler0bilin, indata.TexCoord0, float2(0.0, 1.0));
+	float4 OutputColor = 0.0;
+	float4 TotalWeights = 0.0;
+	float2 PixelSize2D = float2(ddx(indata.TexCoord0.x), ddy(indata.TexCoord0.y));
+
+	OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[0].xy * PixelSize2D)) * Weights[0];
+	TotalWeights += Weights[0];
+
+	for(int i = 1; i < 5; i++)
+	{
+		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[i].xy * PixelSize2D)) * Weights[i];
+		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 - (Offsets[i].xy * PixelSize2D)) * Weights[i];
+		TotalWeights += (Weights[i] * 2.0);
+	}
+
+    return OutputColor / TotalWeights;
 }
 
 float4 psDx9_tr_opticsNoBlurCircle(VS2PS_tr_blit indata) : COLOR
 {
 	// Aspect ratio: flip variables because we calculate pixelsize ratio (larger resolution == smaller number)
-	float AspectRatio = ddy(indata.TexCoord0.y) / ddx(indata.TexCoord0.x);
+	float AspectRatio = abs(ddy(indata.TexCoord0.y)) / abs(ddx(indata.TexCoord0.x));
 	float BlurAmountMod = frac(highPassGate) / 0.9; // used for the fade-in effect
 	float Radius1 = blurStrength / 1000.0; // 0.2 by default (floor() isn't used for perfomance reasons)
 	float Radius2 = frac(blurStrength); // 0.25 by default
-	float Distance = length((indata.TexCoord0 - 0.5) * float2(abs(AspectRatio), 1.0)); // get distance from the center of the screen
+	float Distance = length((indata.TexCoord0 - 0.5) * float2(AspectRatio, 1.0)); // get distance from the center of the screen
 	float BlurAmount = saturate((Distance - Radius1) / (Radius2 - Radius1)) * BlurAmountMod;
 	float4 InputColor = tex2D(sampler0aniso, indata.TexCoord0);
 	return float4(InputColor.rgb, BlurAmount);
@@ -181,7 +190,7 @@ float4 psDx9_tr_PassThrough_aniso(VS2PS_tr_blit indata) : COLOR
 
 float4 ps_dummy() : COLOR
 {
-	return 0;
+    return 0;
 }
 
 VS2PS_blit_ vsDx9_blitMagnified(APP2VS_blit indata)
@@ -258,11 +267,11 @@ VS2PS_5SampleFilter14 vsDx9_5SampleFilter14(APP2VS_blit indata, uniform float of
 
 struct VS2PS_Down4x4Filter14
 {
-	float4	Pos 		: POSITION;
-	float2	TexCoord0	: TEXCOORD0;
-	float2	TexCoord1	: TEXCOORD1;
-	float2	TexCoord2	: TEXCOORD2;
-	float2	TexCoord3	: TEXCOORD3;
+    float4	Pos 		: POSITION;
+    float2	TexCoord0	: TEXCOORD0;
+    float2	TexCoord1	: TEXCOORD1;
+    float2	TexCoord2	: TEXCOORD2;
+    float2	TexCoord3	: TEXCOORD3;
 };
 
 VS2PS_Down4x4Filter14 vsDx9_Down4x4Filter14(APP2VS_blit indata)

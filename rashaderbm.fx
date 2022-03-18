@@ -293,10 +293,12 @@ BMVariableVSOutput vs(BMVariableVSInput input)
 	Out.Interpolated[__ENVMAPINTERPIDX].w = pow((R0 + (1.0 - R0) * (1.0 - dot(worldEyeVec, getWorldNormal(input)))), 2);
 #endif
 
+	float FogValue = length(getWorldPos(input).xyz - WorldSpaceCamPos.xyz);
+
 #if _POINTLIGHT_
-	Out.SpecularLightOrPointFog = calcFog(Out.HPos.w);
+	Out.SpecularLightOrPointFog = calcFog(FogValue);
 #else
-	Out.Fog = calcFog(Out.HPos.w); 		//always fog
+	Out.Fog = calcFog(FogValue); // always fog
 #endif
 
 	return Out;

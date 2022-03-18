@@ -66,7 +66,8 @@ OUT_vsDecal vsDecal(appdata input)
 	
 	Out.Texture0 = input.TexCoordsInstanceIndexAndAlpha.xy;
 	
-	Out.Fog = calcFog(Out.HPos.w); 	 
+	float FogValue = Out.HPos.z;
+	Out.Fog = calcFog(FogValue); 	 
 
 	return Out;
 }
@@ -123,7 +124,9 @@ OUT_vsDecalShadowed vsDecalShadowed(appdata input)
 	Out.TexShadow.z -= 0.007;
 	
 	Out.Texture0 = input.TexCoordsInstanceIndexAndAlpha.xy;
-	Out.Fog = calcFog(Out.HPos.w); 	 
+
+	float FogValue = Out.HPos.z;
+	Out.Fog = calcFog(FogValue);
 	
 	return Out;
 }

@@ -70,7 +70,8 @@ OUT_vsDiffuse vsDiffuse
  	Out.GroundUV.xy = ((Pos.xyz + (hemiMapInfo.z/2)).xz - hemiMapInfo.xy)/ hemiMapInfo.z;	
  	Out.LerpAndLMapIntOffset = saturate(clamp((Pos.y - hemiShadowAltitude) / 10.f, 0.f, 1.0f) + lightmapIntensityOffset);
  	
- 	 Out.Fog = calcFog(Out.HPos.w); 	 
+	float FogValue = Out.HPos.z;
+	Out.Fog = calcFog(FogValue);
 	
 	return Out;
 }

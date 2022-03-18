@@ -467,9 +467,9 @@ technique Full
 {
 	pass p0 
 	{		
- 		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	viewProjMatrix,
-										viewInverseMatrix,
-										lightPos);
+ 		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(viewProjMatrix,
+																	 viewInverseMatrix,
+																	 lightPos);
         PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1();
 	}
 }
@@ -485,9 +485,9 @@ technique Full20
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
 		
-		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn20(	viewProjMatrix,
-										viewInverseMatrix,
-										lightPos);
+		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn20(viewProjMatrix,
+																	  viewInverseMatrix,
+																	  lightPos);
 										
 		PixelShader = compile ps_2_a PShade2();
 										

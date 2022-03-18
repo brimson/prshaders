@@ -316,7 +316,8 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
 
 	outdata.Tex1 = projToLighting(outdata.Pos);
 
-	outdata.Fog = calcFog(outdata.Pos.w);
+	float FogValue = length(wPos.xyz - vCamerapos.xyz);
+	outdata.Fog = calcFog(FogValue);
 	
 //	outdata.Tex1 = interpVal;
 //	outdata.Tex1 = float4(vMorphDeltaAdder[indata.Pos0.z*256], 1) * 256*256;
@@ -456,7 +457,8 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
  	outdata.WaterAndFog.x = (wPos.y/-3.0) + waterHeight;
 // 	outdata.WaterAndFog.x = saturate((waterHeight*3 - wPos.y)/3.0f);
 
-	outdata.WaterAndFog.yzw = calcFog(outdata.Pos.w);
+	float FogValue = length(wPos.xyz - vCamerapos.xyz);
+	outdata.WaterAndFog.yzw = calcFog(FogValue);
 	
 	return outdata;
 }
@@ -511,8 +513,9 @@ Shared_VS2PS_STNormal Shared_VS_STNormal(Shared_APP2VS_STNormal indata)
 	float2 yPlaneTexCord = tex.zx;
 	float2 zPlaneTexCord = tex.zy;
 
+	float FogValue = length(outdata.Pos.xyz - vCamerapos.xyz);
  	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Fog = calcFog(outdata.Pos.w);
+ 	outdata.Fog = calcFog(FogValue);
 
  	outdata.Tex1 = yPlaneTexCord * vSTFarTexTiling.z;
 	outdata.Tex2.xy = xPlaneTexCord.xy * vSTFarTexTiling.xy;

@@ -81,7 +81,7 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
 	float fadeIn = saturate(age/tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.x);
 	float fadeOut = saturate((1.f - age)/tParameters.m_fadeInOutTileFactorAndUVOffsetVelocity.y);
 		 
-	float3 eyeVec = eyePos - input.pos;
+	float3 eyeVec = eyePos.xyz - input.pos.xyz;
 	
 	// project eyevec to tangent vector to get position on axis
 	float tanPos = dot(eyeVec, input.tangent);
@@ -174,7 +174,8 @@ VS_TRAIL_OUTPUT vsTrail(appdata input, uniform float4x4 myWV, uniform float4x4 m
  	
  	Out.lightFactorAndAlpha.a = tParameters.m_color1AndLightFactor.a;
  	 	 		
-	Out.Fog = calcFog(Out.HPos.w); 	 	 						
+	float FogValue = length(eyeVec);
+	Out.Fog = calcFog(FogValue); 	 						
 	
 	return Out;
 }

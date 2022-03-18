@@ -51,9 +51,16 @@ struct VS2PS_Quad2
     float2	TexCoord1	: TEXCOORD1;
 };
 
+struct VS2PS_Tinnitus
+{
+    float2 Position : VPOS;
+    float2 TexCoord0 : TEXCOORD0;
+    float2 TexCoord1 : TEXCOORD1;
+};
+
 struct PS2FB_Combine
 {
-    float4	Col0 		: COLOR0;
+    float4 Col0 : COLOR0;
 };
 
 VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
@@ -64,17 +71,6 @@ VS2PS_Quad vsDx9_OneTexcoord(APP2VS_Quad indata)
 	return outdata;
 }
 
-const float4 filterkernel[8] = {
--1.0, 1.0, 0, 0.125,
-0.0, 1.0, 0, 0.125,
-1.0, 1.0, 0, 0.125,
--1.0, 0.0, 0, 0.125,
-1.0, 0.0, 0, 0.125,
--1.0, -1.0, 0, 0.125,
-0.0, -1.0, 0, 0.125,
-1.0, -1.0, 0, 0.125,
-};
-
 VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)
 {
 	VS2PS_Quad2 outdata;	
@@ -84,28 +80,67 @@ VS2PS_Quad2 vsDx9_Tinnitus(APP2VS_Quad indata)
 	return outdata;
 }
 
-PS2FB_Combine psDx9_Tinnitus(VS2PS_Quad2 indata)
+// Rotated noise convolution tinnitus
+// Vogel disk sampling: http://blog.marmakoide.org/?p=1
+// Rotated noise sampling: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare (slide 123)
+
+static const float Pi = 3.1415926535897932384626433832795;
+
+float2 VogelSample(int Index, int SamplesCount)
+{
+    const float GoldenAngle = Pi * (3.0 - sqrt(5.0));
+    float Radius = sqrt(float(Index) + 0.5) * rsqrt(float(SamplesCount));
+    float Theta = float(Index) * GoldenAngle;
+
+    float2 SinCosTheta = 0.0;
+    sincos(Theta, SinCosTheta.x, SinCosTheta.y);
+    return Radius * SinCosTheta;
+}
+
+float GradientNoise(float2 Position)
+{
+    const float3 Numbers = float3(0.06711056f, 0.00583715f, 52.9829189f);
+    return frac(Numbers.z * frac(dot(Position.xy, Numbers.xy)));
+}
+
+PS2FB_Combine psDx9_Tinnitus(VS2PS_Tinnitus indata)
 {
 	PS2FB_Combine outdata;
-float4 blur = float4(0,0,0,0);
-	for(int i=0;i<8;i++)
-		blur += filterkernel[i].w * tex2D(sampler0bilin, float2(indata.TexCoord0.x + 0.02 * filterkernel[i].x, indata.TexCoord0.y + 0.02 * filterkernel[i].y));   
+    float2 PixelSize = float2(ddx(indata.TexCoord0.x), ddy(indata.TexCoord0.y));
+
+	float4 blur = 0.0;
+	float Samples = 4.0;
+	float Radius = 32.0;
+
+    float2 Rotation = 0.0;
+    sincos(2.0 * Pi * GradientNoise(indata.Position.xy), Rotation.y, Rotation.x);
+
+    float2x2 RotationMatrix = float2x2(Rotation.x, Rotation.y,
+                                      -Rotation.y, Rotation.x);
+
+    for(int i = 0; i < Samples; i++)
+    {
+        float2 SampleOffset = mul(VogelSample(i, Samples) * Radius, RotationMatrix);
+        blur += tex2D(sampler0bilin, indata.TexCoord0 + (SampleOffset * PixelSize));
+    }
+
+    blur = blur / Samples;
+
 	float4 color = tex2D(sampler0bilin, indata.TexCoord0);
-	float2 tcxy = float2(indata.TexCoord0.x, indata.TexCoord0.y);
+	float2 tcxy = indata.TexCoord0.xy;
 
 	//parabolic function for x opacity to darken the edges, exponential function for yopacity to darken the lower part of the screen
-	float darkness = max(4 * tcxy.x * tcxy.x - 4 * tcxy.x + 1, saturate((pow(2.5,tcxy.y) - tcxy.y/2 - 1)));
+	float darkness = max(4.0 * tcxy.x * tcxy.x - 4.0 * tcxy.x + 1.0, saturate((pow(2.5, tcxy.y) - tcxy.y / 2.0 - 1.0)));
 
 	//weight the blurred version more heavily as you go lower on the screen
-	float4 finalcolor = lerp(color, blur, saturate(2 * (pow(4,tcxy.y) - tcxy.y - 1)));
+	float4 finalcolor = lerp(color, blur, saturate(2.0 * (pow(4.0, tcxy.y) - tcxy.y - 1.0)));
 
 	//darken the left, right, and bottom edges of the final product
-	finalcolor = lerp(finalcolor, float4(0,0,0,1), darkness);
+	finalcolor = lerp(finalcolor, float4(0, 0, 0, 1), darkness);
 	float4 outcolor = float4(finalcolor.rgb,saturate(2*backbufferLerpbias));
 	outdata.Col0 = outcolor;
 	return outdata;
 }
-
 
 technique Tinnitus
 {
@@ -117,8 +152,8 @@ technique Tinnitus
 		DestBlend = INVSRCALPHA;
 		StencilEnable = FALSE;
 		
-		VertexShader = compile vs_2_a vsDx9_Tinnitus();
-		PixelShader = compile ps_2_a psDx9_Tinnitus();
+		VertexShader = compile vs_3_0 vsDx9_Tinnitus();
+		PixelShader = compile ps_3_0 psDx9_Tinnitus();
 		
 	}
 }
@@ -181,12 +216,11 @@ technique Glow
 float4 psDx9_Fog(VS2PS_Quad indata) : COLOR
 {
 	float3 wPos = tex2D(sampler0, indata.TexCoord0);
-	float uvCoord =  saturate((wPos.zzzz-fogStartAndEnd.r)/fogStartAndEnd.g);//fogColorAndViewDistance.a);
+	float uvCoord =  saturate((wPos.zzzz-fogStartAndEnd.r)/fogStartAndEnd.g); // fogColorAndViewDistance.a);
 	return saturate(float4(fogColor.rgb,uvCoord));
-	//float2 fogcoords = float2(uvCoord, 0.0);
+	// float2 fogcoords = float2(uvCoord, 0.0);
 	return tex2D(sampler1, float2(uvCoord, 0.0))*fogColor.rgbb;
 }
-
 
 technique Fog
 {

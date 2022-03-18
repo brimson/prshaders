@@ -210,7 +210,8 @@ float2 lmtex	: TEXCOORD1
 	VS_OUTPUT_WATER Out;// = (VS_OUTPUT_WATER)0;
 
 	float4 wPos		= mul(inPos, World);
-	
+	float FogValue = length(wPos.xyz - WorldSpaceCamPos.xyz);
+
 	//float h = (WorldSpaceCamPos.y - WaterHeight);
 	//wPos.y += h/500;
 	
@@ -238,7 +239,7 @@ float2 lmtex	: TEXCOORD1
 #ifndef NO_LIGHTMAP
 	Out.lmtex.xy = lmtex.xy * LightMapOffset.xy + LightMapOffset.zw;
 #endif
-	Out.Fog		= calcFog(Out.Pos.w);
+	Out.Fog		= calcFog(FogValue);
 
 #ifdef USE_SHADOWS
 	Out.TexShadow = calcShadowProjection(wPos);
