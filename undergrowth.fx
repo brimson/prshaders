@@ -158,7 +158,7 @@ VS2PS VShader(
  	{
  		outdata.TexShadow = calcShadowProjection(pos);
  	}
- 		
+			
  	outdata.Fog = calcFog(dist);
  	
  	outdata.LightAndScale.rgb = 0;

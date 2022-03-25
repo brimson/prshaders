@@ -11,6 +11,7 @@ float4	PosUnpack;
 float2	NormalUnpack;
 float	TexUnpack;
 float4	ObjectSpaceCamPos;
+float4	WorldSpaceCamPos;
 
 struct VS_OUTPUT
 {
@@ -74,8 +75,10 @@ VS_OUTPUT basicVertexShader
 
 	inPos *= PosUnpack;
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
-	float FogValue = length(inPos.xyz - ObjectSpaceCamPos.xyz);
-	Out.Fog		= calcFog(FogValue);
+
+	float4 wPos = mul(float4(inPos.xyz, 1), World);
+	float FogValue = length(WorldSpaceCamPos.xyz - wPos.xyz);
+	Out.Fog = calcFog(FogValue);
 	Out.Tex0	= tex0 * TexUnpack;
 #ifndef BASEDIFFUSEONLY
 	Out.Tex1	= tex1 * TexUnpack;
@@ -123,7 +126,8 @@ string GlobalParameters[] =
 	"ShadowMap",
 #endif
 	"FogRange",
-	"FogColor"
+	"FogColor",
+	"WorldSpaceCamPos",
 };
 
 string TemplateParameters[] = 
@@ -147,7 +151,8 @@ string InstanceParameters[] =
 	"Transparency",
 	"ObjectSpaceCamPos",
 	"Lights",
-	"OverGrowthAmbient"
+	"OverGrowthAmbient",
+	"World",
 };
 
 technique defaultTechnique

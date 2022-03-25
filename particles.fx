@@ -96,7 +96,7 @@ VS_PARTICLE_OUTPUT vsParticle(appdata input, uniform float4x4 myWV, uniform floa
  	Out.lightFactorAndAlphaBlend.a = templ[input.ageFactorAndGraphIndex.y].m_color1AndLightFactor.a;
 
 	float FogValue = Out.HPos.z;
-	Out.Fog = (FogValue);
+	Out.Fog = calcFog(FogValue);
 
 	return Out;
 }

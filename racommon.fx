@@ -51,9 +51,9 @@ float4		FogColor : fogColor;
 
 float calcFog(float w)
 {
-	half2 fogVals = w*FogRange.xy + FogRange.zw;
-	half close = max(fogVals.y, FogColor.w);
-	half far = pow(fogVals.x,3);
+	float2 fogVals = w*FogRange.xy + FogRange.zw;
+	float close = max(fogVals.y, FogColor.w);
+	float far = pow(fogVals.x,3);
 	return close-far;
 }
 
