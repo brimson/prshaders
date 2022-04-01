@@ -8,6 +8,7 @@ sampler sampler1point = sampler_state { Texture = (texture1); AddressU = CLAMP; 
 //sampler sampler2 = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
 //sampler sampler3 = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
 sampler sampler0bilin = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; };
+sampler sampler0bilinMirror = sampler_state { Texture = (texture0); AddressU = MIRROR; AddressV = MIRROR; MinFilter = LINEAR; MagFilter = LINEAR; };
 sampler sampler0aniso = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = ANISOTROPIC; MagFilter = ANISOTROPIC; MaxAnisotropy = 8; };
 
 dword dwStencilRef : STENCILREF = 0;
@@ -128,61 +129,60 @@ const float Weights[5] =
 	0.012539291705835646
 };
 
-float4 psDx9_tr_opticsBlurH(VS2PS_tr_blit indata) : COLOR
+float4 LinearGaussianBlur(sampler2D Source, float2 TexCoord, bool IsHorizontal)
 {
 	float4 OutputColor = 0.0;
 	float4 TotalWeights = 0.0;
-	float2 PixelSize2D = float2(ddx(indata.TexCoord0.x), ddy(indata.TexCoord0.y));
+	float2 PixelSize = 0.0;
+	PixelSize.x = 1.0 / int(1.0 / abs(ddx(TexCoord.x)));
+	PixelSize.y = 1.0 / int(1.0 / abs(ddy(TexCoord.y)));
 
-	OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[0].yx * PixelSize2D)) * Weights[0];
+	OutputColor += tex2D(Source, TexCoord + (Offsets[0].xy * PixelSize)) * Weights[0];
 	TotalWeights += Weights[0];
 
 	for(int i = 1; i < 5; i++)
 	{
-		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[i].yx * PixelSize2D)) * Weights[i];
-		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 - (Offsets[i].yx * PixelSize2D)) * Weights[i];
+		float2 Offset = (IsHorizontal) ? Offsets[i].yx : Offsets[i].xy;
+		OutputColor += tex2D(Source, TexCoord + (Offset * PixelSize)) * Weights[i];
+		OutputColor += tex2D(Source, TexCoord - (Offset * PixelSize)) * Weights[i];
 		TotalWeights += (Weights[i] * 2.0);
 	}
 
-    return OutputColor / TotalWeights;
+	return OutputColor / TotalWeights;
+}
+
+float4 psDx9_tr_opticsBlurH(VS2PS_tr_blit indata) : COLOR
+{
+    return LinearGaussianBlur(sampler0bilinMirror, indata.TexCoord0, true);
 }
 
 float4 psDx9_tr_opticsBlurV(VS2PS_tr_blit indata) : COLOR
 {
-	float4 OutputColor = 0.0;
-	float4 TotalWeights = 0.0;
-	float2 PixelSize2D = float2(ddx(indata.TexCoord0.x), ddy(indata.TexCoord0.y));
-
-	OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[0].xy * PixelSize2D)) * Weights[0];
-	TotalWeights += Weights[0];
-
-	for(int i = 1; i < 5; i++)
-	{
-		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 + (Offsets[i].xy * PixelSize2D)) * Weights[i];
-		OutputColor += tex2D(sampler0bilin, indata.TexCoord0 - (Offsets[i].xy * PixelSize2D)) * Weights[i];
-		TotalWeights += (Weights[i] * 2.0);
-	}
-
-    return OutputColor / TotalWeights;
+    return LinearGaussianBlur(sampler0bilinMirror, indata.TexCoord0, false);
 }
 
 float4 psDx9_tr_opticsNoBlurCircle(VS2PS_tr_blit indata) : COLOR
 {
-	// Aspect ratio: flip variables because we calculate pixelsize ratio (larger resolution == smaller number)
-	float AspectRatio = abs(ddy(indata.TexCoord0.y)) / abs(ddx(indata.TexCoord0.x));
+	float2 ScreenSize = 0.0;
+	ScreenSize.x = int(1.0 / abs(ddx(indata.TexCoord0.x)));
+	ScreenSize.y = int(1.0 / abs(ddy(indata.TexCoord0.y)));
+	float AspectRatio = ScreenSize.x / ScreenSize.y;
+
 	float BlurAmountMod = frac(highPassGate) / 0.9; // used for the fade-in effect
 	float Radius1 = blurStrength / 1000.0; // 0.2 by default (floor() isn't used for perfomance reasons)
 	float Radius2 = frac(blurStrength); // 0.25 by default
 	float Distance = length((indata.TexCoord0 - 0.5) * float2(AspectRatio, 1.0)); // get distance from the center of the screen
-	float BlurAmount = saturate((Distance - Radius1) / (Radius2 - Radius1)) * BlurAmountMod;
+
+	float BlurAmount = saturate((Distance - Radius1) / (Radius2 - Radius1)) * BlurAmountMod; 
 	float4 InputColor = tex2D(sampler0aniso, indata.TexCoord0);
-	return float4(InputColor.rgb, BlurAmount);
+	return float4(InputColor.rgb, BlurAmount); // Alpha (.a) is the mask to be composited in the pixel shader's blend operation
 }
 
 float4 psDx9_tr_PassThrough_point(VS2PS_tr_blit indata) : COLOR
 {
 	return tex2D(sampler0point, indata.TexCoord0);
 }
+
 float4 psDx9_tr_PassThrough_aniso(VS2PS_tr_blit indata) : COLOR
 {
 	return tex2D(sampler0aniso, indata.TexCoord0);
@@ -755,7 +755,7 @@ technique Blit
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 		VertexShader = compile vs_2_a vsDx9_blit();
-		PixelShader = compile ps_2_a psDx9_FSBMGaussianBlur15x15HorizontalFilter();//psDx9_FSBMGaussianBlur15x15HorizontalFilter2();
+		PixelShader = compile ps_2_a psDx9_FSBMGaussianBlur15x15HorizontalFilter(); // psDx9_FSBMGaussianBlur15x15HorizontalFilter2();
 	}
 
 	pass FSBMGaussianBlur15x15VerticalFilter
@@ -763,7 +763,7 @@ technique Blit
 		ZEnable = FALSE;
 		AlphaBlendEnable = FALSE;
 		VertexShader = compile vs_2_a vsDx9_blit();
-		PixelShader = compile ps_2_a psDx9_FSBMGaussianBlur15x15VerticalFilter();//psDx9_FSBMGaussianBlur15x15VerticalFilter2();
+		PixelShader = compile ps_2_a psDx9_FSBMGaussianBlur15x15VerticalFilter(); // psDx9_FSBMGaussianBlur15x15VerticalFilter2();
 	}
 
 	pass FSBMGrowablePoisson13Filter
@@ -950,6 +950,7 @@ technique Blit
 		AlphaBlendEnable = TRUE;
 		StencilEnable = FALSE;
 		AlphaTestEnable = FALSE;
+		BlendOp = ADD;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 vsDx9_tr_blit();
