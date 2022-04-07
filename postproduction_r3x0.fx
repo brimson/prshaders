@@ -23,18 +23,18 @@ float2 _SampleOffset : SAMPLEOFFSET;
 float2 _FogStartAndEnd : FOGSTARTANDEND;
 float3 _FogColor : FOGCOLOR;
 
-sampler Sampler0 = sampler_state
+sampler Sampler1Point = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (Texture1);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = POINT;
 	MagFilter = POINT;
 };
 
-sampler Sampler1 = sampler_state
+sampler Sampler0Point = sampler_state
 {
-	Texture = (Texture1);
+	Texture = (Texture0);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = POINT;
@@ -190,11 +190,11 @@ technique GlowMaterial
 
 float4 Fog_PS(VS2PS_Quad Input) : COLOR
 {
-	float3 WorldPosition = tex2D(Sampler0, Input.TexCoord0).xyz;
+	float3 WorldPosition = tex2D(Sampler0Point, Input.TexCoord0).xyz;
 	float Coord = saturate((WorldPosition.z - _FogStartAndEnd.r) /_FogStartAndEnd.g); // fogColorAndViewDistance.a);
 	return saturate(float4(_FogColor.rgb,Coord));
 	// float2 FogCoords = float2(Coord, 0.0);
-	return tex2D(Sampler1, float2(Coord, 0.0)) * _FogColor.rgbb;
+	return tex2D(Sampler1Point, float2(Coord, 0.0)) * _FogColor.rgbb;
 }
 
 technique Fog

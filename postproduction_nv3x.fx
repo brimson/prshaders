@@ -40,18 +40,9 @@ float2 _Displacement : DISPLACEMENT; // Random <x, y> jitter
 float _DeltaU : DELTAU;
 float _DeltaV : DELTAV;
 
-sampler Sampler0 = sampler_state
+sampler Sampler0Point = sampler_state
 {
 	Texture = (Texture0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = POINT;
-	MagFilter = POINT;
-};
-
-sampler Sampler1 = sampler_state
-{
-	Texture = (Texture1);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = POINT;
@@ -65,6 +56,15 @@ sampler Sampler0Bilinear = sampler_state
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
+};
+
+sampler Sampler1Point = sampler_state
+{
+	Texture = (Texture1);
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	MinFilter = POINT;
+	MagFilter = POINT;
 };
 
 sampler Sampler1Bilinear = sampler_state
@@ -113,11 +113,27 @@ struct VS2PS_Quad2
 	float2 TexCoord1 : TEXCOORD1;
 };
 
+struct VS2PS_Quad3
+{
+	float4 Pos : POSITION;
+	float2 TexCoord0 : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+	float2 TexCoord2 : TEXCOORD2;
+};
+
 struct PS2FB_Quad2
 {
 	float2 Pos : VPOS;
 	float2 TexCoord0 : TEXCOORD0;
 	float2 TexCoord1 : TEXCOORD1;
+};
+
+struct PS2FB_Quad3
+{
+	float2 Pos : VPOS;
+	float2 TexCoord0 : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+	float2 TexCoord2 : TEXCOORD2;
 };
 
 VS2PS_Quad PostProcess_VS(APP2VS_Quad Input)
@@ -240,11 +256,11 @@ technique GlowMaterial
 /*
 	float4 Fog_PS(VS2PS_Quad Input) : COLOR
 	{
-		float3 WorldPosition = tex2D(Sampler0, Input.TexCoord0).xyz;
+		float3 WorldPosition = tex2D(Sampler0Point, Input.TexCoord0).xyz;
 		float Coord = saturate((WorldPosition.z - _FogStartAndEnd.r) / _FogStartAndEnd.g); // fogColorandomViewDistance.a);
 		return saturate(float4(_FogColor.rgb, Coord));
 		// float2 FogCoords = float2(Coord, 0.0);
-		return tex2D(Sampler1, float2(Coord, 0.0)) * _FogColor.rgbb;
+		return tex2D(Sampler1Point, float2(Coord, 0.0)) * _FogColor.rgbb;
 	}
 
 	technique Fog
@@ -289,6 +305,9 @@ float _Granularity : TVGRANULARITY; // = 3.5;
 float _TVAmbient : TVAMBIENT; // = 0.15
 float3 _TVColor : TVCOLOR;
 
+// Thermal vision with Gaussian noise
+// The larger Random()'s result deviates, the lesser the noise would be, whether negative or positive
+
 VS2PS_Quad2 ThermalVision_VS(APP2VS_Quad Input)
 {
 	VS2PS_Quad2 Output;
@@ -299,23 +318,49 @@ VS2PS_Quad2 ThermalVision_VS(APP2VS_Quad Input)
 	return Output;
 }
 
-// Thermal vision with Gaussian noise
-// The larger Random()'s result deviates, the lesser the noise would be, whether negative or positive
+/*
+	Title: How the thermal vision's screen-space, 2-pixel pixelation shader works
+	Example: We pixelate a 4x1 texture by sampling every 2nd pixel
+
+	1. Obtain pixel locations by input VPOS
+		[<1,0>, <2,0>, <3,0>, <4,0>]
+	2. Divide each pixel location pixel by 2 to round
+		[<0.5,0.0>, <1.0,0.0>, <1.5,0.0>, <2.0,0.0>]
+	3. Round step 2 to generate UV blocks
+		[<1,0>, <1,0>, <2,0>, <2,0>]
+	4. Multiply by 2 to scale step 3 into screen-space indecies
+		[<2,0>, <2,0>, <4,0>, <4,0>]
+	5. Normalize step 4 into 0-1 range by multiplying against its Pixelsize (Pixelsize = <1.0/4.0,1.0>)
+		[<0.5,0.0>, <0.5,0.0>, <1.0,0.0>, <1.0,0.0>]
+	
+	Result: Step 5 is now the new UV map for the texture.
+*/
+
+float4 Pixelate_PS(sampler2D Source, float2 PixelPosition, float2 TexCoord)
+{
+	// Calculate screen-space properties
+	float2 PixelSize = float2(ddx(TexCoord.x), ddy(TexCoord.y));
+	float2 ScreenSize = trunc(1.0 / abs(PixelSize));
+
+	// Calculate how many quarters it takes to go from source size to destinated size
+	float2 SrcSize = ScreenSize.x * ScreenSize.y;
+	float2 DestSize = 1280.0 * 720.0;
+	float RequiredLevels = 0.5 * log2(SrcSize / DestSize);
+
+	// Sample pixelated version of buffer by sampling every 1st texel if 720p or less, pixelate if above
+	const float BlockRadius = max(4.0 * round(RequiredLevels), 2.0);
+	float2 BlockCoordinates = round(PixelPosition / BlockRadius) * BlockRadius;
+	float2 Coord = (RequiredLevels > 0.0) ? BlockCoordinates  / ScreenSize : TexCoord;
+	return tex2Dlod(Sampler0Bilinear, float4(Coord, 0.0, 0.0));
+}
 
 float4 ThermalVision_PS(PS2FB_Quad2 Input) : COLOR
 {
 	float4 OutColor = 0.0;
 
-	// Calculate screen-space properties
-	float2 PixelSize = float2(ddx(Input.TexCoord1.x), ddy(Input.TexCoord1.y));
-	float2 ScreenSize = int2(1.0 / PixelSize); // Round to int
-
-	// Sample pixelated version of buffer by picking every 2nd texel
-	float2 PixelDensity = ScreenSize / 2.0;
-	float4 PixelatedImage = tex2D(Sampler0Bilinear, round(Input.TexCoord1 * PixelDensity) / PixelDensity);
-
 	// Use the jitter attribute interpolated by the pixel shader to generate noise
 	float GaussianNoise = Gaussian(Random(Input.TexCoord0.xy), 0.5 * 0.5);
+	float4 PixelatedImage = Pixelate_PS(Sampler0Bilinear, Input.Pos, Input.TexCoord1);
 
 	if (_Interference <= 1.0)
 	{
@@ -350,51 +395,6 @@ float4 ThermalVision_PS(PS2FB_Quad2 Input) : COLOR
 	return OutColor;
 }
 
-//	TV Effect with usage of gradient texture (what objects use this?)
-
-float4 ThermalVisionGradient_PS(PS2FB_Quad2 Input) : COLOR
-{
-	float4 OutColor = 0.0;
-
-	// Calculate screen-space properties
-	float2 PixelSize = float2(ddx(Input.TexCoord1.x), ddy(Input.TexCoord1.y));
-	float2 ScreenSize = int2(1.0 / PixelSize); // Round to int
-
-	// Use the jitter attribute interpolated by the pixel shader to generate noise
-	float GaussianNoise = Gaussian(Random(Input.TexCoord0.xy), 0.5 * 0.5);
-
-	if (_Interference >= 0.0 && _Interference <= 1.0)
-	{
-		float2 ImageCoord = Input.TexCoord1;
-
-		float Random = GaussianNoise - 0.2;
-		float Noise = GaussianNoise - 0.5;
-
-		float Distort = frac(Input.TexCoord0.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
-		Distort *= (1.0 - Distort);
-		Distort /= 1.0 + _DistortionScale * abs(Input.TexCoord0.y);
-
-		ImageCoord.x += _DistortionScale * Noise * Distort;
-
-		// Sample pixelated version of buffer by picking every 2nd texel
-		float2 PixelDensity = ScreenSize / 2.0;
-		float4 PixelatedImage = tex2D(Sampler0Bilinear, round(ImageCoord * PixelDensity) / PixelDensity);
-		PixelatedImage = Max3(PixelatedImage);
-
-		float4 Intensity = (_Interference * Random + PixelatedImage * (1.0 - _TVAmbient) + _TVAmbient);
-
-		float4 GradientColor = tex2D(Sampler3Bilinear, float2(Intensity.r, 0.0f));
-		OutColor = float4(GradientColor.rgb, Intensity.a);
-	}
-	else // Skip the processing if interference not within conditional range
-	{
-		OutColor = tex2D(Sampler0Bilinear, Input.TexCoord1);
-	}
-
-	return OutColor;
-	// return float4(0.0, 1.0, 0.0, 1.0);
-}
-
 technique TVEffect //  BF2 calls Thermal Vision "TV", but we renamed the TV methods to "ThermalVision" to avoid confusion.
 {
 	pass p0
@@ -408,6 +408,53 @@ technique TVEffect //  BF2 calls Thermal Vision "TV", but we renamed the TV meth
 	}
 }
 
+//	TV Effect with usage of gradient texture (what objects use this?)
+
+VS2PS_Quad3 ThermalVisionGradient_VS(APP2VS_Quad Input)
+{
+	VS2PS_Quad3 Output;
+	Input.Pos.xy = sign(Input.Pos.xy);
+	Output.Pos = float4(Input.Pos.xy, 0.0, 1.0);
+	Output.TexCoord0 = Input.Pos.xy * _Granularity + _Displacement;
+	Output.TexCoord1 = Input.Pos.xy * 0.25 + float2(-0.35, 0.25) * _SinFracTime;
+	Output.TexCoord2 = Input.TexCoord0;
+	return Output;
+}
+
+float4 ThermalVisionGradient_PS(PS2FB_Quad3 Input) : COLOR
+{
+	float4 OutColor = 0.0;
+
+	// Use the jitter attribute interpolated by the pixel shader to generate noise
+
+	if (_Interference >= 0.0 && _Interference <= 1.0)
+	{
+		float2 ImageCoord = Input.TexCoord2;
+		float RandomNumbers = Gaussian(Random(Input.TexCoord0.xy), 0.5 * 0.5) - 0.2;
+		float Noise = Gaussian(Random(Input.TexCoord1.xy), 0.5 * 0.5) - 0.5;
+
+		float Distort = frac(Input.TexCoord0.y * _DistortionFreq + _DistortionRoll * _SinFracTime);
+		Distort *= (1.0 - Distort);
+		Distort /= 1.0 + _DistortionScale * abs(Input.TexCoord0.y);
+		ImageCoord.x += _DistortionScale * Noise * Distort;
+
+		// Sample buffer using coordinates warped by distorted noise
+		float4 PixelatedImage = tex2D(Sampler0Bilinear, ImageCoord);
+
+		// Calculate warped gradient texture using blended noise + warped image as coordinates
+		float4 Intensity = (_Interference * RandomNumbers + PixelatedImage * (1.0 - _TVAmbient) + _TVAmbient);
+		float4 GradientColor = tex2D(Sampler3Bilinear, float2(Intensity.r, 0.0f));
+		OutColor = float4(GradientColor.rgb, Intensity.a);
+	}
+	else // Skip the processing if interference not within conditional range
+	{
+		OutColor = tex2D(Sampler0Bilinear, Input.TexCoord2);
+	}
+
+	return OutColor;
+	// return float4(0.0, 1.0, 0.0, 1.0);
+}
+
 technique TVEffect_Gradient_Tex // BF2 calls Thermal Vision "TV", but we renamed the TV methods to "ThermalVision" to avoid confusion.
 {
 	pass p0
@@ -416,7 +463,7 @@ technique TVEffect_Gradient_Tex // BF2 calls Thermal Vision "TV", but we renamed
 		AlphaBlendEnable = FALSE;
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_3_0 ThermalVision_VS();
+		VertexShader = compile vs_3_0 ThermalVisionGradient_VS();
 		PixelShader = compile ps_3_0 ThermalVisionGradient_PS();
 	}
 }
