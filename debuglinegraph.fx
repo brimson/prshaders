@@ -1,42 +1,38 @@
 
-float2 graphPos : GRAPHSIZE;
-float2 viewportSize : VIEWPORTSIZE;
+float2 _GraphPos : GRAPHSIZE;
+float2 _ViewportSize : VIEWPORTSIZE;
 
 struct APP2VS
 {
-    float2	scrPos : POSITION;
-    float4	col : COLOR;
+	float2 ScreenPos : POSITION;
+	float4 Color : COLOR;
 };
-
 
 struct VS2PS
 {
-    float4	hPos : POSITION;
-    float4	col : COLOR;
+	float4 HPos : POSITION;
+	float4 Color : COLOR;
 };
 
-VS2PS vs(APP2VS indata)
+VS2PS VS(APP2VS Input)
 {
-	VS2PS outdata;
+	VS2PS Output;
 
-	float2 scrPos = indata.scrPos + graphPos;
-	scrPos.x = scrPos.x/(viewportSize.x/2)-1;
-	scrPos.y = -(scrPos.y/(viewportSize.y/2)-1);
+	float2 ScreenPos = Input.ScreenPos + _GraphPos;
+	ScreenPos.xy = (ScreenPos.xy / (_ViewportSize.xy / 2.0) - 1.0) * float2(1.0, -1.0);
 
-	outdata.hPos.xy = scrPos;
-	outdata.hPos.z = 0.001;
-	outdata.hPos.w = 1;
-	outdata.col = indata.col;
-	return outdata;
+	Output.HPos = float4(ScreenPos, 0.001, 1.0);
+	Output.Color = Input.Color;
+	return Output;
 }
 
-float4 ps(VS2PS indata) : COLOR
+float4 PS(VS2PS Input) : COLOR
 {
-	return indata.col;
+	return Input.Color;
 }
 
 technique Graph <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_POSITION, 0,
@@ -49,7 +45,7 @@ technique Graph <
 	{
 		ZEnable = FALSE;
 
-		VertexShader = compile vs_2_a vs();
-		PixelShader = compile ps_2_a ps();
+		VertexShader = compile vs_3_0 VS();
+		PixelShader = compile ps_3_0 PS();
 	}
 }

@@ -1,11 +1,11 @@
 
-float4 alpha : BLENDALPHA;
+float4 _Alpha : BLENDALPHA;
 
-texture texture0: TEXLAYER0;
+texture Texture_0: TEXLAYER0;
 
-sampler sampler0_clamp = sampler_state
+sampler Sampler_0_Clamp = sampler_state
 {
-	Texture = (texture0);
+	Texture = (Texture_0);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 	MinFilter = LINEAR;
@@ -13,9 +13,9 @@ sampler sampler0_clamp = sampler_state
 	MipFilter = LINEAR;
 };
 
-sampler sampler0_wrap = sampler_state
+sampler Sampler_0_Wrap = sampler_state
 {
-	Texture = (texture0);
+	Texture = (Texture_0);
 	AddressU = WRAP;
 	AddressV = WRAP;
 	MinFilter = LINEAR;
@@ -25,46 +25,40 @@ sampler sampler0_wrap = sampler_state
 
 struct APP2VS
 {
-    float4	HPos : POSITION;
-    float3	Col : COLOR;
-    float2	TexCoord0 : TEXCOORD0;
+    float4 HPos : POSITION;
+    float3 Col : COLOR;
+    float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4	HPos : POSITION;
-    float3	Col : COLOR;
-    float2	Tex0 : TEXCOORD0;
+    float4 HPos : POSITION;
+    float3 Col : COLOR;
+    float2 Tex0 : TEXCOORD0;
 };
 
-VS2PS HPosVS(APP2VS indata)
+VS2PS HPos_VS(APP2VS Input)
 {
-	VS2PS outdata;
-	
-	outdata.HPos = indata.HPos;
-	outdata.Col = indata.Col;
- 	outdata.Tex0 = indata.TexCoord0;
- 	
-	return outdata;
+	VS2PS Output;
+	Output.HPos = Input.HPos;
+	Output.Col = Input.Col;
+ 	Output.Tex0 = Input.TexCoord0;
+	return Output;
 }
 
-float4 HPosPS(VS2PS indata) : COLOR
+float4 HPos_PS(VS2PS Input) : COLOR
 {
-    float4 outCol = tex2D(sampler0_clamp, indata.Tex0);
-    float4 noAlpha = float4(1,1,1,0);
-    outCol = dot(outCol, noAlpha);
-    outCol.rgb = outCol.rgb * indata.Col;
-    return outCol;
+    float4 OutColor = tex2D(Sampler_0_Clamp, Input.Tex0);
+    float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
+    OutColor = dot(OutColor, NoAlpha);
+    OutColor.rgb = OutColor.rgb * Input.Col;
+    return OutColor;
 }
 
-float4 Overlay_HPosPS(VS2PS Input) : COLOR
+technique Text_States <bool Restore = true;>
 {
-	float4 InputTexture0 = tex2D(sampler0_wrap, Input.Tex0);
-	return InputTexture0 * float4(1.0, 1.0, 1.0, alpha.a);
-}
-
-technique Text_States <bool Restore = true;> {
-	pass BeginStates {
+	pass BeginStates
+	{
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
 		// SrcBlend = INVSRCCOLOR;
@@ -73,8 +67,7 @@ technique Text_States <bool Restore = true;> {
 		DestBlend = INVSRCALPHA;
 	}
 	
-	pass EndStates {
-	}
+	pass EndStates { }
 }
 
 technique Text <
@@ -90,13 +83,15 @@ technique Text <
 {
 	pass p0
 	{		
-		VertexShader = compile vs_2_a HPosVS();
-		PixelShader = compile ps_2_a HPosPS(); 
+		VertexShader = compile vs_3_0 HPos_VS();
+		PixelShader = compile ps_3_0 HPos_PS(); 
 	}
 }
 
-technique Overlay_States <bool Restore = true;> {
-	pass BeginStates {
+technique Overlay_States <bool Restore = true;>
+{
+	pass BeginStates
+	{
 		CullMode = NONE;
 		ZEnable = FALSE;
 		AlphaBlendEnable = TRUE;
@@ -104,8 +99,13 @@ technique Overlay_States <bool Restore = true;> {
 		DestBlend = INVSRCALPHA;
 	}
 	
-	pass EndStates {
-	}
+	pass EndStates { }
+}
+
+float4 Overlay_HPos_PS(VS2PS Input) : COLOR
+{
+	float4 InputTexture0 = tex2D(Sampler_0_Wrap, Input.Tex0);
+	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
 }
 
 technique Overlay <
@@ -122,26 +122,7 @@ technique Overlay <
 {
 	pass p0
 	{
-		/*
-			TextureFactor = (alpha);
-			Texture[0] = (texture0);
-			AddressU[0] = WRAP;
-			AddressV[0] = WRAP;
-			MipFilter[0] = LINEAR;
-			MinFilter[0] = LINEAR;
-			MagFilter[0] = LINEAR;
-			
-			ColorOp[0] = SELECTARG1;
-			ColorArg1[0] = TEXTURE;
-			AlphaOp[0] = MODULATE;
-			AlphaArg1[0] = TEXTURE;
-			AlphaArg2[0] = TFACTOR;
-			ColorOp[1] = DISABLE;
-			AlphaOp[1] = DISABLE;
-		*/
-
-		VertexShader = compile vs_2_a HPosVS();
-		// PixelShader = NULL;
-		PixelShader = compile ps_2_a Overlay_HPosPS();
+		VertexShader = compile vs_3_0 HPos_VS();
+		PixelShader = compile ps_3_0 Overlay_HPos_PS();
 	}
 }

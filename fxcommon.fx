@@ -2,47 +2,45 @@
 #include "shaders/RaCommon.fx"
 
 // Particle Texture
-uniform texture texture0: Texture0;
+uniform texture Texture_0: Texture0;
 
 // Groundhemi Texture
-uniform texture texture1: Texture1;
+uniform texture Texture_1: Texture1;
 
 // commonparams
-uniform float4x4 viewMat : ViewMat;
-uniform float4x4 projMat : ProjMat;
+uniform float4x4 _ViewMat : ViewMat;
+uniform float4x4 _ProjMat : ProjMat;
 
-uniform float uvScale = 1.0f/sqrt(2.0f);
-uniform float4 hemiMapInfo : HemiMapInfo;
-uniform float hemiShadowAltitude : HemiShadowAltitude;
-uniform float alphaPixelTestRef : AlphaPixelTestRef = 0;
+uniform float _UVScale = rsqrt(2.0f);
+uniform float4 _HemiMapInfo : HemiMapInfo;
+uniform float _HemiShadowAltitude : HemiShadowAltitude;
+uniform float _AlphaPixelTestRef : AlphaPixelTestRef = 0;
 
-const float OneOverShort = 1.0/32767.0;
+const float _OneOverShort = 1.0 / 32767.0;
 
-
-sampler diffuseSampler = sampler_state
+sampler Diffuse_Sampler = sampler_state
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	MipFilter = FILTER_PARTICLE_MIP;
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
 
-sampler diffuseSampler2 = sampler_state 
+sampler Diffuse_Sampler_2 = sampler_state 
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	MipFilter = FILTER_PARTICLE_MIP;
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
 
-
-sampler lutSampler = sampler_state 
+sampler LUT_Sampler = sampler_state 
 { 
-	Texture = <texture1>; 
+	Texture = <Texture_1>; 
 	AddressU = CLAMP; 
 	AddressV = CLAMP; 
 	MinFilter = LINEAR; 
@@ -50,13 +48,12 @@ sampler lutSampler = sampler_state
 	MipFilter = FILTER_PARTICLE_MIP; 
 };
 
-uniform float3 effectSunColor : EffectSunColor;
-uniform float3 effectShadowColor : EffectShadowColor;
+uniform float3 _EffectSunColor : EffectSunColor;
+uniform float3 _EffectShadowColor : EffectShadowColor;
 
-float3 calcParticleLighting(float lm, float lmOffset, float lightFactor)
+float3 Calc_Particle_Lighting(float LM, float LMOffset, float LightFactor)
 {
-	float lut = saturate(lm + lmOffset);
-	float3 diffuse = lerp(effectShadowColor, effectSunColor, lut);
-
-	return lerp(1, diffuse, lightFactor);
+	float LUT = saturate(LM + LMOffset);
+	float3 Diffuse = lerp(_EffectShadowColor, _EffectSunColor, LUT);
+	return lerp(1.0, Diffuse, LightFactor);
 }

@@ -224,8 +224,6 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 	float4 objSpacePosition = skinPosition(input);
 	
 	Out.Pos = mul(objSpacePosition, WorldViewProjection);
-	float FogValue = length(objSpacePosition.xyz - ObjectSpaceCamPos.xyz);
-
 	Out.Tex0 = input.TexCoord0;
 	
 #if (_USEHEMIMAP_ && !_USEPERPIXELHEMIMAP_) || (_USEHEMIMAP_ && !_HASNORMALMAP_)
@@ -252,7 +250,7 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 	Out.LightVec = lVec;
 	#if !_POINTLIGHT_
 		Out.LightVec = normalize(Out.LightVec);
-		Out.Fog = calcFog(FogValue);
+		Out.Fog = Calc_Fog(Out.Pos.w);
 	#endif
 	Out.HalfVecAndOccShadow.xyz = normalize(hVec);
 #else
@@ -262,15 +260,15 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 		Out.Specular = (lighting.z * Lights[0].color * /*StaticGloss*/0.15) * 0.5;
 	#else
 		Out.Specular = (lighting.z * Lights[0].specularColor * /*StaticGloss*/0.15) * 0.5;
-		Out.Fog = calcFog(FogValue);
+		Out.Fog = Calc_Fog(Out.Pos.w);
 	#endif
 #endif
 	
 #if _HASSHADOW_ || _HASSHADOWOCCLUSION_
-	Out.ShadowMat = calcShadowProjection(getWorldPos(input));
+	Out.ShadowMat = Calc_Shadow_Projection(getWorldPos(input));
 #endif
 #if _HASSHADOWOCCLUSION_
-	Out.HalfVecAndOccShadow.w = calcShadowProjection(getWorldPos(input), -0.003, true).z;
+	Out.HalfVecAndOccShadow.w = Calc_Shadow_Projection(getWorldPos(input), -0.003, true).z;
 #endif
 
 	return Out;
@@ -310,7 +308,7 @@ float4 ps(SMVariableVSOutput input) : COLOR
 
 // Remember, optimize for HWSM and ps1.3 (yes, it can be done!)
 #if _HASSHADOW_
-	float dirShadow = getShadowFactor(ShadowMapSampler, input.ShadowMat);
+	float dirShadow = Get_Shadow_Factor(ShadowMapSampler, input.ShadowMat);
 #else
 	float dirShadow = 1.0;
 #endif
@@ -318,7 +316,7 @@ float4 ps(SMVariableVSOutput input) : COLOR
 #if _HASSHADOWOCCLUSION_
 	float4 shadowOccMat = input.ShadowMat;
 	shadowOccMat.z = input.HalfVecAndOccShadow.w;
-	float dirOccShadow = getShadowFactor(ShadowOccluderMapSampler, shadowOccMat, NUMOCCLUSIONSAMPLES);
+	float dirOccShadow = Get_Shadow_Factor(ShadowOccluderMapSampler, shadowOccMat, NUMOCCLUSIONSAMPLES);
 	dirShadow *= dirOccShadow;
 #endif
 

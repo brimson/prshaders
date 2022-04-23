@@ -172,7 +172,7 @@ Shared_VS2PS_PointLight Shared_VS_PointLight(Shared_APP2VS_Default indata)
 
  	//tl: uncompress normal
  	indata.Normal = indata.Normal * 2 - 1;
- 	outdata.Color = float4(calcPVPointTerrain(wPos.xyz, indata.Normal), 0);
+ 	outdata.Color = float4(Calc_PV_Point_Terrain(wPos.xyz, indata.Normal), 0);
 
 	return outdata;
 }
@@ -316,8 +316,7 @@ Shared_VS2PS_LowDetail Shared_VS_LowDetail(Shared_APP2VS_Default indata)
 
 	outdata.Tex1 = projToLighting(outdata.Pos);
 
-	float FogValue = length(wPos.xyz - vCamerapos.xyz);
-	outdata.Fog = calcFog(FogValue);
+	outdata.Fog = Calc_Fog(outdata.Pos.w);
 	
 //	outdata.Tex1 = interpVal;
 //	outdata.Tex1 = float4(vMorphDeltaAdder[indata.Pos0.z*256], 1) * 256*256;
@@ -339,7 +338,7 @@ float4 Shared_PS_DynamicShadowmap(Shared_VS2PS_DynamicShadowmap indata) : COLOR
 		float avgShadowValue = tex2Dproj(sampler2PointClamp, indata.ShadowTex);
 	#else
 		float avgShadowValue = tex2Dproj(sampler2PointClamp, indata.ShadowTex) == 1.0;
-	//	float avgShadowValue = getShadowFactor(ShadowMapSampler, indata.ShadowTex);
+	//	float avgShadowValue = Get_Shadow_Factor(ShadowMapSampler, indata.ShadowTex);
 	//	float avgShadowValue = 0.5;
 	#endif
 	return  avgShadowValue.x;
@@ -457,8 +456,7 @@ Shared_VS2PS_UnderWater Shared_VS_UnderWater(Shared_APP2VS_Default indata)
  	outdata.WaterAndFog.x = (wPos.y/-3.0) + waterHeight;
 // 	outdata.WaterAndFog.x = saturate((waterHeight*3 - wPos.y)/3.0f);
 
-	float FogValue = length(wPos.xyz - vCamerapos.xyz);
-	outdata.WaterAndFog.yzw = calcFog(FogValue);
+	outdata.WaterAndFog.yzw = Calc_Fog(outdata.Pos.w);
 	
 	return outdata;
 }
@@ -513,9 +511,8 @@ Shared_VS2PS_STNormal Shared_VS_STNormal(Shared_APP2VS_STNormal indata)
 	float2 yPlaneTexCord = tex.zx;
 	float2 zPlaneTexCord = tex.zy;
 
-	float FogValue = length(outdata.Pos.xyz - vCamerapos.xyz);
  	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Fog = calcFog(FogValue);
+ 	outdata.Fog = Calc_Fog(outdata.Pos.w);
 
  	outdata.Tex1 = yPlaneTexCord * vSTFarTexTiling.z;
 	outdata.Tex2.xy = xPlaneTexCord.xy * vSTFarTexTiling.xy;
@@ -585,7 +582,7 @@ Shared_VS2PS_STFast Shared_VS_STFast(Shared_APP2VS_STFast indata)
 	outdata.Pos.yw = (indata.Pos1.xw * vSTScaleTransY.xy) + vSTScaleTransY.zw;
  	outdata.Tex0 = indata.TexCoord0;
  	outdata.Pos = mul(outdata.Pos, mViewProj);
- 	outdata.Fog = calcFog(outdata.Pos.w);
+ 	outdata.Fog = Calc_Fog(outdata.Pos.w);
 
 	return outdata;
 }

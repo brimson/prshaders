@@ -1,54 +1,46 @@
-float4x4 mWorldViewProj : WorldViewProjection;
-bool zbuffer : ZBUFFER;
+float4x4 _WorldViewProjection : WorldViewProjection;
+bool _ZBuffer : ZBUFFER;
 
-//string Category = "Effects\\Lighting";
+// string Category = "Effects\\Lighting";
 
 struct APP2VS
 {
-    float4	Pos : POSITION;    
-    float4  Diffuse : COLOR;
+	float4 Pos : POSITION;
+	float4 Diffuse : COLOR;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4  Diffuse : COLOR;
+	float4 Pos : POSITION;
+	float4 Diffuse : COLOR;
 };
 
 struct PS2FB
 {
-	float4	Col : COLOR;
+	float4 Col : COLOR;
 };
 
-
-VS2PS VShader(APP2VS indata, 
-	uniform float4x4 wvp)
+VS2PS Shader_VS(APP2VS Input, uniform float4x4 WorldViewProj)
 {
-	VS2PS outdata;
- 
-
-	outdata.Pos = mul(float4(indata.Pos.xyz, 1.0f), wvp);
-
-	
-    	outdata.Diffuse.xyz = indata.Diffuse.xyz;
-    	outdata.Diffuse.w = 0.8f;//indata.Diffuse.w;
- 	 	
- 	return outdata;
+	VS2PS Output;
+	Output.Pos = mul(float4(Input.Pos.xyz, 1.0f), WorldViewProj);
+	Output.Diffuse.xyz = Input.Diffuse.xyz;
+	Output.Diffuse.w = 0.8f; // Input.Diffuse.w;
+ 	return Output;
 }
 
-PS2FB PShader(VS2PS indata)
+PS2FB Shader_PS(VS2PS Input)
 {
-	PS2FB outdata;
-	outdata.Col = indata.Diffuse;
-	
-	return outdata;
+	PS2FB Output;
+	Output.Col = Input.Diffuse;
+	return Output;
 }
 
 technique t0
 <
 	int DetailLevel = DLHigh+DLNormal+DLLow+DLAbysmal;
 	int Compatibility = CMPR300+CMPNV2X;
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -59,28 +51,30 @@ technique t0
 {
 	pass p0
 	{
-		/*CullMode = NONE;
-		AlphaBlendEnable = TRUE;
-		//FillMode = WIREFRAME;
-		//ColorWriteEnable = 0;
- 		ZWriteEnable = 0;
- 		ZEnable = TRUE;*/
+		/*
+			CullMode = NONE;
+			AlphaBlendEnable = TRUE;
+			// FillMode = WIREFRAME;
+			// ColorWriteEnable = 0;
+			ZWriteEnable = 0;
+			ZEnable = TRUE;
+		*/
 
 		CullMode = NONE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		//FillMode = WIREFRAME;
-		//ColorWriteEnable = 0;
+		// FillMode = WIREFRAME;
+		// ColorWriteEnable = 0;
 		DepthBias=-0.00001;
 		ZWriteEnable = 1;
-		//float zbuffe = TRUE;
-		ZEnable = FALSE;//TRUE;
+		// float zbuffe = TRUE;
+		ZEnable = FALSE; // TRUE;
 		ShadeMode = FLAT;
 		ZFunc = LESSEQUAL;
-	
-		VertexShader = compile vs_2_a VShader(mWorldViewProj);
-		PixelShader = compile ps_2_a PShader();
+
+		VertexShader = compile vs_3_0 Shader_VS(_WorldViewProjection);
+		PixelShader = compile ps_3_0 Shader_PS();
 	}
 }
 
@@ -89,7 +83,7 @@ technique t0_usezbuffer
 <
 	int DetailLevel = DLHigh+DLNormal+DLLow+DLAbysmal;
 	int Compatibility = CMPR300+CMPNV2X;
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -104,11 +98,8 @@ technique t0_usezbuffer
 		AlphaBlendEnable = FALSE;
  		ZWriteEnable = 1;
  		ZEnable = TRUE;
-			
-		VertexShader = compile vs_2_a VShader(mWorldViewProj);
-		PixelShader = compile ps_2_a PShader();
+
+		VertexShader = compile vs_3_0 Shader_VS(_WorldViewProjection);
+		PixelShader = compile ps_3_0 Shader_PS();
 	}
 }
-
-
-

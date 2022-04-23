@@ -2,8 +2,6 @@
  
 Light Lights[1];
 float4 	OverGrowthAmbient;
-float4	ObjectSpaceCamPos;
-float4	WorldSpaceCamPos;
 
 struct VS_OUTPUT
 {
@@ -43,11 +41,9 @@ float2 tex0	: TEXCOORD0
 	VS_OUTPUT Out = (VS_OUTPUT)0;
 
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
-	float wPos = mul(float4(inPos.xyz, 1.0), World);
 
-	float FogValue = length(WorldSpaceCamPos.xyz - wPos.xyz);
-	Out.Fog = calcFog(FogValue);
-	Out.Tex0 = tex0 / 32767.0f;
+	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Tex0	= tex0 / 32767.0f;
 
 	normal = normal * 2.0f - 1.0f;
 
@@ -74,7 +70,6 @@ string GlobalParameters[] =
 	"GlobalTime",
 	"FogRange",
 	"FogColor",
-	"WorldSpaceCamPos",
 };
 
 string TemplateParameters[] = 
@@ -85,11 +80,9 @@ string TemplateParameters[] =
 string InstanceParameters[] =
 {
 	"WorldViewProjection",
-	"ObjectSpaceCamPos",
 	"Lights",
 	"OverGrowthAmbient",
-	"Transparency",
-	"World",
+	"Transparency"
 };
 
 technique defaultTechnique

@@ -177,8 +177,8 @@ Hi_VS2PS_FullDetail Hi_VS_FullDetail(Shared_APP2VS_Default indata)
 	outdata.Tex3.wz = zPlaneTexCord.xy * vFarTexTiling.xy;
 	outdata.Tex3.z += vFarTexTiling.w;
 #endif
-	float FogValue = length(wPos.xyz - vCamerapos.xyz);
-	outdata.FogAndFade2.x = calcFog(FogValue);
+
+	outdata.FogAndFade2.x = Calc_Fog(outdata.Pos.w);
 	outdata.FogAndFade2.yzw = 0.5+interpVal*0.5;
 	
 #if HIGHTERRAIN
@@ -347,8 +347,8 @@ Hi_VS2PS_FullDetailMounten Hi_VS_FullDetailMounten(Shared_APP2VS_Default indata)
           outdata.Tex6.z += vNearTexTiling.w;
  
           outdata.Tex5.xy = yPlaneTexCord * vFarTexTiling.z;
-		  float FogValue = length(wPos.xyz - vCamerapos.xyz);
-          outdata.FogAndFade2.x = calcFog(FogValue);
+ 
+          outdata.FogAndFade2.x = Calc_Fog(outdata.Pos.w);
           outdata.FogAndFade2.yzw = 0.5+interpVal*0.5;
           
 #if HIGHTERRAIN
@@ -526,8 +526,8 @@ Hi_VS2PS_FullDetailWithEnvMap Hi_VS_FullDetailWithEnvMap(Shared_APP2VS_Default i
 	outdata.Tex3.wz = zPlaneTexCord.xy * vFarTexTiling.xy;
 	outdata.Tex3.z += vFarTexTiling.w;
 #endif
-	float FogValue = length(wPos.xyz - vCamerapos.xyz);
-	outdata.FogAndFade2.x = calcFog(FogValue);
+
+	outdata.FogAndFade2.x = Calc_Fog(outdata.Pos.w);
 	outdata.FogAndFade2.yzw = 0.5+interpVal*0.5;
 
 #if HIGHTERRAIN
@@ -579,7 +579,7 @@ struct Hi_VS2PS_PerPixelPointLight
 
 float4 Hi_PS_PerPixelPointLight(Hi_VS2PS_PerPixelPointLight indata) : COLOR
 {
- 	return float4(calcPVPointTerrain(indata.wPos, indata.Normal), 0) * 0.5;
+ 	return float4(Calc_PV_Point_Terrain(indata.wPos, indata.Normal), 0) * 0.5;
 }
 
 Hi_VS2PS_PerPixelPointLight Hi_VS_PerPixelPointLight(Shared_APP2VS_Default indata)
@@ -612,7 +612,7 @@ float4 Hi_PS_DirectionalLightShadows(Shared_VS2PS_DirectionalLightShadows indata
 {
 	float4 lightmap = tex2D(sampler0Clamp, indata.Tex0);
 	
-	float4 avgShadowValue = getShadowFactor(ShadowMapSampler, indata.ShadowTex);
+	float4 avgShadowValue = Get_Shadow_Factor(ShadowMapSampler, indata.ShadowTex);
 
 	float4 light = saturate(lightmap.z * vGIColor*2) * 0.5;
 	if (avgShadowValue.z < lightmap.y)

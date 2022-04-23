@@ -1,58 +1,57 @@
-struct PointLightData
+struct Point_Light_Data
 {
-	float3	pos;
-	float	attSqrInv;
-	float3	col;
+	float3 Pos;
+	float AttSqrInv;
+	float3 Col;
 };
 
-struct SpotLightData
+struct Spot_Light_Data
 {
-	float3	pos;
-	float	attSqrInv;
-	float3	col;
-	float	coneAngle;
-	float3	dir;
-	float	oneminusconeAngle;
+	float3 Pos;
+	float AttSqrInv;
+	float3 Col;
+	float ConeAngle;
+	float3 Dir;
+	float OneMinusConeAngle;
 };
 
-PointLightData pointLight : POINTLIGHT;
-SpotLightData spotLight : SPOTLIGHT;
+Point_Light_Data _PointLight : POINTLIGHT;
+Spot_Light_Data _SpotLight : SPOTLIGHT;
 
+float4 _LightPositionAndAttSqrInv : LightPositionAndAttSqrInv;
+float4 _LightColor : LightColor;
 
-float4 lightPosAndAttSqrInv : LightPositionAndAttSqrInv;
-float4 lightColor : LightColor;
-
-float3 calcPVPoint(PointLightData indata, float3 wPos, float3 normal)
+float3 Calc_PV_Point(Point_Light_Data Input, float3 WorldPos, float3 Normal)
 {
-	float3 lvec = lightPosAndAttSqrInv.xyz - wPos;
-	float radialAtt = saturate(1 - dot(lvec, lvec)*lightPosAndAttSqrInv.w);
-	lvec = normalize(lvec);
-	float intensity = dot(lvec, normal) * radialAtt;
+	float3 LightVec = _LightPositionAndAttSqrInv.xyz - WorldPos;
+	float RadialAtt = saturate(1.0 - dot(LightVec, LightVec) * _LightPositionAndAttSqrInv.w);
 
-	return intensity * lightColor.xyz;
+	LightVec = normalize(LightVec);
+	float Intensity = dot(LightVec, Normal) * RadialAtt;
+	return Intensity * _LightColor.xyz;
 }
 
-float3 calcPVPointTerrain(float3 wPos, float3 normal)
+float3 Calc_PV_Point_Terrain(float3 WorldPos, float3 Normal)
 {
-	float3 lvec = pointLight.pos - wPos;
-	float radialAtt = saturate(1 - (dot(lvec, lvec))*pointLight.attSqrInv);
-//	return radialAtt * pointLight.col;
-	lvec = normalize(lvec);
-	float intensity = dot(lvec, normal) * radialAtt;
+	float3 LightVec = _PointLight.Pos - WorldPos;
+	float RadialAtt = saturate(1.0 - (dot(LightVec, LightVec)) * _PointLight.AttSqrInv);
+	// return RadialAtt * _PointLight.Col;
 
-	return intensity * pointLight.col;
+	LightVec = normalize(LightVec);
+	float Intensity = dot(LightVec, Normal) * RadialAtt;
+	return Intensity * _PointLight.Col;
 }
 
-float3 calcPVSpot(SpotLightData indata, float3 wPos, float3 normal)
+float3 Calc_PV_Spot(Spot_Light_Data Input, float3 WorldPos, float3 Normal)
 {
-	float3 lvec = indata.pos - wPos;
+	float3 LightVec = Input.Pos - WorldPos;
 	
-	float radialAtt = saturate(1 - dot(lvec, lvec)*indata.attSqrInv);
-	lvec = normalize(lvec);
+	float RadialAtt = saturate(1.0 - dot(LightVec, LightVec) * Input.AttSqrInv);
+	LightVec = normalize(LightVec);
 	
-	float conicalAtt =	saturate(dot(lvec, indata.dir)-indata.oneminusconeAngle) / indata.coneAngle;
+	float ConicalAtt = saturate(dot(LightVec, Input.Dir) - Input.OneMinusConeAngle) / Input.ConeAngle;
 
-	float intensity = dot(lvec, normal) * radialAtt * conicalAtt;
+	float Intensity = dot(LightVec, Normal) * RadialAtt * ConicalAtt;
 
-	return intensity * indata.col;
+	return Intensity * Input.Col;
 }

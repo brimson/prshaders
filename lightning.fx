@@ -1,46 +1,47 @@
-float4x4 wvp : WORLDVIEWPROJ;
 
-float4 lightningColor: LIGHTNINGCOLOR = {1,1,1,1};
+float4x4 _WorldViewProj : WORLDVIEWPROJ;
 
-texture texture0 : TEXTURE;
+float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
 
-sampler sampler0 = sampler_state
+texture Texture_0 : TEXTURE;
+
+sampler Sampler_0 = sampler_state
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };
 
-struct VSINPUT
+struct APP2VS
 {
 	float3 Pos: POSITION;
 	float2 TexCoords: TEXCOORD0;
 	float4 Color : COLOR;
 };
 
-struct VSOUT
+struct VS2PS
 {
 	float4 Pos: POSITION;
 	float2 TexCoords: TEXCOORD0;
 	float4 Color : COLOR;
 };
 
-VSOUT vsLightning(VSINPUT input)
+VS2PS Lightning_VS(APP2VS Input)
 {
-	VSOUT output;
-	output.Pos = mul(float4(input.Pos,1), wvp);
-	output.TexCoords = input.TexCoords;
-	output.Color = input.Color;
-	return output;
+	VS2PS Output;
+	Output.Pos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
+	Output.TexCoords = Input.TexCoords;
+	Output.Color = Input.Color;
+	return Output;
 }
 
-float4 psLightning(VSOUT input) : COLOR
+float4 Lightning_PS(VS2PS Input) : COLOR
 {
-	float4 texCol = tex2D(sampler0, input.TexCoords);
-	return float4(texCol.rgb * lightningColor.rgb, texCol.a * lightningColor.a * input.Color.a);
+	float4 Color = tex2D(Sampler_0, Input.TexCoords);
+	return float4(Color.rgb * _LightningColor.rgb, Color.a * _LightningColor.a * Input.Color.a);
 }
 
 technique Lightning
@@ -56,7 +57,7 @@ technique Lightning
 		DestBlend = One;
 		CullMode = NONE;
 		
-		VertexShader = compile vs_2_a vsLightning();
-		PixelShader = compile ps_2_a psLightning();
+		VertexShader = compile vs_3_0 Lightning_VS();
+		PixelShader = compile ps_3_0 Lightning_PS();
 	}
 }

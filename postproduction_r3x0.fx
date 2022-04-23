@@ -6,6 +6,16 @@
 		3. Fog
 */
 
+#define SAMPLER(NAME, TEXTURE, ADDRESS, FILTER) \
+	sampler NAME = sampler_state \
+	{ \
+		Texture = TEXTURE; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+		MinFilter = FILTER; \
+		MagFilter = FILTER; \
+	};
+
 texture Texture0 : TEXLAYER0;
 texture Texture1 : TEXLAYER1;
 
@@ -18,37 +28,15 @@ texture Texture1 : TEXLAYER1;
 	texture Texture6 : TEXLAYER6;
 */
 
+SAMPLER(Sampler_0_Point, Texture_0, CLAMP, POINT)
+SAMPLER(Sampler_0_Bilinear, Texture_0, CLAMP, LINEAR)
+
+SAMPLER(Sampler_1_Point, Texture_1, CLAMP, POINT)
+
 float _BackBufferLerpBias : BACKBUFFERLERPBIAS;
 float2 _SampleOffset : SAMPLEOFFSET;
 float2 _FogStartAndEnd : FOGSTARTANDEND;
 float3 _FogColor : FOGCOLOR;
-
-sampler Sampler1Point = sampler_state
-{
-	Texture = (Texture1);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = POINT;
-	MagFilter = POINT;
-};
-
-sampler Sampler0Point = sampler_state
-{
-	Texture = (Texture0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = POINT;
-	MagFilter = POINT;
-};
-
-sampler Sampler0Bilinear = sampler_state
-{
-	Texture = (Texture0);
-	AddressU = CLAMP;
-	AddressV = CLAMP;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-};
 
 struct APP2VS_Quad
 {
@@ -62,14 +50,7 @@ struct VS2PS_Quad
 	float2 TexCoord0 : TEXCOORD0;
 };
 
-struct VS2PS_Quad2
-{
-	float4 Pos : POSITION;
-	float2 TexCoord0 : TEXCOORD0;
-	float2 TexCoord1 : TEXCOORD1;
-};
-
-VS2PS_Quad PostProcess_VS(APP2VS_Quad Input)
+VS2PS_Quad Basic_VS(APP2VS_Quad Input)
 {
 	VS2PS_Quad OutData;
 	OutData.Pos = float4(Input.Pos.xy, 0.0, 1.0);
@@ -99,10 +80,10 @@ float4 Tinnitus_PS(VS2PS_Quad Input) : COLOR
 
 	for(int i = 0; i < 8; i++)
 	{
-		Blur += FilterKernel[i].w * tex2D(Sampler0Bilinear, Input.TexCoord0.xy + 0.02 * FilterKernel[i].xy);
+		Blur += FilterKernel[i].w * tex2D(Sampler_0_Bilinear, Input.TexCoord0.xy + 0.02 * FilterKernel[i].xy);
 	}
 
-	float4 Color = tex2D(Sampler0Bilinear, Input.TexCoord0);
+	float4 Color = tex2D(Sampler_0_Bilinear, Input.TexCoord0);
 	float2 UV = Input.TexCoord0;
 
 	// Parabolic function for x opacity to darken the edges, exponential function for opacity to darken the lower part of the screen
@@ -138,12 +119,12 @@ technique Tinnitus
 
 float4 Glow_PS(VS2PS_Quad Input) : COLOR
 {
-	return tex2D(Sampler0Bilinear, Input.TexCoord0);
+	return tex2D(Sampler_0_Bilinear, Input.TexCoord0);
 }
 
-float4 GlowMaterial_PS(VS2PS_Quad Input) : COLOR
+float4 Glow_Material_PS(VS2PS_Quad Input) : COLOR
 {
-	float4 Diffuse = tex2D(Sampler0Bilinear, Input.TexCoord0);
+	float4 Diffuse = tex2D(Sampler_0_Bilinear, Input.TexCoord0);
 	// return (1.0 - Diffuse.a);
 	return float4(Diffuse.rgb * (1.0 - Diffuse.a), 1.0);
 }
@@ -157,7 +138,7 @@ technique Glow
 		SrcBlend = SRCCOLOR;
 		DestBlend = ONE;
 
-		VertexShader = compile vs_3_0 PostProcess_VS();
+		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Glow_PS();
 	}
 }
@@ -179,8 +160,8 @@ technique GlowMaterial
 		StencilZFail = KEEP;
 		StencilPass = KEEP;
 
-		VertexShader = compile vs_3_0 PostProcess_VS();
-		PixelShader = compile ps_3_0 GlowMaterial_PS();
+		VertexShader = compile vs_3_0 Basic_VS();
+		PixelShader = compile ps_3_0 Glow_Material_PS();
 	}
 }
 
@@ -190,11 +171,11 @@ technique GlowMaterial
 
 float4 Fog_PS(VS2PS_Quad Input) : COLOR
 {
-	float3 WorldPosition = tex2D(Sampler0Point, Input.TexCoord0).xyz;
+	float3 WorldPosition = tex2D(Sampler_0_Point, Input.TexCoord0).xyz;
 	float Coord = saturate((WorldPosition.z - _FogStartAndEnd.r) /_FogStartAndEnd.g); // fogColorAndViewDistance.a);
 	return saturate(float4(_FogColor.rgb,Coord));
 	// float2 FogCoords = float2(Coord, 0.0);
-	return tex2D(Sampler1Point, float2(Coord, 0.0)) * _FogColor.rgbb;
+	return tex2D(Sampler_1_Point, float2(Coord, 0.0)) * _FogColor.rgbb;
 }
 
 technique Fog
@@ -217,7 +198,7 @@ technique Fog
 		StencilZFail = KEEP;
 		StencilPass = KEEP;
 
-		VertexShader = compile vs_3_0 PostProcess_VS();
+		VertexShader = compile vs_3_0 Basic_VS();
 		PixelShader = compile ps_3_0 Fog_PS();
 	}
 }

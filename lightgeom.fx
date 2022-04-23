@@ -1,41 +1,40 @@
 #line 2 "lightGeom.fx"
 
 // UNIFORM INPUTS
-float4x4 wvpMat : WorldViewProj;
-float4x4 wvMat : WorldView;
-float4 lightColor : LightColor;
+float4x4 _WorldViewProj : WorldViewProj;
+float4x4 _WorldView : WorldView;
+float4 _LightColor : LightColor;
 
+float3 _SpotDir : SpotDir;
+float _ConeAngle : ConeAngle;
 
-float3 spotDir : SpotDir;
-float spotConeAngle : ConeAngle;
+// float3 _SpotPosition : SpotPosition;
 
-//float3 spotPosition : SpotPosition;
-
-struct appdata
+struct APP2VS
 {
-    float4	Pos : POSITION;    
+	float4 Pos : POSITION;
 };
 
-struct VS_OUTPUT {
-	float4 HPos		: POSITION;
+struct VS2PS
+{
+	float4 HPos : POSITION;
 };
 
-VS_OUTPUT vsPointLight(appdata input, uniform float4x4 myWVP)
+VS2PS Point_Light_VS(APP2VS Input)
 {
-	VS_OUTPUT Out;
- 	Out.HPos = mul(float4(input.Pos.xyz, 1.0f), myWVP);
+	VS2PS Out;
+ 	Out.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
 	return Out;
 }
 
-float4 psPointLight() : COLOR
+float4 Point_Light_PS() : COLOR
 {
-	return lightColor;
-	//return float4(1,0,0,1);
+	return _LightColor;
 }
 
 technique Pointlight
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -52,50 +51,45 @@ technique Pointlight
 		StencilEnable = TRUE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
-		
- 		VertexShader = compile vs_2_a vsPointLight(wvpMat);
-		PixelShader = compile ps_2_a psPointLight();		
+
+ 		VertexShader = compile vs_3_0 Point_Light_VS();
+		PixelShader = compile ps_3_0 Point_Light_PS();
 	}
 }
 
-///
-
-struct VS_SPOT_OUTPUT {
-	float4 HPos		: POSITION;
-	float3 lightDir		: TEXCOORD0; 
-	float3 lightVec		: TEXCOORD1;
+struct VS2PS_Spot
+{
+	float4 HPos : POSITION;
+	float3 LightDir : TEXCOORD0;
+	float3 LightVec : TEXCOORD1;
 };
 
-VS_SPOT_OUTPUT vsSpotLight(appdata input, uniform float4x4 myWVP, uniform float4x4 myWV, uniform float3 lightDir)
+VS2PS_Spot Spot_Light_VS(APP2VS Input)
 {
-	VS_SPOT_OUTPUT Out;
- 	Out.HPos = mul(float4(input.Pos.xyz, 1.0f), myWVP);
+	VS2PS_Spot Out;
+ 	Out.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
 
 	// transform vertex
-	float3 vertPos = mul(float4(input.Pos.xyz, 1.0f), myWV);
-	Out.lightVec = -normalize(vertPos);
-	
-	// transform lightDir to objectSpace
-	Out.lightDir = mul(lightDir, float3x3(myWV[0].xyz, myWV[1].xyz, myWV[2].xyz));
+	float3 VertPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldView);
+	Out.LightVec = -normalize(VertPos);
+
+	// transform LightDir to objectSpace
+	Out.LightDir = mul(_SpotDir, float3x3(_WorldView[0].xyz, _WorldView[1].xyz, _WorldView[2].xyz));
 
 	return Out;
 }
 
-float4 psSpotLight(VS_SPOT_OUTPUT input, uniform float coneAngle, uniform float oneMinusConeAngle) : COLOR
+float4 Spot_Light_PS(VS2PS_Spot Input) : COLOR
 {
-	float3 lvec = normalize(input.lightVec);
-	float3 ldir = normalize(input.lightDir);
-	float conicalAtt = saturate(pow(saturate(dot(lvec, ldir)), 2) - oneMinusConeAngle);///coneAngle;
-
-	return lightColor * conicalAtt;
+	float3 LightVec = normalize(Input.LightVec);
+	float3 LightDir = normalize(Input.LightDir);
+	float ConicalAtt = saturate(pow(saturate(dot(LightVec, LightDir)), 2.0) + (1.0f - _ConeAngle));
+	return _LightColor * ConicalAtt;
 }
-
-///
-
 
 technique Spotlight
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -112,9 +106,8 @@ technique Spotlight
 		StencilEnable = TRUE;
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
-		
- 		VertexShader = compile vs_2_a vsSpotLight(wvpMat, wvMat, spotDir);
-		PixelShader = compile ps_2_a psSpotLight(spotConeAngle, 1.f - spotConeAngle);		
+
+ 		VertexShader = compile vs_3_0 Spot_Light_VS();
+		PixelShader = compile ps_3_0 Spot_Light_PS();
 	}
 }
-

@@ -51,10 +51,9 @@ float4 blendIndices : BLENDINDICES
 	int4 indexVector = D3DCOLORtoUBYTE4(blendIndices);
 	int indexArray[4] = (int[4])indexVector;
 
-	Out.Pos = mul(float4(inPos, 1), mul(Bones[indexArray[0]], ViewProjection));
-	// float FogValue = length(Out.Pos.xyz);
-	Out.Fog = calcFog(Out.Pos.z);
-	Out.Tex = tex0;
+	Out.Pos		= mul(float4(inPos, 1), mul(Bones[indexArray[0]], ViewProjection));
+	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Tex		= tex0;
 
 	return Out;
 }
@@ -89,8 +88,8 @@ technique defaultTechnique
 
 		AlphaTestEnable = < AlphaTest >;
 		AlphaBlendEnable= < AlphaBlendEnable >;
-		AlphaRef		= < alphaRef >;
-		SrcBlend		= < srcBlend >;
-		DestBlend		= < destBlend >;
+		AlphaRef		= < _AlphaRef >;
+		SrcBlend		= < _SrcBlend >;
+		DestBlend		= < _DestBlend >;
 	}
 }

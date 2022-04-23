@@ -138,7 +138,7 @@ VS2PS VShader(
 	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
 	pos.xyz += posOffsetAndScale.xyz;
 
- 	float3 vec = pos.xyz - cameraPos.xyz;
+ 	float3 vec = pos.xyz - cameraPos;
  	float dist = sqrt(dot(vec, vec));
 
  	float viewDistance = fadeAndHeightScaleOffset.x;
@@ -156,10 +156,10 @@ VS2PS VShader(
  	
  	if (shadowmapEnable)
  	{
- 		outdata.TexShadow = calcShadowProjection(pos);
+ 		outdata.TexShadow = Calc_Shadow_Projection(pos);
  	}
-			
- 	outdata.Fog = calcFog(dist);
+ 		
+ 	outdata.Fog = Calc_Fog(outdata.Pos.w);
  	
  	outdata.LightAndScale.rgb = 0;
  	for (int i=0; i<lightCount; i++)
@@ -195,7 +195,7 @@ float4 PShader(
 	float4 terrainShadow;
 	if (shadowmapEnable)
 	{
-		terrainShadow = getShadowFactor(ShadowMapSampler, indata.TexShadow, 1);
+		terrainShadow = Get_Shadow_Factor(ShadowMapSampler, indata.TexShadow, 1);
 	}
 	else
 		terrainShadow = 1;
@@ -226,7 +226,7 @@ VS2PS_Simple VShader_Simple(
 	float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
 	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
 
- 	float3 vec = pos.xyz - cameraPos.xyz;
+ 	float3 vec = pos.xyz - cameraPos;
  	float dist = sqrt(dot(vec, vec));
  	
  	float viewDistance = fadeAndHeightScaleOffset.x;
@@ -240,10 +240,10 @@ VS2PS_Simple VShader_Simple(
  	
  	if (shadowmapEnable)
  	{
- 		outdata.TexShadow = calcShadowProjection(pos);
+ 		outdata.TexShadow = Calc_Shadow_Projection(pos);
  	}
  		
- 	outdata.Fog = calcFog(dist);
+ 	outdata.Fog = Calc_Fog(outdata.Pos.w);
 
 	float3 light = 0;
 
@@ -307,7 +307,7 @@ float4 PShader_Simple(
 
 	if (shadowmapEnable)
 	{
-		float4 terrainShadow = getShadowFactor(ShadowMapSampler, indata.TexShadow, 1);
+		float4 terrainShadow = Get_Shadow_Factor(ShadowMapSampler, indata.TexShadow, 1);
 
 		float3 light = indata.SunLight * terrainShadow.xyz;
 		light += indata.LightAndScale.rgb;

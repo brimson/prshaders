@@ -1,111 +1,104 @@
-float4x4 mWorldViewProj : WorldViewProjection;
-float4x4 world : World;
+float4x4 _WorldViewProjection : WorldViewProjection;
+float4x4 _World : World;
 
 string Category = "Effects\\Lighting";
 
-float4 LhtDir = {1.0f, 0.0f, 0.0f, 1.0f};    //light Direction 
-float4 lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f}; // Light Diffuse
-float4 MaterialAmbient : MATERIALAMBIENT = {0.5f, 0.5f, 0.5f, 1.0f};
-float4 MaterialDiffuse : MATERIALDIFFUSE = {1.0f, 1.0f, 1.0f, 1.0f};
+float4 _LightDir = { 1.0f, 0.0f, 0.0f, 1.0f }; // light direction
+float4 _LightDiffuse = { 1.0f, 1.0f, 1.0f, 1.0f }; // light diffuse
+float4 _MaterialAmbient : MATERIALAMBIENT = { 0.5f, 0.5f, 0.5f, 1.0f };
+float4 _MaterialDiffuse : MATERIALDIFFUSE = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-texture basetex: TEXLAYER0
+texture Base_Tex: TEXLAYER0
 <
-	 string File = "aniso2.dds";
-	 string TextureType = "2D";
+	string File = "aniso2.dds";
+	string TextureType = "2D";
 >;
 
-sampler2D samplebase = sampler_state
+sampler2D Sample_Base = sampler_state
 {
-	Texture = <basetex>;
+	Texture = <Base_Tex>;
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 };
 
-
 struct APP2VS
 {
-    float4	Pos : POSITION;    
-    float3	Normal : NORMAL;
-    float2	TexCoord0 : TEXCOORD0;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4  Diffuse : COLOR;
-    float2	Tex0 : TEXCOORD0;
+	float4 Pos : POSITION;
+	float4 Diffuse : COLOR;
+	float2 Tex0 : TEXCOORD0;
 };
 
 struct PS2FB
 {
-	float4	Col : COLOR;
+	float4 Col : COLOR;
 };
 
-float3 Diffuse(float3 Normal,uniform float4 lhtDir)
+float3 Diffuse(float3 Normal, uniform float4 LightDir)
 {
-    float CosTheta;
-    
-    // N.L Clamped
-    CosTheta = max(0.0f, dot(Normal, lhtDir.xyz));
-       
-    // propogate float result to vector
-    return (CosTheta);
+	float CosTheta;
+
+	// N.L Clamped
+	CosTheta = max(0.0f, dot(Normal, LightDir.xyz));
+
+	// propogate float result to vector
+	return (CosTheta);
 }
 
-VS2PS VShader(APP2VS indata, 
-	uniform float4x4 wvp, 
-	uniform float4 materialAmbient, 
-	uniform float4 materialDiffuse,
-	uniform float4 lhtDir)
+VS2PS VS
+(
+	APP2VS Input,
+	uniform float4x4 WorldViewProj,
+	uniform float4 MaterialAmbient,
+	uniform float4 MaterialDiffuse,
+	uniform float4 LightDir
+)
 {
-	VS2PS outdata;
- 
-	//float4 Po = float4(indata.Pos.x,indata.Pos.y,indata.Pos.z,1.0);
-	//outdata.Pos = mul(wvp, Po);
-	//outdata.Pos = mul(float4(indata.Pos.xyz, 1.0f), wvp);
+	VS2PS OutData;
+
  	float3 Pos;
- 	Pos = mul(indata.Pos, world);
-	outdata.Pos = mul(float4(Pos.xyz, 1.0f), wvp);
-	
+ 	Pos = mul(Input.Pos, _World);
+	OutData.Pos = mul(float4(Pos.xyz, 1.0f), WorldViewProj);
+
 	// Lighting. Shade (Ambient + etc.)
-    outdata.Diffuse.xyz = materialAmbient.xyz + Diffuse(indata.Normal,lhtDir) * materialDiffuse.xyz;
-    outdata.Diffuse.w = 1.0f;
- 	 	
- 	outdata.Tex0 = indata.TexCoord0;
- 	
-	return outdata;
+	OutData.Diffuse.xyz = MaterialAmbient.xyz + Diffuse(Input.Normal, LightDir) * MaterialDiffuse.xyz;
+	OutData.Diffuse.w = 1.0f;
+ 	OutData.Tex0 = Input.TexCoord0;
+	return OutData;
 }
 
-PS2FB PShader(VS2PS indata,
-	uniform sampler2D colorMap)
+PS2FB PS(VS2PS Input, uniform sampler2D ColorMap)
 {
-	PS2FB outdata;
-	
-	float4 base = tex2D(colorMap, indata.Tex0);
-	outdata.Col = indata.Diffuse * base;
-	
-	return outdata;
+	PS2FB OutData;
+	float4 Base = tex2D(ColorMap, Input.Tex0);
+	OutData.Col = Input.Diffuse * Base;
+	return OutData;
 }
 
-PS2FB PShaderMarked(VS2PS indata,
-	uniform sampler2D colorMap)
+PS2FB Marked_PS(VS2PS Input, uniform sampler2D ColorMap)
 {
-	PS2FB outdata;
-	
-	float4 base = tex2D(colorMap, indata.Tex0);
-	outdata.Col = (indata.Diffuse * base)+float4(1.f,0.f,0.f,0.f);
-	
-	return outdata;
+	PS2FB OutData;
+	float4 Base = tex2D(ColorMap, Input.Tex0);
+	OutData.Col = (Input.Diffuse * Base) + float4(1.0f, 0.0f, 0.0f, 0.0f);
+	return OutData;
 }
 
 
-technique t0_States <bool Restore = false;> {
-	pass BeginStates 
+technique t0_States <bool Restore = false;>
+{
+	pass BeginStates
 	{
 		CullMode = NONE;
 	}
-	pass EndStates 
+
+	pass EndStates
 	{
 		CullMode = CCW;
 	}
@@ -113,7 +106,7 @@ technique t0_States <bool Restore = false;> {
 
 technique t0
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -126,8 +119,8 @@ technique t0
 {
 	pass p0
 	{
-		VertexShader = compile vs_2_a VShader(mWorldViewProj,MaterialAmbient,MaterialDiffuse,LhtDir);
-		PixelShader = compile ps_2_a PShader(samplebase);
+		VertexShader = compile vs_3_0 VS(_WorldViewProjection,_MaterialAmbient,_MaterialDiffuse,_LightDir);
+		PixelShader = compile ps_3_0 PS(Sample_Base);
 	}
 }
 
@@ -137,7 +130,7 @@ technique marked
 <
 	int DetailLevel = DLHigh+DLNormal+DLLow+DLAbysmal;
 	int Compatibility = CMPR300+CMPNV2X;
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -151,40 +144,36 @@ technique marked
 	{
 		CullMode = NONE;
 		AlphaBlendEnable = FALSE;
-	
-		VertexShader = compile vs_2_a VShader(mWorldViewProj,MaterialAmbient,MaterialDiffuse,LhtDir);
-		PixelShader = compile ps_2_a PShaderMarked(samplebase);
+
+		VertexShader = compile vs_3_0 VS(_WorldViewProjection,_MaterialAmbient,_MaterialDiffuse,_LightDir);
+		PixelShader = compile ps_3_0 Marked_PS(Sample_Base);
 	}
 }
 
-VS2PS vsLightSource(APP2VS indata, 
-	uniform float4x4 wvp, 
-	uniform float4 materialDiffuse )
+VS2PS Light_Source_VS(APP2VS Input, uniform float4x4 WorldViewProj, uniform float4 MaterialDiffuse )
 {
-	VS2PS outdata;
- 
- 	float4 Pos;
- 	Pos.xyz = mul(indata.Pos, world);
- 	Pos.w = 1;
-	outdata.Pos = mul(Pos, wvp);
-	
-	// Lighting. Shade (Ambient + etc.)
-	outdata.Diffuse.rgb = materialDiffuse.xyz;
-	outdata.Diffuse.a = materialDiffuse.w;
- 	 	
-	outdata.Tex0 = 0;
+	VS2PS OutData;
 
-	return outdata;
+ 	float4 Pos;
+ 	Pos.xyz = mul(Input.Pos, _World);
+ 	Pos.w = 1.0;
+	OutData.Pos = mul(Pos, WorldViewProj);
+
+	// Lighting. Shade (Ambient + etc.)
+	OutData.Diffuse.rgb = MaterialDiffuse.xyz;
+	OutData.Diffuse.a = MaterialDiffuse.w;
+	OutData.Tex0 = 0.0;
+	return OutData;
 }
 
-float4 psLightSource(VS2PS indata) : COLOR
+float4 Light_Source_PS(VS2PS Input) : COLOR
 {
-	return indata.Diffuse;
+	return Input.Diffuse;
 }
 
 technique lightsource
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -202,8 +191,8 @@ technique lightsource
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsLightSource(mWorldViewProj, MaterialDiffuse);
-		PixelShader = compile ps_2_a psLightSource();
+		VertexShader = compile vs_3_0 Light_Source_VS(_WorldViewProjection, _MaterialDiffuse);
+		PixelShader = compile ps_3_0 Light_Source_PS();
 	}
 	pass p1
 	{
@@ -211,18 +200,18 @@ technique lightsource
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		
+
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
-	
-		VertexShader = compile vs_2_a vsLightSource(mWorldViewProj, MaterialDiffuse);
-		PixelShader = compile ps_2_a psLightSource();
+
+		VertexShader = compile vs_3_0 Light_Source_VS(_WorldViewProjection, _MaterialDiffuse);
+		PixelShader = compile ps_3_0 Light_Source_PS();
 	}
 }
 
 technique editor
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
@@ -240,21 +229,22 @@ technique editor
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsLightSource(mWorldViewProj, MaterialDiffuse);
-		PixelShader = compile ps_2_a psLightSource();
+		VertexShader = compile vs_3_0 Light_Source_VS(_WorldViewProjection, _MaterialDiffuse);
+		PixelShader = compile ps_3_0 Light_Source_PS();
 	}
+
 	pass p1
 	{
 		ColorWriteEnable = Red|Blue|Green|Alpha;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		
+
 		ZFunc = EQUAL;
 		ZWriteEnable = FALSE;
-		
-		VertexShader = compile vs_2_a vsLightSource(mWorldViewProj, MaterialDiffuse);
-		PixelShader = compile ps_2_a psLightSource();
+
+		VertexShader = compile vs_3_0 Light_Source_VS(_WorldViewProjection, _MaterialDiffuse);
+		PixelShader = compile ps_3_0 Light_Source_PS();
 	}
 }
 
@@ -271,8 +261,8 @@ technique EditorDebug
 		ShadeMode = FLAT;
 		ZFunc = LESSEQUAL;
 		FillMode = SOLID;
-		
-		VertexShader = compile vs_2_a vsLightSource(mWorldViewProj, MaterialDiffuse);
-		PixelShader = compile ps_2_a psLightSource();
+
+		VertexShader = compile vs_3_0 Light_Source_VS(_WorldViewProjection, _MaterialDiffuse);
+		PixelShader = compile ps_3_0 Light_Source_PS();
 	}
 }

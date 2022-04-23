@@ -35,10 +35,9 @@ float2 tex0	: TEXCOORD0
 {
 	VS_OUTPUT Out = (VS_OUTPUT)0;
 
-	Out.Pos = mul(float4(inPos, 1), mul(World, ViewProjection));
-	// float FogValue = length(Out.Pos.xyz);
-	Out.Fog = calcFog(Out.Pos.z);
-	Out.Tex0 = tex0;
+	Out.Pos		= mul(float4(inPos, 1), mul(World, ViewProjection));
+	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Tex0	= tex0;
 
 	return Out;
 }
@@ -78,11 +77,11 @@ technique defaultTechnique
 		FillMode		= WireFrame;
 #endif
 
-		AlphaTestEnable = true;//< AlphaTest >;
-		AlphaBlendEnable= < alphaBlendEnable >;
-		AlphaRef		= < alphaRef >;
-		SrcBlend		= < srcBlend >;
-		DestBlend		= < destBlend >;
+		AlphaTestEnable = true; // < AlphaTest >;
+		AlphaBlendEnable= < _AlphaBlendEnable >;
+		AlphaRef		= < _AlphaRef >;
+		SrcBlend		= < _SrcBlend >;
+		DestBlend		= < _DestBlend >;
 
 		AlphaRef = 127; // temporary hack by johan because "m_shaderSettings.m_alphaTestRef = 127" somehow doesn't work
 

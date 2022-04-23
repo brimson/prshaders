@@ -1,43 +1,43 @@
 #line 2 "PointSpriteParticles.fx"
 
 // UNIFORM INPUTS
-float4x4 wvpMat : WorldViewProj;
+float4x4 _WorldViewProj : WorldViewProj;
 
 // Particle Texture
-texture texture0: Texture0;
+texture Texture_0: Texture0;
 
 //$TODO this is a temporary solution that is inefficient
 // Groundhemi Texture
-uniform texture texture1: Texture1;
+uniform texture Texture_1: Texture1;
 
-uniform float baseSize : BaseSize;
+uniform float _BaseSize : BaseSize;
 
-uniform float2 heightmapSize : HeightmapSize = 2048.f;
-uniform float alphaPixelTestRef : AlphaPixelTestRef = 0;
+uniform float2 _HeightmapSize : HeightmapSize = 2048.0f;
+uniform float _AlphaPixelTestRef : AlphaPixelTestRef = 0.0;
 
-sampler diffuseSampler = sampler_state
+sampler Diffuse_Sampler = sampler_state
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
-sampler lutSampler = sampler_state 
-{ 
-	Texture = <texture1>; 
-	AddressU = CLAMP; 
-	AddressV = CLAMP; 
-	MinFilter = LINEAR; 
-	MagFilter = LINEAR; 
-	MipFilter = LINEAR; 
+sampler Sampler_LUT = sampler_state
+{
+	Texture = <Texture_1>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
-
-// constant array
-struct TemplateParameters {
+// Constant array
+struct TemplateParameters
+{
 	float4 m_uvRangeLMapIntensiyAndParticleMaxSize;
 	float4 m_lightColorAndRandomIntensity;
 	float4 m_color1;
@@ -47,79 +47,76 @@ struct TemplateParameters {
 	float4 m_sizeGraph;
 };
 
-TemplateParameters tParameters[10] : TemplateParameters;
-//TemplateParameters tParameters : TemplateParameters;
+TemplateParameters _TParameters[10] : TemplateParameters;
+// TemplateParameters _TParameters : TemplateParameters;
 
-struct appdata
+struct APP2VS
 {
-    float4	pos : POSITION;    
-    float1	ageFactor : TEXCOORD0;
-    float1 	graphIndex : TEXCOORD1;
-    float2 	randomSizeAndAlpha : TEXCOORD2;
-    float2 	intensityAndRandomIntensity : TEXCOORD3;
+	float4 Pos : POSITION;
+	float1 AgeFactor : TEXCOORD0;
+	float1 GraphIndex : TEXCOORD1;
+	float2 RandomSizeAndAlpha : TEXCOORD2;
+	float2 IntensityAndRandomIntensity : TEXCOORD3;
 };
 
-
-struct VS_POINTSPRITE_OUTPUT {
-	float4 HPos		: POSITION;
-	float4 color		: COLOR;
-	float2 texCoords	: TEXCOORD0;
-	float2 texCoords1	: TEXCOORD1;	
-	float lightMapIntensityOffset : TEXCOORD2;
-	float  pointSize	: PSIZE0; 
+struct VS2PS_Pointsprite_Output
+{
+	float4 HPos : POSITION;
+	float4 Color : COLOR;
+	float2 TexCoords : TEXCOORD0;
+	float2 TexCoords1 : TEXCOORD1;
+	float LightMapIntensityOffset : TEXCOORD2;
+	float PointSize : PSIZE0;
 };
 
-VS_POINTSPRITE_OUTPUT vsPointSprite(appdata input, uniform float4x4 myWVP, uniform TemplateParameters templ[10], uniform float scale, uniform float myHeightmapSize)
+VS2PS_Pointsprite_Output Pointsprite_VS(APP2VS Input, uniform TemplateParameters Temp[10])
 {
-	VS_POINTSPRITE_OUTPUT Out;
- 	Out.HPos = mul(float4(input.pos.xyz, 1.0f), myWVP);
-	Out.texCoords.xy = 0;
-	
+	VS2PS_Pointsprite_Output Output;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	Output.TexCoords.xy = 0;
+
 	// hemi lookup coords
- 	Out.texCoords1 = (input.pos.xyz + (myHeightmapSize/2)).xz / myHeightmapSize;	
-	
+	Output.TexCoords1 = (Input.Pos.xyz + (_HeightmapSize / 2.0)).xz / _HeightmapSize;
 
 	// Compute Cubic polynomial factors.
-	float4 pc = {input.ageFactor*input.ageFactor*input.ageFactor, input.ageFactor*input.ageFactor, input.ageFactor, 1.f};
-	
+	float4 PC = float4(pow(Input.AgeFactor, float3(3.0, 2.0, 1.0)), 1.0);
+
 	// compute size of particle using the constants of the template (mSizeGraph)
-	float pointSize = min(dot(templ[input.graphIndex.x].m_sizeGraph, pc), 1) * templ[input.graphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
-	pointSize = (pointSize + input.randomSizeAndAlpha.x) * scale;
-	Out.pointSize = pointSize / Out.HPos.w;
-	Out.lightMapIntensityOffset = templ[input.graphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
-	
-	float colorBlendFactor = min(dot(templ[input.graphIndex.x].m_colorBlendGraph, pc), 1);
-	float3 color = colorBlendFactor * templ[input.graphIndex.x].m_color2;
-	color += (1 - colorBlendFactor) * templ[input.graphIndex.x].m_color1;
-	
-	Out.color.rgb = (color * input.intensityAndRandomIntensity[0]) + input.intensityAndRandomIntensity[1];
-	float alphaBlendFactor = min(dot(templ[input.graphIndex.x].m_transparencyGraph, pc), 1);
-	Out.color.a = alphaBlendFactor * input.randomSizeAndAlpha[1];
-					
-	return Out;
+	float PointSize = min(dot(Temp[Input.GraphIndex.x].m_sizeGraph, PC), 1.0) * Temp[Input.GraphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
+	PointSize = (PointSize + Input.RandomSizeAndAlpha.x) * _BaseSize;
+
+	Output.PointSize = PointSize / Output.HPos.w;
+	Output.LightMapIntensityOffset = Temp[Input.GraphIndex.x].m_uvRangeLMapIntensiyAndParticleMaxSize.z;
+
+	float ColorBlendFactor = min(dot(Temp[Input.GraphIndex.x].m_colorBlendGraph, PC), 1);
+	float3 Color = ColorBlendFactor * Temp[Input.GraphIndex.x].m_color2;
+	Color += (1.0 - ColorBlendFactor) * Temp[Input.GraphIndex.x].m_color1;
+
+	Output.Color.rgb = (Color * Input.IntensityAndRandomIntensity[0]) + Input.IntensityAndRandomIntensity[1];
+	float AlphaBlendFactor = min(dot(Temp[Input.GraphIndex.x].m_transparencyGraph, PC), 1.0);
+	Output.Color.a = AlphaBlendFactor * Input.RandomSizeAndAlpha[1];
+	return Output;
 }
 
-float4 psPointSprite(VS_POINTSPRITE_OUTPUT input) : COLOR
+float4 Pointsprite_PS(VS2PS_Pointsprite_Output Input) : COLOR
 {
-	float4 tDiffuse = tex2D( diffuseSampler, input.texCoords);    
-	float4 tLut = tex2D( lutSampler, input.texCoords1);
-	float4 color = input.color * tDiffuse;
-	color.rgb *= tLut.a + input.lightMapIntensityOffset;
-	
-	return color;
+	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.TexCoords);
+	float4 TLUT = tex2D(Sampler_LUT, Input.TexCoords1);
+	float4 Color = Input.Color * TDiffuse;
+	Color.rgb *= TLUT.a + Input.LightMapIntensityOffset;
+	return Color;
 }
-
 
 technique PointSprite
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		{ 0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, D3DDECLTYPE_FLOAT1, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, D3DDECLTYPE_FLOAT1, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },		
-		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 3 },				
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 0, D3DDECLTYPE_FLOAT2, D3DDECLUSAGE_TEXCOORD, 3 },
 		DECLARATION_END	// End macro
 	};
 >
@@ -134,25 +131,25 @@ technique PointSprite
 		StencilFunc = ALWAYS;
 		StencilPass = ZERO;
 		AlphaTestEnable = TRUE;
-		AlphaRef = <alphaPixelTestRef>;
+		AlphaRef = <_AlphaPixelTestRef>;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
-		DestBlend = ONE;		
+		DestBlend = ONE;
 
-		Texture[0] = (texture0);		
-		Texture[1] = NULL;		
-		Texture[2] = NULL;		
-		Texture[3] = NULL;		
-		
+		Texture[0] = (Texture_0);
+		Texture[1] = NULL;
+		Texture[2] = NULL;
+		Texture[3] = NULL;
+
 		PointSpriteEnable = TRUE;
 		PointScaleEnable = TRUE;
-		//ColorArg1[0] = DIFFUSE;
-		//ColorArg2[0] = TEXTURE;
-		//ColorOp[0] = MODULATE;
-		
-		//PointSpriteScaleEnable = TRUE;
-		
- 		VertexShader = compile vs_2_a vsPointSprite(wvpMat, tParameters, baseSize, heightmapSize);
-		PixelShader = compile ps_2_a psPointSprite();		
+		// ColorArg1[0] = DIFFUSE;
+		// ColorArg2[0] = TEXTURE;
+		// ColorOp[0] = MODULATE;
+
+		// PointSpriteScaleEnable = TRUE;
+
+		VertexShader = compile vs_3_0 Pointsprite_VS(_TParameters);
+		PixelShader = compile ps_3_0 Pointsprite_PS();
 	}
 }

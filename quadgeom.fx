@@ -1,45 +1,46 @@
+
+/*
+	Assumption: Shader that generates the fullscreen quad for FSQuaddrawer and postproduction
+	Reason: Vertex position normalized from [-1.0, 1.0] to [0.0, 1.0], flipping the Y axis
+*/
+
 #line 2 "QuadGeom.fx"
 
-texture texture0: TEXLAYER0;
+texture Texture_0: TEXLAYER0;
 
-sampler sampler0 = sampler_state
+sampler Sample_0 = sampler_state
 {
-	Texture = (texture0);
+	Texture = (Texture_0);
 	AddressU = CLAMP;
 	AddressV = CLAMP;
-	MipFilter = POINT;
-	MinFilter = POINT;
-	MagFilter = POINT;
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 };
 
 struct APP2VS
 {
-    float2	Pos : POSITION;
+    float2 Pos : POSITION;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float2	Tex : TEXCOORD0;
+    float4 Pos : POSITION;
+    float2 Tex : TEXCOORD0;
 };
 
-VS2PS vsFFP(APP2VS indata)
+VS2PS Quad_VS(APP2VS Input)
 {
-	VS2PS outdata;
-
-	outdata.Pos.x = indata.Pos.x;
-	outdata.Pos.y = indata.Pos.y;
-	outdata.Pos.z = 0.f;
-	outdata.Pos.w = 1.0f;
- 	outdata.Tex.x = 0.5f * (indata.Pos.x + 1.0f);
- 	outdata.Tex.y = 1.0f - (0.5f * (indata.Pos.y + 1.0f));
- 	 	
-	return outdata;
+	VS2PS Output;
+	Output.Pos = float4(Input.Pos.xy, 0.0f, 1.0f);
+	Output.Tex = Input.Pos.xy * 0.5 + 0.5;
+	Output.Tex.y = 1.0 - Output.Tex.y;
+	return Output;
 }
 
-float4 psFFP(VS2PS Input) : COLOR
+float4 Quad_PS(VS2PS Input) : COLOR
 {
-	return tex2D(sampler0, Input.Tex);
+	return tex2D(Sample_0, Input.Tex);
 }
 
 technique TexturedQuad
@@ -71,25 +72,7 @@ technique TexturedQuad
 		// StencilPass = ZERO;
 		// StencilRef = 0;
 
-		/*
-			// App pixel settings
-			ColorOp[0] = SELECTARG2;
-			ColorArg1[0] = DIFFUSE;
-			ColorArg2[0] = TEXTURE;
-			AlphaOp[0] = MODULATE;
-			AlphaArg1[0] = DIFFUSE;
-			AlphaArg2[0] = TEXTURE;
-			Texture[0] = (texture0);
-			AddressU[0] = CLAMP;
-			AddressV[0] = CLAMP;
-			MipFilter[0] = POINT;
-			MinFilter[0] = POINT;
-			MagFilter[0] = POINT;
-		*/
-
-		VertexShader = compile vs_2_a vsFFP();
-		PixelShader = compile ps_2_a psFFP();
-		// PixelShader = NULL;
+		VertexShader = compile vs_3_0 Quad_VS();
+		PixelShader = compile ps_3_0 Quad_PS();
 	}
 }
-

@@ -1,93 +1,119 @@
+
+/*
+	Shader that handles BF2's UI elements
+*/
+
 #line 2 "PortedMenuShader.fx"
 
-float4x4 mWorld : matWORLD;
-float4x4 mView : matVIEW;
-float4x4 mProj : matPROJ;
+// Render-states from app settings
+bool _AlphaBlend : ALPHABLEND = false;
+dword _SrcBlend : SRCBLEND = D3DBLEND_INVSRCALPHA;
+dword _DestBlend : DESTBLEND = D3DBLEND_SRCALPHA;
+bool _AlphaTest : ALPHATEST = false;
+dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+dword _AlphaRef : ALPHAREF = 0;
+dword _ZEnable : ZMODE = D3DZB_TRUE;
+dword _ZFunc : ZFUNC = D3DCMP_LESSEQUAL;
+bool _ZWriteEnable : ZWRITEENABLE = true;
 
-bool bAlphaBlend : ALPHABLEND		= false;
-dword dwSrcBlend : SRCBLEND		= D3DBLEND_INVSRCALPHA;
-dword dwDestBlend : DESTBLEND		= D3DBLEND_SRCALPHA;
+#define APP_ALPHA_DEPTH_SETTINGS \
+	AlphaBlendEnable = (_AlphaBlend); \
+	SrcBlend = (_SrcBlend); \
+	DestBlend = (_DestBlend); \
+	AlphaTestEnable = (_AlphaTest); \
+	AlphaFunc = (_AlphaFunc); \
+	AlphaRef = (_AlphaRef); \
+	ZEnable = (_ZEnable); \
+	ZFunc = (_ZFunc); \
+	ZWriteEnable = (_ZWriteEnable); \
 
-bool bAlphaTest : ALPHATEST		= false;
-dword dwAlphaFunc : ALPHAFUNC		= D3DCMP_GREATER;
-dword dwAlphaRef : ALPHAREF		= 0;
+float4x4 _WorldMatrix : matWORLD;
+float4x4 _ViewMatrix : matVIEW;
+float4x4 _ProjMatrix : matPROJ;
 
-dword dwZEnable : ZMODE			= D3DZB_TRUE;
-dword dwZFunc : ZFUNC			= D3DCMP_LESSEQUAL;
-bool bZWriteEnable : ZWRITEENABLE	= true;
+texture Texture_0: TEXLAYER0;
+texture Texture_1: TEXLAYER1;
 
-texture texture0: TEXLAYER0;
-texture texture1: TEXLAYER1;
+sampler Sampler_0_Clamp = sampler_state
+{
+	Texture = (Texture_0);
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+};
 
-sampler sampler0Clamp = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1Clamp = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1Wrap = sampler_state { Texture = (texture1); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
+sampler Sampler_1_Clamp = sampler_state
+{
+	Texture = (Texture_1);
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+};
 
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+	float4 Pos : POSITION;
+	float4 Col : COLOR;
+	float2 Tex : TEXCOORD0;
+	float2 Tex2 : TEXCOORD1;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+	float4 Pos : POSITION;
+	float4 Col : COLOR;
+	float2 Tex : TEXCOORD0;
+	float2 Tex2 : TEXCOORD1;
 };
 
-VS2PS vsFFP(APP2VS indata)
+VS2PS Basic_VS(APP2VS Input)
 {
-	VS2PS outdata;
-	
-	float4x4 mWVP = mWorld * mView * mProj;
-	outdata.Pos = mul(indata.Pos, mWVP);
-	outdata.Col = indata.Col;
- 	outdata.Tex = indata.Tex;
- 	outdata.Tex2 = indata.Tex2;
- 	
-	return outdata;
+	VS2PS Output;
+
+	float4x4 WorldViewProj = _WorldMatrix * _ViewMatrix * _ProjMatrix;
+	Output.Pos = mul(Input.Pos, WorldViewProj);
+	Output.Col = Input.Col;
+ 	Output.Tex = Input.Tex;
+ 	Output.Tex2 = Input.Tex2;
+	return Output;
 }
 
-float4 psQuadWTexNoTex(VS2PS indata) : COLOR
+technique Menu
 {
-	return indata.Col;	
+	pass { }
 }
 
-float4 psQuadWTexOneTex(VS2PS indata) : COLOR
+technique Menu_States <bool Restore = true;>
 {
-	return indata.Col * tex2D(sampler0Clamp, indata.Tex);
+	pass BeginStates { }
+	pass EndStates { }
 }
 
-float4 psQuadWTexOneTexMasked(VS2PS indata) : COLOR
+float4 Quad_WTex_NoTex_PS(VS2PS Input) : COLOR
 {
-	float4 outcol = indata.Col * tex2D(sampler0Clamp, indata.Tex);
-//	outcol *= tex2D(sampler1Clamp, indata.Tex2);
-	outcol.a *= tex2D(sampler1Clamp, indata.Tex2).a;
-	return outcol;
+	return Input.Col;
 }
 
-float4 psQuadCache(VS2PS Input) : COLOR
+float4 Quad_WTex_Tex_PS(VS2PS Input) : COLOR
 {
-	float4 InputTexture = tex2D(sampler0Clamp, Input.Tex);
-	return (InputTexture + 1.0) * Input.Col;
+	return Input.Col * tex2D(Sampler_0_Clamp, Input.Tex);
 }
 
-technique Menu{pass{}}
-technique Menu_States <bool Restore = true;> {
-	pass BeginStates {
-	}
-	
-	pass EndStates {
-	}
+float4 Quad_WTex_Tex_Masked_PS(VS2PS Input) : COLOR
+{
+	float4 Color = Input.Col * tex2D(Sampler_0_Clamp, Input.Tex);
+	// Color *= tex2D(Sampler_1_Clamp, Input.Tex2);
+	Color.a *= tex2D(Sampler_1_Clamp, Input.Tex2).a;
+	return Color;
 }
 
 technique QuadWithTexture
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0,
@@ -101,58 +127,37 @@ technique QuadWithTexture
 	pass notex
 	{
 		// App alpha/depth settings
-		AlphaBlendEnable = (bAlphaBlend);
-		SrcBlend = (dwSrcBlend);
-		DestBlend = (dwDestBlend);
-		AlphaTestEnable = (bAlphaTest);
-		AlphaFunc = (dwAlphaFunc);
-		AlphaRef = (dwAlphaRef);
-		ZEnable = (dwZEnable);
-		ZFunc = (dwZFunc);
-		ZWriteEnable = (bZWriteEnable);
-		
-		VertexShader = compile vs_2_a vsFFP();
-		PixelShader = compile ps_2_a psQuadWTexNoTex();
+		APP_ALPHA_DEPTH_SETTINGS
+		VertexShader = compile vs_3_0 Basic_VS();
+		PixelShader = compile ps_3_0 Quad_WTex_NoTex_PS();
 	}
-	
+
 	pass tex
 	{
 		// App alpha/depth settings
-		AlphaBlendEnable = (bAlphaBlend);
-		SrcBlend = (dwSrcBlend);
-		DestBlend = (dwDestBlend);
-		AlphaTestEnable = (bAlphaTest);
-		AlphaFunc = (dwAlphaFunc);
-		AlphaRef = (dwAlphaRef);
-		ZEnable = (dwZEnable);
-		ZFunc = (dwZFunc);
-		ZWriteEnable = (bZWriteEnable);
-		
-		VertexShader = compile vs_2_a vsFFP();
-		PixelShader = compile ps_2_a psQuadWTexOneTex();
+		APP_ALPHA_DEPTH_SETTINGS
+		VertexShader = compile vs_3_0 Basic_VS();
+		PixelShader = compile ps_3_0 Quad_WTex_Tex_PS();
 	}
-	
+
 	pass masked
 	{
 		// App alpha/depth settings
-		AlphaBlendEnable = (bAlphaBlend);
-		SrcBlend = (dwSrcBlend);
-		DestBlend = (dwDestBlend);
-		AlphaTestEnable = (bAlphaTest);
-		AlphaFunc = (dwAlphaFunc);
-		AlphaRef = (dwAlphaRef);
-		ZEnable = (dwZEnable);
-		ZFunc = (dwZFunc);
-		ZWriteEnable = (bZWriteEnable);
-		
-		VertexShader = compile vs_2_a vsFFP();
-		PixelShader = compile ps_2_a psQuadWTexOneTexMasked();
+		APP_ALPHA_DEPTH_SETTINGS
+		VertexShader = compile vs_3_0 Basic_VS();
+		PixelShader = compile ps_3_0 Quad_WTex_Tex_Masked_PS();
 	}
+}
+
+float4 Quad_Cache_PS(VS2PS Input) : COLOR
+{
+	float4 InputTexture = tex2D(Sampler_0_Clamp, Input.Tex);
+	return (InputTexture + 1.0) * Input.Col;
 }
 
 technique QuadCache
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT4, D3DDECLUSAGE_POSITION, 0,
@@ -172,35 +177,8 @@ technique QuadCache
 		ZEnable = TRUE;
 		ZFunc = LESS;
 		ZWriteEnable = TRUE;
-		// TextureFactor = 0xFFFFFFFF;
-		
-		/*
-			// App pixel settings
-			ColorOp[0] = ADD;
-			ColorArg1[0] = TEXTURE;
-			ColorArg2[0] = TFACTOR;
-			ColorOp[1] = MODULATE;
-			ColorArg1[1] = CURRENT;
-			ColorArg2[1] = DIFFUSE;
-			ColorOp[2] = DISABLE;
-			AlphaOp[0] = ADD;
-			AlphaArg1[0] = TEXTURE;
-			AlphaArg2[0] = TFACTOR;
-			AlphaOp[1] = MODULATE;
-			AlphaArg1[1] = CURRENT;
-			AlphaArg2[1] = DIFFUSE;
-			AlphaOp[2] = DISABLE;
 
-			Texture[0] = (texture0);
-			AddressU[0] = CLAMP;
-			AddressV[0] = CLAMP;
-			MipFilter[0] = LINEAR;
-			MinFilter[0] = LINEAR;
-			MagFilter[0] = LINEAR;
-		*/
-
-		VertexShader = compile vs_2_a vsFFP();
-		// PixelShader = NULL;
-		PixelShader = compile ps_2_a psQuadCache();
+		VertexShader = compile vs_3_0 Basic_VS();
+		PixelShader = compile ps_3_0 Quad_Cache_PS();
 	}
 }
