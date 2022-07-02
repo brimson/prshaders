@@ -114,7 +114,7 @@ technique Low_Terrain
 	}
 }
 
-technique Low_ST
+technique Low_SurroundingTerrain
 {
 	pass p0 // Normal
 	{
