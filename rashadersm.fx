@@ -250,7 +250,7 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 	Out.LightVec = lVec;
 	#if !_POINTLIGHT_
 		Out.LightVec = normalize(Out.LightVec);
-		Out.Fog = Calc_Fog(Out.Pos.w);
+		Out.Fog = calcFog(Out.Pos.w);
 	#endif
 	Out.HalfVecAndOccShadow.xyz = normalize(hVec);
 #else
@@ -260,15 +260,15 @@ SMVariableVSOutput vs(SMVariableVSInput input)
 		Out.Specular = (lighting.z * Lights[0].color * /*StaticGloss*/0.15) * 0.5;
 	#else
 		Out.Specular = (lighting.z * Lights[0].specularColor * /*StaticGloss*/0.15) * 0.5;
-		Out.Fog = Calc_Fog(Out.Pos.w);
+		Out.Fog = calcFog(Out.Pos.w);
 	#endif
 #endif
 	
 #if _HASSHADOW_ || _HASSHADOWOCCLUSION_
-	Out.ShadowMat = Calc_Shadow_Projection(getWorldPos(input));
+	Out.ShadowMat = calcShadowProjection(getWorldPos(input));
 #endif
 #if _HASSHADOWOCCLUSION_
-	Out.HalfVecAndOccShadow.w = Calc_Shadow_Projection(getWorldPos(input), -0.003, true).z;
+	Out.HalfVecAndOccShadow.w = calcShadowProjection(getWorldPos(input), -0.003, true).z;
 #endif
 
 	return Out;
@@ -308,7 +308,7 @@ float4 ps(SMVariableVSOutput input) : COLOR
 
 // Remember, optimize for HWSM and ps1.3 (yes, it can be done!)
 #if _HASSHADOW_
-	float dirShadow = Get_Shadow_Factor(ShadowMapSampler, input.ShadowMat);
+	float dirShadow = getShadowFactor(ShadowMapSampler, input.ShadowMat);
 #else
 	float dirShadow = 1.0;
 #endif
@@ -316,7 +316,7 @@ float4 ps(SMVariableVSOutput input) : COLOR
 #if _HASSHADOWOCCLUSION_
 	float4 shadowOccMat = input.ShadowMat;
 	shadowOccMat.z = input.HalfVecAndOccShadow.w;
-	float dirOccShadow = Get_Shadow_Factor(ShadowOccluderMapSampler, shadowOccMat, NUMOCCLUSIONSAMPLES);
+	float dirOccShadow = getShadowFactor(ShadowOccluderMapSampler, shadowOccMat, NUMOCCLUSIONSAMPLES);
 	dirShadow *= dirOccShadow;
 #endif
 
@@ -334,10 +334,6 @@ float4 ps(SMVariableVSOutput input) : COLOR
 #else
 	const float3 hemicolor = float3(0.425,0.425,0.4); //"old"  -- expose a per-level "static hemi" value (ambient mod)
 	float4 groundcolor = 1;
-#endif
-
-#if _HASHEMIOCCLUSION_
-	dirShadow *= groundcolor.a;
 #endif
 
 	float4 diffuseTex = tex2D(DiffuseMapSampler, input.Tex0);

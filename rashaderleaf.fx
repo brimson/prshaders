@@ -71,7 +71,7 @@ VS_OUTPUT basicVertexShader
 #endif
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
 
-	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Fog		= calcFog(Out.Pos.w);
 	Out.Tex0	= tex0;
 
 #ifdef OVERGROWTH
@@ -97,14 +97,14 @@ VS_OUTPUT basicVertexShader
 #endif
 
 #if _HASSHADOW_
-	Out.TexShadow = Calc_Shadow_Projection(float4(inPos.xyz, 1));
+	Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1));
 #elif !defined(_POINTLIGHT_)
 	Out.Color.rgb += OverGrowthAmbient;
 #endif
 
 #ifdef _POINTLIGHT_
 	Out.Color.rgb *= 1 - saturate(dot(lightVec, lightVec) * Lights[0].attenuation * 0.1);
-	Out.Color.rgb *= Calc_Fog(Out.Pos.w);
+	Out.Color.rgb *= calcFog(Out.Pos.w);
 #endif
 	Out.Color.a = Transparency;
 	Out.Color = Out.Color * 0.5;
@@ -118,7 +118,7 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
 	float4 diffuseMap = tex2D(DiffuseMapSampler, VsOut.Tex0);
 
 #if _HASSHADOW_
-	vertexColor.rgb *= saturate(Get_Shadow_Factor(ShadowMapSampler, VsOut.TexShadow, 1)+0.6667);
+	vertexColor.rgb *= saturate(getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1)+0.6667);
 	vertexColor.rgb += OverGrowthAmbient/2;
 #endif
 
@@ -212,8 +212,8 @@ technique defaultTechnique
 		AlphaTestEnable		= true;
 
 		AlphaRef			= 127;
-		SrcBlend			= < _SrcBlend >;
-		DestBlend			= < _DestBlend >;
+		SrcBlend			= < srcBlend >;
+		DestBlend			= < destBlend >;
 
 #ifdef _POINTLIGHT_
 		FogEnable			= false;

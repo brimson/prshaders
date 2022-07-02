@@ -2,7 +2,28 @@
 
 #include "shaders/RaCommon.fx"
 
-#define SAMPLER(NAME, TEXTURE, ADDRESS, FILTER) \
+/*
+	[Attributes from app]
+*/
+
+uniform float4x4 _WorldViewProjection : WorldViewProjection;
+uniform float4x3 _InstanceTransformations[10]: InstanceTransformations;
+uniform float4x4 _ShadowTransformations[10] : ShadowTransformations;
+uniform float4 _ShadowViewPortMaps[10] : ShadowViewPortMaps;
+
+// offset x/y heightmapsize z / hemilerpbias w
+// uniform float4 _HemiMapInfo : HemiMapInfo;
+// uniform float4 _SkyColor : SkyColor;
+uniform float4 _AmbientColor : AmbientColor;
+uniform float4 _SunColor : SunColor;
+uniform float4 _SunDirection : SunDirection;
+uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0f, 30.0f);
+
+/*
+	[Textures and samplers]
+*/
+
+#define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS, FILTER) \
 	sampler NAME = sampler_state \
 	{ \
 		Texture = TEXTURE; \
@@ -13,29 +34,14 @@
 		MipFilter = FILTER; \
 	};
 
-// UNIFORM INPUTS
-float4x4 _WorldViewProjection : WorldViewProjection;
-float4x3 _InstanceTransformations[10]: InstanceTransformations;
-float4x4 _ShadowTransformations[10] : ShadowTransformations;
-float4 _ShadowViewPortMaps[10] : ShadowViewPortMaps;
+uniform texture Texture_0: TEXLAYER0;
+uniform texture Texture_1: HemiMapTexture;
+uniform texture Shadow_Map_Tex: ShadowMapTex;
+// uniform texture Shadow_Map_Occluder_Tex: ShadowMapOccluderTex;
 
-// offset x/y heightmapsize z / hemilerpbias w
-// float4 _HemiMapInfo : HemiMapInfo;
-// float4 _SkyColor : SkyColor;
-
-float4 _AmbientColor : AmbientColor;
-float4 _SunColor : SunColor;
-float4 _SunDirection : SunDirection;
-float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = float2(100.0f, 30.0f);
-
-texture Texture_0: TEXLAYER0;
-texture Texture_1: HemiMapTexture;
-texture Shadow_Map_Tex: ShadowMapTex;
-// texture Shadow_Map_Occluder_Tex: ShadowMapOccluderTex;
-
-SAMPLER(Sampler_0, Texture_0, CLAMP, LINEAR)
-// SAMPLER(Shadow_Map_Sampler, Shadow_Map_Tex, CLAMP, LINEAR)
-// SAMPLER(Shadow_Map_Occluder_Sampler, Shadow_Map_Occluder_Tex, CLAMP, LINEAR)
+CREATE_SAMPLER(Decals_Sampler_0, Texture_0, CLAMP, LINEAR)
+// CREATE_SAMPLER(Decals_Shadow_Map_Sampler, Shadow_Map_Tex, CLAMP, LINEAR)
+// CREATE_SAMPLER(Decals_Shadow_Map_Occluder_Sampler, Shadow_Map_Occluder_Tex, CLAMP, LINEAR)
 
 struct APP2VS
 {
@@ -45,7 +51,7 @@ struct APP2VS
    	float4 TexCoordsInstanceIndexAndAlpha : TEXCOORD0;
 };
 
-struct VS2PS_Decal
+struct VS2PS
 {
 	float4 HPos : POSITION;
 	float2 Texture0 : TEXCOORD0;
@@ -55,51 +61,62 @@ struct VS2PS_Decal
 	float Fog : FOG;
 };
 
-void Output_Decal
-(
-	APP2VS Input,
-	out int Index,
-	out float3 Pos,
-	out float4 HPos,
-	out float3 Diffuse,
-	out float4 Alpha,
-	out float3 Color
-)
+struct Decals_Common_Data
 {
-	Index = Input.TexCoordsInstanceIndexAndAlpha.z;
-
-	Pos = mul(Input.Pos, _InstanceTransformations[Index]);
-	HPos = mul(float4(Pos.xyz, 1.0f), _WorldViewProjection);
-
-	float3 WorldNormal = mul(Input.Normal.xyz, (float3x3)_InstanceTransformations[Index]);
-	Diffuse = saturate(dot(WorldNormal, -_SunDirection.xyz)) * _SunColor;
-
-	Alpha = 1.0f - saturate((HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
-	Alpha *= Input.TexCoordsInstanceIndexAndAlpha.w;
-	Alpha = Alpha;
-	Color = Input.Color;
-}
-
-VS2PS_Decal Decal_VS(APP2VS Input)
-{
-	VS2PS_Decal Output;
-
 	int Index;
 	float3 Pos;
-	Output_Decal(Input, Index, Pos, Output.HPos, Output.Diffuse, Output.Alpha, Output.Color);
+	float4 HPos;
+	float3 Diffuse;
+	float4 Alpha;
+	float3 Color;
+	float2 Texture0;
+	float Fog;
+};
+
+Decals_Common_Data Decals_Common(APP2VS Input)
+{
+	Decals_Common_Data Output;
+	Output.Index = Input.TexCoordsInstanceIndexAndAlpha.z;
+
+	Output.Pos = mul(Input.Pos, _InstanceTransformations[Output.Index]);
+	Output.HPos = mul(float4(Output.Pos.xyz, 1.0f), _WorldViewProjection);
+
+	float3 WorldNormal = mul(Input.Normal.xyz, (float3x3)_InstanceTransformations[Output.Index]);
+	Output.Diffuse = saturate(dot(WorldNormal, -_SunDirection.xyz)) * _SunColor;
+
+	Output.Alpha = 1.0f - saturate((Output.HPos.z - _DecalFadeDistanceAndInterval.x) / _DecalFadeDistanceAndInterval.y);
+	Output.Alpha *= Input.TexCoordsInstanceIndexAndAlpha.w;
+	Output.Alpha = saturate(Output.Alpha);
+	Output.Color = Input.Color;
 
 	Output.Texture0 = Input.TexCoordsInstanceIndexAndAlpha.xy;
-	Output.Fog = Calc_Fog(Output.HPos.w);
+	Output.Fog = saturate(calcFog(Output.HPos.w));
 	return Output;
 }
 
-float4 Decal_PS(VS2PS_Decal Input) : COLOR
+VS2PS Decals_VS(APP2VS Input)
+{
+	VS2PS Output;
+	Decals_Common_Data Data = Decals_Common(Input);
+	Output.HPos = Data.HPos;
+	Output.Texture0 = Data.Texture0;
+	Output.Color = Data.Color;
+	Output.Diffuse = Data.Diffuse;
+	Output.Alpha = Data.Alpha;
+	Output.Fog = Data.Fog;
+	return Output;
+}
+
+float4 Decals_PS(VS2PS Input) : COLOR
 {
 	float3 Lighting = _AmbientColor.rgb + Input.Diffuse;
-	float4 OutColor = tex2D(Sampler_0, Input.Texture0); // * Input.Color;
+	float4 OutColor = tex2D(Decals_Sampler_0, Input.Texture0); // * Input.Color;
 
 	OutColor.rgb *= Input.Color * Lighting;
 	OutColor.a *= Input.Alpha;
+
+	// Fog
+	OutColor.rgb = lerp(FogColor.rgb, OutColor.rgb, Input.Fog);
 	return OutColor;
 }
 
@@ -115,34 +132,28 @@ struct VS2PS_Decal_Shadowed
 	float Fog : FOG;
 };
 
-VS2PS_Decal_Shadowed Decal_Shadowed_VS(APP2VS Input)
+VS2PS_Decal_Shadowed Decals_Shadowed_VS(APP2VS Input)
 {
 	VS2PS_Decal_Shadowed Output;
+	Decals_Common_Data Data = Decals_Common(Input);
 
-	int Index;
-	float3 Pos;
-	Output_Decal(Input, Index, Pos, Output.HPos, Output.Diffuse, Output.Alpha, Output.Color);
-
-	Output.ViewPortMap = _ShadowViewPortMaps[Index];
-	Output.TexShadow = mul(float4(Pos, 1.0), _ShadowTransformations[Index]);
+	Output.ViewPortMap = _ShadowViewPortMaps[Data.Index];
+	Output.TexShadow = mul(float4(Data.Pos, 1.0), _ShadowTransformations[Data.Index]);
 	Output.TexShadow.z -= 0.007;
-
-	Output.Texture0 = Input.TexCoordsInstanceIndexAndAlpha.xy;
-	Output.Fog = Calc_Fog(Output.HPos.w);
 	return Output;
 }
 
-float4 Decal_Shadowed_PS(VS2PS_Decal_Shadowed Input) : COLOR
+float4 Decals_Shadowed_PS(VS2PS_Decal_Shadowed Input) : COLOR
 {
 	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
 	float4 Samples;
 
 	/*
 		Input.TexShadow.xy = clamp(Input.TexShadow.xy,  Input.ViewPortMap.xy, Input.ViewPortMap.zw);
-		Samples.x = tex2D(Shadow_Map_Sampler, Input.TexShadow);
-		Samples.y = tex2D(Shadow_Map_Sampler, Input.TexShadow + float2(Texel.x, 0));
-		Samples.z = tex2D(Shadow_Map_Sampler, Input.TexShadow + float2(0, Texel.y));
-		Samples.w = tex2D(Shadow_Map_Sampler, Input.TexShadow + Texel);
+		Samples.x = tex2D(Decals_Shadow_Map_Sampler, Input.TexShadow);
+		Samples.y = tex2D(Decals_Shadow_Map_Sampler, Input.TexShadow + float2(Texel.x, 0));
+		Samples.z = tex2D(Decals_Shadow_Map_Sampler, Input.TexShadow + float2(0, Texel.y));
+		Samples.w = tex2D(Decals_Shadow_Map_Sampler, Input.TexShadow + Texel);
 
 		float4 Cmpbits = Samples >= saturate(Input.TexShadow.z);
 		float DirShadow = dot(Cmpbits, float4(0.25, 0.25, 0.25, 0.25));
@@ -150,12 +161,15 @@ float4 Decal_Shadowed_PS(VS2PS_Decal_Shadowed Input) : COLOR
 
 	float DirShadow = 1.0;
 
-	float4 OutColor = tex2D(Sampler_0, Input.Texture0);
+	float4 OutColor = tex2D(Decals_Sampler_0, Input.Texture0);
 	OutColor.rgb *=  Input.Color;
 	OutColor.a *= Input.Alpha;
 
 	float3 Lighting = _AmbientColor.rgb + Input.Diffuse * DirShadow;
 	OutColor.rgb *= Lighting;
+
+	// Fog
+	OutColor.rgb = lerp(FogColor.rgb, OutColor.rgb, Input.Fog);
 	return OutColor;
 }
 
@@ -184,10 +198,9 @@ technique Decal
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = TRUE;
 
- 		VertexShader = compile vs_3_0 Decal_VS();
-		PixelShader = compile ps_3_0 Decal_PS();
+ 		VertexShader = compile vs_3_0 Decals_VS();
+		PixelShader = compile ps_3_0 Decals_PS();
 	}
 
 	pass p1
@@ -202,9 +215,8 @@ technique Decal
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = TRUE;
 
- 		VertexShader = compile vs_3_0 Decal_VS();
-		PixelShader = compile ps_3_0 Decal_PS();
+ 		VertexShader = compile vs_3_0 Decals_VS();
+		PixelShader = compile ps_3_0 Decals_PS();
 	}
 }

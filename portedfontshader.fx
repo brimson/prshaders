@@ -1,9 +1,17 @@
 
-float4 _Alpha : BLENDALPHA;
+/*
+	[Attributes from app]
+*/
 
-texture Texture_0: TEXLAYER0;
+uniform float4 _Alpha : BLENDALPHA;
 
-sampler Sampler_0_Clamp = sampler_state
+/*
+	[Textures and samplers]
+*/
+
+uniform texture Texture_0: TEXLAYER0;
+
+sampler PortedFont_Sampler_0_Clamp = sampler_state
 {
 	Texture = (Texture_0);
 	AddressU = CLAMP;
@@ -13,7 +21,7 @@ sampler Sampler_0_Clamp = sampler_state
 	MipFilter = LINEAR;
 };
 
-sampler Sampler_0_Wrap = sampler_state
+sampler PortedFont_Sampler_0_Wrap = sampler_state
 {
 	Texture = (Texture_0);
 	AddressU = WRAP;
@@ -26,32 +34,32 @@ sampler Sampler_0_Wrap = sampler_state
 struct APP2VS
 {
     float4 HPos : POSITION;
-    float3 Col : COLOR;
+    float3 Color : COLOR;
     float2 TexCoord0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
     float4 HPos : POSITION;
-    float3 Col : COLOR;
-    float2 Tex0 : TEXCOORD0;
+    float3 Color : COLOR0;
+    float2 TexCoord : TEXCOORD0;
 };
 
 VS2PS HPos_VS(APP2VS Input)
 {
 	VS2PS Output;
 	Output.HPos = Input.HPos;
-	Output.Col = Input.Col;
- 	Output.Tex0 = Input.TexCoord0;
+	Output.Color = saturate(Input.Color);
+ 	Output.TexCoord = Input.TexCoord0;
 	return Output;
 }
 
 float4 HPos_PS(VS2PS Input) : COLOR
 {
-    float4 OutColor = tex2D(Sampler_0_Clamp, Input.Tex0);
+    float4 OutColor = tex2D(PortedFont_Sampler_0_Clamp, Input.TexCoord);
     float4 NoAlpha = float4(1.0, 1.0, 1.0, 0.0);
     OutColor = dot(OutColor, NoAlpha);
-    OutColor.rgb = OutColor.rgb * Input.Col;
+    OutColor.rgb = OutColor.rgb * Input.Color;
     return OutColor;
 }
 
@@ -104,7 +112,7 @@ technique Overlay_States <bool Restore = true;>
 
 float4 Overlay_HPos_PS(VS2PS Input) : COLOR
 {
-	float4 InputTexture0 = tex2D(Sampler_0_Wrap, Input.Tex0);
+	float4 InputTexture0 = tex2D(PortedFont_Sampler_0_Wrap, Input.TexCoord);
 	return InputTexture0 * float4(1.0, 1.0, 1.0, _Alpha.a);
 }
 

@@ -1,41 +1,40 @@
 #line 2 "TerrainShader_nv3x.fx"
-//
-// -- Low Terrain
-//
 
+/*
+	Low Terrain
+*/
 
-
-float4 Low_PS_DirectionalLightShadows(Shared_VS2PS_DirectionalLightShadows indata) : COLOR
+float4 Low_DirectionalLightShadows_PS(VS2PS_Shared_DirectionalLightShadows Input) : COLOR
 {
-	float4 lightmap = tex2D(sampler0Clamp, indata.Tex0);
-	float avgShadowValue = tex2Dproj(sampler2PointClamp, indata.ShadowTex);
-	avgShadowValue = avgShadowValue == 1.f;
+	float4 LightMap = tex2D(Sampler_0_Clamp, Input.Tex0);
+	float AvgShadowValue = tex2Dproj(Sampler_2_Clamp, Input.ShadowTex);
+	AvgShadowValue = AvgShadowValue == 1.0f;
 
-	float4 light = saturate(lightmap.z * vGIColor*2) * 0.5;
-	if (avgShadowValue < lightmap.y)
-		light.w = 1-saturate(4-indata.Z.x)+avgShadowValue.x;
+	float4 Light = saturate(LightMap.z * _GIColor * 2.0) * 0.5;
+	if (AvgShadowValue < LightMap.y)
+		Light.w = 1.0 - saturate(4.0 - Input.Z.x) + AvgShadowValue.x;
 	else
-		light.w = lightmap.y;
+		Light.w = LightMap.y;
 
-	return light; 
+	return Light; 
 }
 
 technique Low_Terrain
 {
-	pass ZFillLightmap	//p0
+	pass ZFillLightMap // p0
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		AlphaBlendEnable = FALSE;
-		FogEnable = false;
 		
-		VertexShader = compile vs_2_a Shared_VS_ZFillLightmap();
-        PixelShader = compile ps_2_a Shared_PS_ZFillLightmap();
+		VertexShader = compile vs_3_0 Shared_ZFillLightMap_VS();
+        PixelShader = compile ps_3_0 Shared_ZFillLightMap_1_PS();
 
 	}
-	pass pointlight		//p1
+
+	pass pointlight // p1
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
@@ -44,36 +43,44 @@ technique Low_Terrain
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
-		VertexShader = compile vs_2_a Shared_VS_PointLight();
-		PixelShader = compile ps_2_a Shared_PS_PointLight();
+
+		VertexShader = compile vs_3_0 Shared_PointLight_VS();
+		PixelShader = compile ps_3_0 Shared_PointLight_PS();
 	}
+
 	pass {} // spotlight (removed)
-	pass LowDetail		//p3
+
+	pass LowDetail //p3
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
-		FogEnable = true;
 		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_2_a Shared_VS_LowDetail();
-		PixelShader = compile ps_2_a Shared_PS_LowDetail();
+
+		VertexShader = compile vs_3_0 Shared_LowDetail_VS();
+		PixelShader = compile ps_3_0 Shared_LowDetail_PS();
 	}
+
 	pass {} // FullDetail p4
 	pass {} // mulDiffuseDetailMounten (Not used on Low) p5
 	pass {} // p6 tunnels (removed) p6
-	pass DirectionalLightShadows	//p7
+
+	pass DirectionalLightShadows //p7
 	{
 		CullMode = CW;
 		ZEnable = TRUE;
 		ZWriteEnable = FALSE;
 		ZFunc = LESSEQUAL;
  		AlphaBlendEnable = FALSE;
-		VertexShader = compile vs_2_a Shared_VS_DirectionalLightShadows();
-		PixelShader = compile ps_2_a Low_PS_DirectionalLightShadows();
+
+		VertexShader = compile vs_3_0 Shared_DirectionalLightShadows_VS();
+		PixelShader = compile ps_3_0 Low_DirectionalLightShadows_PS();
 	}
-	pass {} // DirectionalLightShadowsNV (removed)	//p8
-	pass DynamicShadowmap	//p9
+
+	pass {} // DirectionalLightShadowsNV (removed) // p8
+
+	pass DynamicShadowmap // p9
 	{
 		CullMode = CW;
 		ZEnable = FALSE;
@@ -82,13 +89,15 @@ technique Low_Terrain
  		AlphaBlendEnable = TRUE;
  		SrcBlend = DESTCOLOR;
  		DestBlend = ZERO;
-		VertexShader = compile vs_2_a Shared_VS_DynamicShadowmap();
-		PixelShader = compile ps_2_a Shared_PS_DynamicShadowmap();
+
+		VertexShader = compile vs_3_0 Shared_DynamicShadowmap_VS();
+		PixelShader = compile ps_3_0 Shared_DynamicShadowmap_PS();
 	}
+
 	pass {} // p10
 	pass {} // mulDiffuseDetailWithEnvMap (Not used on Low)	p11
 	pass {} // mulDiffuseFast (removed) p12
-	pass {} // PerPixelPointlight (Dont work on 1.4 shaders) //p13
+	pass {} // PerPixelPointlight (Dont work on 1.4 shaders) // p13
 	
 	pass underWater // p14
 	{
@@ -99,14 +108,13 @@ technique Low_Terrain
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = false;
-		VertexShader = compile vs_2_a Shared_VS_UnderWater();
-		PixelShader = compile ps_2_a Shared_PS_UnderWater();
+
+		VertexShader = compile vs_3_0 Shared_UnderWater_VS();
+		PixelShader = compile ps_3_0 Shared_UnderWater_PS();
 	}
 }
 
-
-technique Low_SurroundingTerrain
+technique Low_ST
 {
 	pass p0 // Normal
 	{
@@ -115,27 +123,21 @@ technique Low_SurroundingTerrain
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		AlphaBlendEnable = FALSE;
-		FogEnable = true;
-		VertexShader = compile vs_2_a Shared_VS_STNormal();		
-		PixelShader = compile ps_2_a Shared_PS_STNormal();
+
+		VertexShader = compile vs_3_0 Shared_ST_Normal_VS();		
+		PixelShader = compile ps_3_0 Shared_ST_Normal_PS();
 	}
-/*
-	pass p1 // Fast
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		AlphaBlendEnable = FALSE;
-		FogEnable = true;
-		VertexShader = compile vs_2_a Shared_VS_STFast();		
-		PixelShader = compile ps_2_a Shared_PS_STFast();
-	}
-*/
+	/*
+		pass p1 // Fast
+		{
+			CullMode = CW;
+			ZEnable = TRUE;
+			ZWriteEnable = TRUE;
+			ZFunc = LESSEQUAL;
+			AlphaBlendEnable = FALSE;
+
+			VertexShader = compile vs_3_0 Shared_ST_Fast_VS();		
+			PixelShader = compile ps_3_0 Shared_ST_Fast_PS();
+		}
+	*/
 }
-
-
-
-
-
-

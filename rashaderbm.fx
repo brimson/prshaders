@@ -239,10 +239,10 @@ BMVariableVSOutput vs(BMVariableVSInput input)
 #endif
 
 #if _HASSHADOW_
-	Out.Interpolated[__SHADOWINTERPIDX] = Calc_Shadow_Projection(getWorldPos(input));
+	Out.Interpolated[__SHADOWINTERPIDX] = calcShadowProjection(getWorldPos(input));
 #endif
 #if _HASSHADOWOCCLUSION_
-	Out.Interpolated[__OCCSHADOWINTERPIDX] = Calc_Shadow_Projection(getWorldPos(input), -0.003, true);
+	Out.Interpolated[__OCCSHADOWINTERPIDX] = calcShadowProjection(getWorldPos(input), -0.003, true);
 #endif
 	
 	float3 worldEyeVec = normalize(WorldSpaceCamPos.xyz - getWorldPos(input).xyz);
@@ -294,9 +294,9 @@ BMVariableVSOutput vs(BMVariableVSInput input)
 #endif
 
 #if _POINTLIGHT_
-	Out.SpecularLightOrPointFog = Calc_Fog(Out.HPos.w);
+	Out.SpecularLightOrPointFog = calcFog(Out.HPos.w);
 #else
-	Out.Fog = Calc_Fog(Out.HPos.w); 		//always fog
+	Out.Fog = calcFog(Out.HPos.w); 		//always fog
 #endif
 
 	return Out;
@@ -326,7 +326,7 @@ float4 ps(BMVariableVSOutput input) : COLOR
 	#else
 		normal = input.Interpolated[__WNORMALINTERPIDX];
 		#if _USEPERPIXELNORMALIZE_
-			normal = normalize(normal);
+			normal = fastNormalize(normal, NRMCUBE);
 		#endif
 	#endif
 
@@ -340,14 +340,14 @@ float4 ps(BMVariableVSOutput input) : COLOR
 	#endif
 	//tl: don't normalize if lvec is world space sun direction
 	#if _USEPERPIXELNORMALIZE_ && (_HASNORMALMAP_ || _POINTLIGHT_)
-		lightVec = normalize(lightVec);
+		lightVec = fastNormalize(lightVec);
 	#endif
 
 	float4 dot3Light = saturate(dot(lightVec, normal));
 
 	float3 halfVec = input.Interpolated[__HVECINTERPIDX];
 	#if _USEPERPIXELNORMALIZE_
-		halfVec = normalize(halfVec);
+		halfVec = fastNormalize(halfVec, (NVIDIA || RAPATH < 1) ? NRMMATH : NRMCUBE);
 	#endif
 
 	float3 specular = tex2D(SpecLUT64Sampler, dot(halfVec, normal));
@@ -383,22 +383,19 @@ float4 ps(BMVariableVSOutput input) : COLOR
 #endif //perpixlight
 
 #if _HASSHADOW_
-	float dirShadow = Get_Shadow_Factor(ShadowMapSampler, input.Interpolated[__SHADOWINTERPIDX]);
+	float dirShadow = getShadowFactor(ShadowMapSampler, input.Interpolated[__SHADOWINTERPIDX]);
 #else
 	float dirShadow = 1.f;
 #endif
 #if _HASSHADOWOCCLUSION_
-	float dirOccShadow = Get_Shadow_Factor(ShadowOccluderMapSampler, input.Interpolated[__OCCSHADOWINTERPIDX]);
+	float dirOccShadow = getShadowFactor(ShadowOccluderMapSampler, input.Interpolated[__OCCSHADOWINTERPIDX]);
 #else
 	float dirOccShadow = 1.f;
 #endif
 
 #if _USEHEMIMAP_
 	float4 groundcolor	= tex2D(HemiMapSampler, input.Interpolated[__HEMINTERPIDX].xy);
- 	float3 hemicolor		= lerp(groundcolor, HemiMapSkyColor, input.Interpolated[__HEMINTERPIDX].z);
-	#if _HASHEMIOCCLUSION_
-		dirOccShadow = groundcolor.a;
-	#endif
+ 	float3 hemicolor = lerp(groundcolor, HemiMapSkyColor, input.Interpolated[__HEMINTERPIDX].z);
 #elif _HASPERPIXELLIGHTING_
 	float hemicolor = Lights[0].color.w;
 #else

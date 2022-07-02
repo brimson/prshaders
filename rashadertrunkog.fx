@@ -42,7 +42,7 @@ float2 tex0	: TEXCOORD0
 
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
 
-	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Fog		= calcFog(Out.Pos.w);
 	Out.Tex0	= tex0 / 32767.0f;
 
 	normal = normal * 2.0f - 1.0f;

@@ -1,597 +1,224 @@
 #line 2 "StaticMesh.fx"
 #include "shaders/commonVertexLight.fx"
 
-// UNIFORM INPUTS
-float4x4 viewProjMatrix : WorldViewProjection;
-float4x4 worldViewMatrix : WorldView;
-float4x4 worldViewITMatrix : WorldViewIT;
-float4x4 viewInverseMatrix : ViewI;
-float4x4 worldMatrix : World;
+/*
+	[Uniform data from app]
+*/
 
-float4 ambColor : Ambient = {0.0, 0.0, 0.0, 1.0};
-float4 diffColor : Diffuse = {1.0, 1.0, 1.0, 1.0};
-float4 specColor : Specular = {0.0, 0.0, 0.0, 1.0};
-float4 fuzzyLightScaleValue : FuzzyLightScaleValue = {1.75,1.75,1.75,1};
-float4 lightmapOffset : LightmapOffset;
-float dropShadowClipheight : DROPSHADOWCLIPHEIGHT;
-float4 parallaxScaleBias : PARALLAXSCALEBIAS;
+uniform float4x4 _WorldViewProj : WorldViewProjection;
+uniform float4x4 _WorldViewMat : WorldView;
+uniform float4x4 _WorldViewITMat : WorldViewIT;
+uniform float4x4 _ViewInverseMat : ViewI;
+uniform float4x4 _WorldMat : World;
 
-float4x4 vpLightMat : vpLightMat;
-float4x4 vpLightTrapezMat : vpLightTrapezMat;
-float4	PosUnpack : POSUNPACK;
-float	TexUnpack : TEXUNPACK;
+uniform float4 _AmbientColor : Ambient = { 0.0, 0.0, 0.0, 1.0 };
+uniform float4 _DiffColor : Diffuse = { 1.0, 1.0, 1.0, 1.0 };
+uniform float4 _SpecColor : Specular = { 0.0, 0.0, 0.0, 1.0 };
+uniform float4 _FuzzyLightScaleValue : FuzzyLightScaleValue = { 1.75, 1.75, 1.75, 1.0 };
+uniform float4 _LightmapOffset : LightmapOffset;
+uniform float _DropShadowClipheight : DROPSHADOWCLIPHEIGHT;
+uniform float4 _ParallaxScaleBias : PARALLAXSCALEBIAS;
 
-bool alphaTest : AlphaTest = false;
+uniform float4x4 _LightMat : vpLightMat;
+uniform float4x4 _LightTrapezMat : vpLightTrapezMat;
+uniform float4 _PosUnpack : POSUNPACK;
+uniform float _TexUnpack : TEXUNPACK;
 
-float4 paraboloidValues : ParaboloidValues;
-float4 paraboloidZValues : ParaboloidZValues;
+uniform bool _AlphaTest : AlphaTest = false;
 
-//SHADOW
-float4 Attenuation : Attenuation;
-//\SHADOW
+uniform float4 _ParaboloidValues : ParaboloidValues;
+uniform float4 _ParaboloidZValues : ParaboloidZValues;
 
-texture texture0: TEXLAYER0;
-texture texture1: TEXLAYER1;
-texture texture2: TEXLAYER2;
-texture texture3: TEXLAYER3;
-texture texture4: TEXLAYER4;
-texture texture5: TEXLAYER5;
-texture texture6: TEXLAYER6;
-texture texture7: TEXLAYER7;
+uniform float4 _Attenuation : Attenuation; // SHADOW
 
-sampler samplerShadowAlpha = sampler_state
+uniform texture Texture_0: TEXLAYER0;
+uniform texture Texture_1: TEXLAYER1;
+uniform texture Texture_2: TEXLAYER2;
+uniform texture Texture_3: TEXLAYER3;
+uniform texture Texture_4: TEXLAYER4;
+uniform texture Texture_5: TEXLAYER5;
+uniform texture Texture_6: TEXLAYER6;
+uniform texture Texture_7: TEXLAYER7;
+
+float4 _LightPos : LightPosition : register(vs_3_0, c12)
+<
+	string Object = "PointLight";
+	string Space = "World";
+> = { 0.0, 0.0, 1.0, 1.0 };
+
+float4 _LightDir : LightDirection;
+float4 _SunColor : SunColor;
+float4 _EyePos : EyePos;
+float4 _EyePosObjectSpace : EyePosObjectSpace;
+
+sampler Sampler_Shadow_Alpha = sampler_state
 {
-	Texture = <texture0>;
+	Texture = <Texture_0>;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	AddressU = Wrap;
-	AddressV = Wrap;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
-//sampler diffuseSampler = sampler_state
-sampler samplerWrap0 = sampler_state
+sampler Sampler_Wrap_0 = sampler_state
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
-//sampler normalSampler = sampler_state
-sampler samplerWrap1 = sampler_state
+sampler Sampler_Color_LUT = sampler_state
 {
-	Texture = <texture1>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrap2 = sampler_state
-{
-	Texture = <texture2>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrap3 = sampler_state
-{
-	Texture = <texture3>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrap4 = sampler_state
-{
-	Texture = <texture4>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrap5 = sampler_state
-{
-	Texture = <texture5>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrap6 = sampler_state
-{
-	Texture = <texture6>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrap7 = sampler_state
-{
-	Texture = <texture7>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrapAniso0 = sampler_state
-{
-	Texture = <texture0>;
-	MinFilter = Anisotropic;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-
-sampler samplerWrapAniso1 = sampler_state
-{
-	Texture = <texture1>;
-	MinFilter = Anisotropic;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso2 = sampler_state
-{
-	Texture = <texture2>;
-	MinFilter = Anisotropic;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
-
-sampler samplerWrapAniso3 = sampler_state
-{
-	Texture = <texture3>;
-	MinFilter = Anisotropic;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso4 = sampler_state
-{
-	Texture = <texture4>;
-	MinFilter = Anisotropic;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso5 = sampler_state
-{
-	Texture = <texture5>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso6 = sampler_state
-{
-	Texture = <texture6>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-sampler samplerWrapAniso7 = sampler_state
-{
-	Texture = <texture7>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-	MaxAnisotropy = 8;
-};
-
-
-sampler samplerClamp0 = sampler_state
-{
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
+	Texture = <Texture_2>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	AddressU = Clamp;
 	AddressV = Clamp;
 };
 
-//sampler normalSampler = sampler_state
-sampler samplerClamp1 = sampler_state
+
+
+
+struct APP2VS
 {
-	Texture = <texture1>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float2 TexCoord : TEXCOORD0;
+	float3 Tan : TANGENT;
+	float3 Binorm : BINORMAL;
 };
 
-sampler samplerClamp2 = sampler_state
+struct VS2PS_Simple
 {
-	Texture = <texture2>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	float4 HPos : POSITION;
+	float2 TexCoord : TEXCOORD0;
 };
 
-sampler samplerClamp3 = sampler_state
+VS2PS_Simple StaticMesh_Simple_VS(APP2VS Input, uniform float4x4 WorldViewProj)
 {
-	Texture = <texture3>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-sampler samplerClamp4 = sampler_state
-{
-	Texture = <texture4>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-sampler samplerClamp5 = sampler_state
-{
-	Texture = <texture5>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-sampler samplerClamp6 = sampler_state
-{
-	Texture = <texture6>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-sampler samplerClamp7 = sampler_state
-{
-	Texture = <texture7>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-	MipMapLodBias = 0;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-sampler sampler0clamppoint = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler1clamppoint = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler2clamppoint = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler3clamppoint = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler4clamppoint = sampler_state { Texture = (texture4); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler5clamppoint = sampler_state { Texture = (texture5); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler6clamppoint = sampler_state { Texture = (texture6); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-
-sampler sampler0wrappoint = sampler_state { Texture = (texture0); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler1wrappoint = sampler_state { Texture = (texture1); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler2wrappoint = sampler_state { Texture = (texture2); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler3wrappoint = sampler_state { Texture = (texture3); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler4wrappoint = sampler_state { Texture = (texture4); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler5wrappoint = sampler_state { Texture = (texture5); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-sampler sampler6wrappoint = sampler_state { Texture = (texture6); AddressU = WRAP; AddressV = WRAP; MinFilter = POINT; MagFilter = POINT; MipFilter = NONE; };
-
-
-sampler colorLUTSampler = sampler_state
-{
-    Texture = <texture2>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-sampler dummySampler = sampler_state
-{
-	MinFilter = Linear;
-	MagFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
-
-float4 lightPos : LightPosition  : register(vs_1_1, c12)
-<
-    string Object = "PointLight";
-    string Space = "World";
-> = {0.0, 0.0, 1.0, 1.0};
-
-float4 lightDir : LightDirection;
-float4 sunColor : SunColor;
-float4 eyePos : EyePos;
-float4 eyePosObjectSpace : EyePosObjectSpace;
-
-struct appdata {
-    float4	Pos : POSITION;    
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float3	Tan		: TANGENT;
-    float3	Binorm	: BINORMAL;
-};
-
-struct VS_OUTPUT {
-	float4 HPos		: POSITION;
-	float2 NormalMap	: TEXCOORD0;
-	float3 LightVec	: TEXCOORD1;
-	float3 HalfVec	: TEXCOORD2;
-	float2 DiffMap	: TEXCOORD3;
-};
-
-struct VS_OUTPUTSS {
-	float4 HPos		: POSITION;
-	float4 TanNormal	: COLOR0;
-	float4 TanLight	: COLOR1;
-	float2 NormalMap	: TEXCOORD0;
-	float3 LightVec	: TEXCOORD1;
-	float3 HalfVec	: TEXCOORD2;
-	float2 DiffMap	: TEXCOORD3;
-};
-
-struct VS_OUTPUT2 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-	float4 Diffuse 	: COLOR;
-};
-
-struct VS_OUTPUT3 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-};
-
-
-VS_OUTPUT3 VSimpleShader(appdata input, 
-	uniform float4x4 wvp)
-{
-	VS_OUTPUT3 outdata;
- 
-	outdata.HPos = mul(float4(input.Pos.xyz, 1.0), wvp);
-	outdata.TexCoord = input.TexCoord;
-
-	return outdata;
+	VS2PS_Simple Output;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0), WorldViewProj);
+	Output.TexCoord = Input.TexCoord;
+	return Output;
 }
 
-float4 PSSimpleShader(VS_OUTPUT3 input) : COLOR
+float4 StaticMesh_Simple_PS(VS2PS_Simple Input) : COLOR
 {
-    float4 ambient = float4(1, 1, 1, 0.8);
-    float4 normalMap = tex2D(samplerWrap0, input.TexCoord);
-    float4 outCol = normalMap * ambient;
-    return outCol;
+	float4 Ambient = float4(1.0, 1.0, 1.0, 0.8);
+	float4 NormalMap = tex2D(Sampler_Wrap_0, Input.TexCoord);
+	return NormalMap * Ambient;
 }
 
 technique alpha_one
 {
-	pass p0 
-	{		
-		ZEnable = true;
-		ZWriteEnable = false;
+	pass p0
+	{
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE;
 		CullMode = NONE;
-		AlphaBlendEnable = true;
-		
-		//SrcBlend = ONE;
+		AlphaBlendEnable = TRUE;
+
 		SrcBlend = SRCALPHA;
 		DestBlend = ONE;
-		
-		AlphaTestEnable = true;
+
+		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
-		//FillMode = WIREFRAME;
 
-		VertexShader = compile vs_2_a VSimpleShader(viewProjMatrix);		
-		PixelShader = compile ps_2_a PSSimpleShader(); 
+		VertexShader = compile vs_3_0 StaticMesh_Simple_VS(_WorldViewProj);
+		PixelShader = compile ps_3_0 StaticMesh_Simple_PS();
 	}
 }
 
-struct APPDATA_ShadowMap {
-    float4 Pos : POSITION;    
-    float2 Tex : TEXCOORD0;
+
+
+
+struct APP2VS_ShadowMap
+{
+	float4 Pos : POSITION;
+	float2 Tex : TEXCOORD0;
 };
 
 struct VS2PS_ShadowMap
 {
-	float4	Pos	: POSITION;
-	float2	PosZW	: TEXCOORD0;
+	float4 Pos : POSITION;
+	float2 PosZW : TEXCOORD0;
 };
 
-struct VS2PS_ShadowMapAlpha
+struct VS2PS_ShadowMap_Alpha
 {
-	float4	Pos	: POSITION;
-	float2	Tex	: TEXCOORD0;
-	float2	PosZW	: TEXCOORD1;
+	float4 Pos : POSITION;
+	float2 Tex : TEXCOORD0;
+	float2 PosZW : TEXCOORD1;
 };
 
-float4 calcShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
+float4 Calc_ShadowProjCoords(float4 Pos, float4x4 matTrap, float4x4 matLight)
 {
  	float4 shadowcoords = mul(Pos, matTrap);
  	float2 lightZW = mul(Pos, matLight).zw;
-	shadowcoords.z = (lightZW.x*shadowcoords.w) / lightZW.y;			// (zL*wT)/wL == zL/wL post homo
+	shadowcoords.z = (lightZW.x*shadowcoords.w) / lightZW.y; // (zL*wT)/wL == zL/wL post homo
 	return shadowcoords;
 }
 
-VS2PS_ShadowMap vsShadowMap(APPDATA_ShadowMap input)
+VS2PS_ShadowMap ShadowMap_VS(APP2VS_ShadowMap Input)
 {
-	VS2PS_ShadowMap Out;
-   	   	 
- 	float4 unpackPos = float4(input.Pos.xyz * PosUnpack.xyz, 1);
- 	float4 wPos = mul(unpackPos, worldMatrix);
-	Out.Pos = calcShadowProjCoords(float4(wPos.xyz,1.0), vpLightTrapezMat, vpLightMat);
- 	Out.PosZW.xy = Out.Pos.zw;
-	
-//SHADOW
-// TBD: mul matrices on CPU
-//	matrix m = mul( vpLightMat, vpLightTrapezMat );
-//	Out.Pos = mul( float4(unpackPos.xyz, 1.0), vpLightMat );
-//\SHADOW
+	VS2PS_ShadowMap Output;
 
-	return Out;
+ 	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
+ 	float4 WPos = mul(UnpackPos, _WorldMat);
+	Output.Pos = Calc_ShadowProjCoords(float4(WPos.xyz, 1.0), _LightTrapezMat, _LightMat);
+ 	Output.PosZW.xy = Output.Pos.zw;
+
+	return Output;
 }
 
-VS2PS_ShadowMapAlpha vsShadowMapAlpha(APPDATA_ShadowMap input)
+VS2PS_ShadowMap_Alpha ShadowMap_Alpha_VS(APP2VS_ShadowMap Input)
 {
-	VS2PS_ShadowMapAlpha Out;
+	VS2PS_ShadowMap_Alpha Output;
 
- 	float4 unpackPos = float4(input.Pos.xyz * PosUnpack.xyz, 1);
- 	float4 wPos = mul(unpackPos, worldMatrix);
-	Out.Pos = calcShadowProjCoords(wPos, vpLightTrapezMat, vpLightMat);
- 	Out.PosZW.xy = Out.Pos.zw;
+ 	float4 UnpackPos = float4(Input.Pos.xyz * _PosUnpack.xyz, 1.0);
+ 	float4 WPos = mul(UnpackPos, _WorldMat);
+	Output.Pos = Calc_ShadowProjCoords(WPos, _LightTrapezMat, _LightMat);
+ 	Output.PosZW.xy = Output.Pos.zw;
 
-	Out.Tex = input.Tex * TexUnpack;
+	Output.Tex = Input.Tex * _TexUnpack;
 
-	return Out;
-}
-float4 psShadowMap(VS2PS_ShadowMap indata) : COLOR
-{
-#if NVIDIA
-	return 0;
-#else
-	return indata.PosZW.x/indata.PosZW.y;
-#endif
+	return Output;
 }
 
-float4 psShadowMapAlpha(VS2PS_ShadowMapAlpha indata) : COLOR
+float4 ShadowMap_PS(VS2PS_ShadowMap Input) : COLOR
 {
-	const float alphaRef = 96.f/255.f;
-	float4 alpha = tex2D(samplerShadowAlpha, indata.Tex);
-
-#if NVIDIA
-	return alpha;
-#else
-	clip(alpha.a - alphaRef);
-	return indata.PosZW.x/indata.PosZW.y;
-#endif
-}
-/*
-VS2PS_ShadowMap vsShadowMapPoint(APPDATA_ShadowMap input)
-{
-	VS2PS_ShadowMap Out;
-   	   	
-   	// Compensate for lack of UBYTE4 on Geforce3
-	//int4 IndexVector = D3DCOLORtoUBYTE4(input.BlendIndices);
-	//int IndexArray[4] = (int[4])IndexVector;
- 
-  	float4 oPos = input.Pos;//float4(mul(input.Pos, mOneBoneSkinning[IndexArray[0]]), 1);
- 	//float4 vPos = mul(oPos, viewProjMatrix);
- 	Out.Pos = mul(oPos, viewProjMatrix);
- 	
-	Out.Pos.z *= paraboloidValues.x;
-	Out.PosZW = Out.Pos.zwww/10.0 + 0.5;
-	
- 	float d = length(Out.Pos.xyz);
- 	Out.Pos.xyz /= d;
-	Out.Pos.z += 1;
- 	Out.Pos.x /= Out.Pos.z;
- 	Out.Pos.y /= Out.Pos.z;
-	Out.Pos.z = (d*paraboloidZValues.x) + paraboloidZValues.y;
-	Out.Pos.w = 1;
- 	
-//SHADOW
-// TBD: mul matrices on CPU
- 	float4 unpackPos = input.Pos * PosUnpack;
-//	matrix m = mul( vpLightMat, vpLightTrapezMat );
-	Out.Pos = mul( float4(unpackPos.xyz, 1.0), vpLightMat );	
-	Out.PosZW.xy = Out.Pos.zw;
-//\SHADOW
-
-	return Out;
+	#if NVIDIA
+		return 0;
+	#else
+		return Input.PosZW.x / Input.PosZW.y;
+	#endif
 }
 
-float4 psShadowMapPoint(VS2PS_ShadowMap indata) : COLOR
+float4 ShadowMap_Alpha_PS(VS2PS_ShadowMap_Alpha Input) : COLOR
 {
-#if NVIDIA
-	return 0;
-#else
-//SHADOW
-;;	return indata.PosZW.x/indata.PosZW.y;
-//\SHADOW
-#endif
-
-	clip(indata.PosZW.x-0.5);
-	return indata.PosZW.x - 0.5;
-}*/
-
-#if NVIDIA
-	PixelShader psShadowMap_Compiled = compile ps_2_a psShadowMap();
-	PixelShader psShadowMapAlpha_Compiled = compile ps_2_a psShadowMapAlpha();
-#else
-	PixelShader psShadowMap_Compiled = compile ps_2_a psShadowMap();
-	PixelShader psShadowMapAlpha_Compiled = compile ps_2_a psShadowMapAlpha();
-#endif
+	const float AlphaRef = 96.0f / 255.0f;
+	float4 Alpha = tex2D(Sampler_Shadow_Alpha, Input.Tex);
+	#if NVIDIA
+		return Alpha;
+	#else
+		clip(Alpha.a - AlphaRef);
+		return Input.PosZW.x/Input.PosZW.y;
+	#endif
+}
 
 technique DrawShadowMap
 {
-	pass directionalspot 
+	pass directionalspot
 	{
-#if NVIDIA
-		ColorWriteEnable = 0;//0x0000000F;
-#endif
+		#if NVIDIA
+			ColorWriteEnable = 0; // 0x0000000F;
+		#endif
 
 		AlphaBlendEnable = FALSE;
 		ZEnable = TRUE;
@@ -599,48 +226,43 @@ technique DrawShadowMap
 		ZFunc = LESSEQUAL;
 		ScissorTestEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsShadowMap();
-		PixelShader = (psShadowMap_Compiled);
+		VertexShader = compile vs_3_0 ShadowMap_VS();
+		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
 	pass directionalspotalpha
 	{
-#if NVIDIA
-		ColorWriteEnable = 0;//0x0000000F;
+		#if NVIDIA
+			ColorWriteEnable = 0; // 0x0000000F;
+			AlphaTestEnable = TRUE;
+			AlphaRef = 96;
+			AlphaFunc = GREATER;
+		#endif
 
-		AlphaTestEnable = TRUE;
-		AlphaRef = 96;
-		AlphaFunc = GREATER;
-#endif
-
-CullMode = CW;
-
+		CullMode = CW;
 		AlphaBlendEnable = FALSE;
-		
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
-
 		ScissorTestEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsShadowMapAlpha();
-		PixelShader = (psShadowMapAlpha_Compiled);
+		VertexShader = compile vs_3_0 ShadowMap_Alpha_VS();
+		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
-	
-	pass point_ 
+
+	pass point_
 	{
-#if NVIDIA
-		ColorWriteEnable = 0;//0x0000000F;
-#endif
+		#if NVIDIA
+			ColorWriteEnable = 0; // 0x0000000F;
+		#endif
 
 		AlphaBlendEnable = FALSE;
-
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ScissorTestEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsShadowMap();
-		PixelShader = (psShadowMap_Compiled);
+		VertexShader = compile vs_3_0 ShadowMap_VS();
+		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 }
 //#endif
@@ -649,11 +271,11 @@ CullMode = CW;
 // but it is kept for back-compatibility with original BF2
 technique DrawShadowMapNV
 {
-	pass directionalspot 
+	pass directionalspot
 	{
-#if NVIDIA
-		ColorWriteEnable = 0;//0x0000000F;
-#endif
+		#if NVIDIA
+			ColorWriteEnable = 0; // 0x0000000F;
+		#endif
 
 		AlphaBlendEnable = FALSE;
 		ZEnable = TRUE;
@@ -661,56 +283,43 @@ technique DrawShadowMapNV
 		ZFunc = LESSEQUAL;
 		ScissorTestEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsShadowMap();
-		PixelShader = (psShadowMap_Compiled);
+		VertexShader = compile vs_3_0 ShadowMap_VS();
+		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 
 	pass directionalspotalpha
 	{
-#if NVIDIA
-		ColorWriteEnable = 0;//0x0000000F;
+		#if NVIDIA
+			ColorWriteEnable = 0; // 0x0000000F;
+			AlphaTestEnable = TRUE;
+			AlphaRef = 96;
+			AlphaFunc = GREATER;
+		#endif
 
-		AlphaTestEnable = TRUE;
-		AlphaRef = 96;
-		AlphaFunc = GREATER;
-#endif
-
-CullMode = CW;
+		CullMode = CW;
 
 		AlphaBlendEnable = FALSE;
-		
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
-
 		ScissorTestEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsShadowMapAlpha();
-		PixelShader = (psShadowMapAlpha_Compiled);
+		VertexShader = compile vs_3_0 ShadowMap_Alpha_VS();
+		PixelShader = compile ps_3_0 ShadowMap_Alpha_PS();
 	}
-	
+
 	pass point_
 	{
-#if NVIDIA
-		ColorWriteEnable = 0;//0x0000000F;
-#endif
+		#if NVIDIA
+			ColorWriteEnable = 0; // 0x0000000F;
+		#endif
 
 		AlphaBlendEnable = FALSE;
-
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ScissorTestEnable = TRUE;
 
-		VertexShader = compile vs_2_a vsShadowMap();
-		PixelShader = (psShadowMap_Compiled);
+		VertexShader = compile vs_3_0 ShadowMap_VS();
+		PixelShader = compile ps_3_0 ShadowMap_PS();
 	}
 }
-
-/*
-#include "shaders/StaticMesh_nv3x.fx"
-#include "shaders/StaticMesh_nv3xpp.fx"
-#include "shaders/StaticMesh_r3x0.fx"
-#include "shaders/StaticMesh_editor.fx"
-#include "shaders/StaticMesh_debug.fx"
-#include "shaders/StaticMesh_lightmapgen.fx"
-*/

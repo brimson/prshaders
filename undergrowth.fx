@@ -1,24 +1,25 @@
-float4x4	worldViewProj					: WorldViewProjection;
-float4x4	worldView						: WorldView;
-float4		posOffsetAndScale				: PosOffsetAndScale;
-float2		sinCos							: SinCos;
-float4		terrainTexCoordScaleAndOffset	: TerrainTexCoordScaleAndOffset;
-float3		cameraPos						: CameraPos;
-float4		fadeAndHeightScaleOffset		: FadeAndHeightScaleOffset;
-float4		swayOffsets[16]					: SwayOffset;
-float4		vShadowTexCoordScaleAndOffset	: ShadowTexCoordScaleAndOffset;
-float4		vSunColor						: SunColor;
-float4		vGIColor						: GIColor;
-float4      pointLightPosAtten[4]           : PointLightPosAtten;
-float4      pointLightColor[4]              : PointLightColor;
-int         alphaRefValue                   : AlphaRef;
-float1		lightingScale					: LightingScale;
 
-float4		Transparency_x8	: TRANSPARENCY_X8;
+uniform float4x4 _WorldViewProj : WorldViewProjection;
+uniform float4x4 _WorldView : WorldView;
+uniform float4 _PosOffsetAndScale : PosOffsetAndScale;
+uniform float2 _SinCos : SinCos;
+uniform float4 _TerrainTexCoordScaleAndOffset : TerrainTexCoordScaleAndOffset;
+uniform float3 _CameraPos : CameraPos;
+uniform float4 _FadeAndHeightScaleOffset : FadeAndHeightScaleOffset;
+uniform float4 _SwayOffsets[16] : SwayOffset;
+uniform float4 _ShadowTexCoordScaleAndOffset : ShadowTexCoordScaleAndOffset;
+uniform float4 _SunColor : SunColor;
+uniform float4 _GIColor : GIColor;
+uniform float4 _PointLightPosAtten[4] : PointLightPosAtten;
+uniform float4 _PointLightColor[4] : PointLightColor;
+uniform int _AlphaRefValue : AlphaRef;
+uniform float _LightingScale : LightingScale;
+
+uniform float4 _Transparency_x8 : TRANSPARENCY_X8;
 
 #if NVIDIA
-#define _CUSTOMSHADOWSAMPLER_ s3
-#define _CUSTOMSHADOWSAMPLERINDEX_ 3
+	#define _CUSTOMSHADOWSAMPLER_ s3
+	#define _CUSTOMSHADOWSAMPLERINDEX_ 3
 #endif
 
 #define FH2_ALPHAREF 127
@@ -26,13 +27,13 @@ float4		Transparency_x8	: TRANSPARENCY_X8;
 string Category = "Effects\\Lighting";
 #include "shaders\racommon.fx"
 
-texture texture0 : TEXLAYER0;
-texture texture1 : TEXLAYER1;
-texture texture2 : TEXLAYER2;
+uniform texture Texture_0 : TEXLAYER0;
+uniform texture Texture_1 : TEXLAYER1;
+uniform texture Texture_2 : TEXLAYER2;
 
-sampler2D sampler0 = sampler_state
+sampler2D Sampler_0 = sampler_state
 {
-	Texture = <texture0>;
+	Texture = <Texture_0>;
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -40,18 +41,19 @@ sampler2D sampler0 = sampler_state
 	AddressV = CLAMP;
 };
 
-sampler2D sampler1 = sampler_state
+sampler2D Sampler_1 = sampler_state
 {
-	Texture = <texture1>;
+	Texture = <Texture_1>;
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };
-sampler2D sampler2 = sampler_state
+
+sampler2D Sampler_2 = sampler_state
 {
-	Texture = <texture2>;
+	Texture = <Texture_2>;
 	MipFilter = LINEAR;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
@@ -63,879 +65,591 @@ struct APP2VS
 {
 	float4 Pos : POSITION;
 	float2 TexCoord : TEXCOORD0;
-    float4 Packed : COLOR;
+	float4 Packed : COLOR;
 };
 
 struct APP2VS_Simple
 {
 	float4 Pos : POSITION;
 	float2 TexCoord : TEXCOORD0;
-    float4 Packed : COLOR;    
-    float4 TerrainColormap : COLOR1;
-    float4 TerrainLightmap : COLOR2;
+	float4 Packed : COLOR;
+	float4 TerrainColormap : COLOR1;
+	float4 TerrainLightmap : COLOR2;
 };
 
 struct VS2PS
 {
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float2 Tex1 : TEXCOORD1;
-    float2 Tex2 : TEXCOORD2;
-    float4 TexShadow : TEXCOORD3; 
-    float  Fog	: FOG;
-    float4 LightAndScale : COLOR0;    
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
+	float2 Tex1 : TEXCOORD1;
+	float2 Tex2 : TEXCOORD2;
+	float4 TexShadow : TEXCOORD3;
+	float4 LightAndScale : COLOR0;
+	float Fog : FOG;
 };
 
-struct VS2PS_Simple
+float4 CalcPos(APP2VS Input)
 {
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-    float4 TexShadow : TEXCOORD3; 
-    float  Fog	: FOG;
-    float4 LightAndScale : COLOR1;
-    float3 SunLight : TEXCOORD1;
-    float3 TerrainColor : COLOR0;
-};
+	float4 Pos = float4((Input.Pos.xyz / 32767.0 * _PosOffsetAndScale.w), 1.0);
+	Pos.xz += _SwayOffsets[Input.Packed.z * 255].xy * Input.Packed.y * 3.0f;
+	Pos.xyz += _PosOffsetAndScale.xyz;
 
-struct VS2PS_ZOnly
-{
-    float4 Pos : POSITION;
-    float2 Tex0 : TEXCOORD0;
-};
-
-VS2PS_ZOnly VShader_ZOnly(APP2VS indata)
-{	
-	VS2PS_ZOnly outdata = (VS2PS_ZOnly)0;
-	
-	float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w), 1.0);
-	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
-	pos.xyz += posOffsetAndScale.xyz;
-
- 	float3 vec = pos.xyz - cameraPos;
- 	float dist = sqrt(dot(vec, vec));
-
- 	float viewDistance = fadeAndHeightScaleOffset.x;
-	float fadeFactor = fadeAndHeightScaleOffset.y;
-
-	float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
-	pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
-	
-	outdata.Pos = mul(pos, worldViewProj);
- 	outdata.Tex0 = indata.TexCoord / 32767.0;
- 	 	 	
-	return outdata;
+	float Dist = length(Pos.xyz - _CameraPos);
+	float ViewDistance = _FadeAndHeightScaleOffset.x;
+	float FadeFactor = _FadeAndHeightScaleOffset.y;
+	float HeightScale = saturate((ViewDistance - Dist) * FadeFactor);
+	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
+	return Pos;
 }
 
-
-VS2PS VShader(
-	APP2VS indata, 
-	uniform int lightCount,
-	uniform bool shadowmapEnable)
+VS2PS Undergrowth_VS(APP2VS Input, uniform int LightCount, uniform bool ShadowMapEnable)
 {
-	VS2PS outdata = (VS2PS)0;
-	
-	float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w), 1.0);
-	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
-	pos.xyz += posOffsetAndScale.xyz;
+	VS2PS Output = (VS2PS)0;
 
- 	float3 vec = pos.xyz - cameraPos;
- 	float dist = sqrt(dot(vec, vec));
+	float4 Pos = CalcPos(Input);
 
- 	float viewDistance = fadeAndHeightScaleOffset.x;
-	float fadeFactor = fadeAndHeightScaleOffset.y;
+	Output.LightAndScale.w = Input.Packed.w * 0.5;
 
-	float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
-	pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
+	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.Tex0 = Input.TexCoord / 32767.0;
+	Output.Tex1.xy = Pos.xz*_TerrainTexCoordScaleAndOffset.xy + _TerrainTexCoordScaleAndOffset.zw;
+	Output.Tex2 = Output.Tex1;
 
- 	outdata.LightAndScale.w = indata.Packed.w * 0.5;
- 	
-	outdata.Pos = mul(pos, worldViewProj);
- 	outdata.Tex0 = indata.TexCoord / 32767.0;
- 	outdata.Tex1.xy = pos.xz*terrainTexCoordScaleAndOffset.xy + terrainTexCoordScaleAndOffset.zw;
- 	outdata.Tex2 = outdata.Tex1;
- 	
- 	if (shadowmapEnable)
- 	{
- 		outdata.TexShadow = Calc_Shadow_Projection(pos);
- 	}
- 		
- 	outdata.Fog = Calc_Fog(outdata.Pos.w);
- 	
- 	outdata.LightAndScale.rgb = 0;
- 	for (int i=0; i<lightCount; i++)
- 	{
- 		float3 lightVec = pos.xyz - pointLightPosAtten[i].xyz;
-		outdata.LightAndScale.rgb  += saturate(1.0 - length(lightVec)*length(lightVec)*pointLightPosAtten[i].w) * pointLightColor[i];
-	}
- 	 	 	
-	return outdata;
-}
+	Output.TexShadow = (ShadowMapEnable) ? calcShadowProjection(Pos) : 0.0;
 
-float4 PShader(
-	VS2PS indata,
-	uniform bool pointLightEnable,
-	uniform bool shadowmapEnable,
-	uniform sampler2D colormap,
-	uniform sampler2D terrainColormap,
-	uniform sampler2D terrainLightmap ) : COLOR
-{
-	float4 base = tex2D(colormap, indata.Tex0);
-	float4 terrainColor;
-    
-    if (FogColor.r < 0.01)
-    {
-        terrainColor.rgb = 0.333;
-    }
-    else
-    {
-        terrainColor.rgb = tex2D(terrainColormap, indata.Tex1);
-    }
-	terrainColor.rgb = lerp(terrainColor.rgb, 1, indata.LightAndScale.w);
-	float3 terrainLightMap = tex2D(terrainLightmap, indata.Tex2);
-	float4 terrainShadow;
-	if (shadowmapEnable)
+	Output.LightAndScale.rgb = 0.0;
+
+	for (int i = 0; i < LightCount; i++)
 	{
-		terrainShadow = Get_Shadow_Factor(ShadowMapSampler, indata.TexShadow, 1);
+		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
+		Output.LightAndScale.rgb += saturate(1.0 - pow(length(LightVec), 2.0) *_PointLightPosAtten[i].w) * _PointLightColor[i];
 	}
-	else
-		terrainShadow = 1;
 
-	float3 pointColor;
-	if (pointLightEnable)
-		pointColor = indata.LightAndScale.rgb * 0.125;
-	else
-		pointColor = 0;
-		
-	float3 terrainLight = (terrainLightMap.y * vSunColor.rgb * terrainShadow.rgb + pointColor) * 2 + (terrainLightMap.z * vGIColor.rgb);
+	Output.LightAndScale = saturate(Output.LightAndScale);
+	Output.Fog = saturate(calcFog(Output.Pos.w));
 
-	terrainColor.rgb = base.rgb * terrainColor.rgb * terrainLight.rgb * 2;
-	terrainColor.a = base.a * Transparency_x8.a * 4;
-	terrainColor.a = terrainColor.a + terrainColor.a;
-	
-	return terrainColor;
+	return Output;
 }
 
-
-VS2PS_Simple VShader_Simple(
-	APP2VS_Simple indata, 
-	uniform int lightCount,
-	uniform bool shadowmapEnable)
+float4 Undergrowth_PS
+(
+	VS2PS Input,
+	uniform bool PointLightEnable,
+	uniform bool ShadowMapEnable,
+	uniform sampler2D ColorMap,
+	uniform sampler2D TerrainColormap,
+	uniform sampler2D TerrainLightmap
+) : COLOR
 {
-	VS2PS_Simple outdata = (VS2PS_Simple)0;
-	
-	float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
-	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+	float4 Base = tex2D(ColorMap, Input.Tex0);
 
- 	float3 vec = pos.xyz - cameraPos;
- 	float dist = sqrt(dot(vec, vec));
- 	
- 	float viewDistance = fadeAndHeightScaleOffset.x;
-	float fadeFactor = fadeAndHeightScaleOffset.y;
+	float4 TerrainColor = (FogColor.r < 0.01) ? 0.333 : tex2D(TerrainColormap, Input.Tex1);
+	TerrainColor.rgb = lerp(TerrainColor.rgb, 1.0, Input.LightAndScale.w);
 
-	float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
-	pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
-  	
-	outdata.Pos = mul(pos, worldViewProj);
- 	outdata.Tex0 = indata.TexCoord / 32767.0;
- 	
- 	if (shadowmapEnable)
- 	{
- 		outdata.TexShadow = Calc_Shadow_Projection(pos);
- 	}
- 		
- 	outdata.Fog = Calc_Fog(outdata.Pos.w);
+	float3 TerrainLightMap = tex2D(TerrainLightmap, Input.Tex2);
+	float4 TerrainShadow = (ShadowMapEnable) ? getShadowFactor(ShadowMapSampler, Input.TexShadow, 1) : 1.0;
 
-	float3 light = 0;
+	float3 PointColor = (PointLightEnable) ? Input.LightAndScale.rgb * 0.125 : 0.0;
+	float3 TerrainLight = (TerrainLightMap.y * _SunColor.rgb * TerrainShadow.rgb + PointColor) * 2.0 + (TerrainLightMap.z * _GIColor.rgb);
 
-	light += indata.TerrainLightmap.z * vGIColor;
+	TerrainColor.rgb = Base.rgb * TerrainColor.rgb * TerrainLight.rgb * 2.0;
+	TerrainColor.a = Base.a * _Transparency_x8.a * 4.0;
+	TerrainColor.a = TerrainColor.a + TerrainColor.a;
 
- 	for (int i=0; i<lightCount; i++)
- 	{
- 		float3 lightVec = pos.xyz - pointLightPosAtten[i].xyz;
-		light += saturate(1.0 - length(lightVec)*length(lightVec)*pointLightPosAtten[i].w) * pointLightColor[i];
-	}
-	
-	if (shadowmapEnable)
-	{
-		outdata.LightAndScale.rgb = light;
- 		outdata.LightAndScale.w = indata.Packed.w;
-		outdata.SunLight = indata.TerrainLightmap.y * vSunColor * 2;
-		outdata.TerrainColor = lerp(indata.TerrainColormap, float4(1,1,1,1), indata.Packed.w);
- 	}
- 	else
- 	{
-		light += indata.TerrainLightmap.y * vSunColor * 2;
+	// Fog
+	TerrainColor.rgb = lerp(FogColor.rgb, TerrainColor.rgb, Input.Fog);
 
-		outdata.TerrainColor = lerp(indata.TerrainColormap, float4(1,1,1,1), indata.Packed.w);
-		outdata.TerrainColor *= light; 	
- 	}	
-	
-	return outdata;
+	return TerrainColor;
 }
 
-VS2PS_ZOnly VShader_ZOnly_Simple(APP2VS_Simple indata)
-{	
-	VS2PS_ZOnly outdata = (VS2PS_ZOnly)0;
-	
-	float4 pos = float4((indata.Pos.xyz / 32767 * posOffsetAndScale.w) + posOffsetAndScale.xyz, 1.0);
-	pos.xz += swayOffsets[indata.Packed.z*255].xy * indata.Packed.y * 3.0f;
+// { StreamNo, DataType, Usage, UsageIdx }
+// DECLARATION_END => End macro
+#define VERTEX_DECLARATION_UNDERGROWTH \
+	int Declaration[] = \
+	{ \
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 }, \
+		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 }, \
+		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 }, \
+		DECLARATION_END \
+	}; \
 
- 	float3 vec = pos.xyz - cameraPos;
- 	float dist = sqrt(dot(vec, vec));
- 	
- 	float viewDistance = fadeAndHeightScaleOffset.x;
-	float fadeFactor = fadeAndHeightScaleOffset.y;
-
-	float heightScale =  clamp((viewDistance-dist)*fadeFactor, 0, 1);
-	pos.y = (indata.Pos.y / 32767 * posOffsetAndScale.w)*heightScale + posOffsetAndScale.y + (indata.Pos.w / 32767 * posOffsetAndScale.w);
-  	
-	outdata.Pos = mul(pos, worldViewProj);
- 	outdata.Tex0 = indata.TexCoord / 32767.0;
- 	 	 	
-	return outdata;
-}
-
-
-float4 PShader_Simple(
-	VS2PS_Simple indata,
-	uniform bool pointLightEnable,
-	uniform bool shadowmapEnable,
-	uniform sampler2D colormap ) : COLOR
-{
-	float4 base = tex2D(colormap, indata.Tex0);
-	float3 color;
-
-	if (shadowmapEnable)
-	{
-		float4 terrainShadow = Get_Shadow_Factor(ShadowMapSampler, indata.TexShadow, 1);
-
-		float3 light = indata.SunLight * terrainShadow.xyz;
-		light += indata.LightAndScale.rgb;
-
-		color = base.rgb * indata.TerrainColor * light * 2;
-	}
-	else
-	{
-		color = base.rgb * indata.TerrainColor * 2;
-	}
-
-	float4 outcol;
-    if (FogColor.r < 0.01)
-    {
-        outcol.rgb = float3(lerp(0.43,0.17,color.b),1,0);
-    }
-    else
-    {
-        outcol.rgb = color;
-    }
-	outcol.a = base.a * Transparency_x8.a * 4;
-	outcol.a = outcol.a + outcol.a;
-	return outcol;
-}
-
-float4 PShader_ZOnly(
-	VS2PS indata,
-	uniform sampler2D colormap) : COLOR
-{
-	float4 base = tex2D(colormap, indata.Tex0);
-	base.a *= Transparency_x8.a * 4;
-	base.a += base.a;
-	return base;
-}
-
+#define RENDERSTATES_UNDERGROWTH \
+	CullMode = CW; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = FH2_ALPHAREF; \
+	AlphaFunc = GREATER; \
+	ZFunc = LESS; \
 
 technique t0_l0
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;	
-		ZFunc				= Less;
-		
-		VertexShader		= compile vs_2_a VShader(0, false);
-		PixelShader			= compile ps_2_a PShader(false, false, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(0, false);
+		PixelShader = compile ps_3_0 Undergrowth_PS(false, false, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l1
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(1, false);
-		PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(1, false);
+		PixelShader = compile ps_3_0 Undergrowth_PS(true, false, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l2
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(2, false);
-		PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(2, false);
+		PixelShader = compile ps_3_0 Undergrowth_PS(true, false, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l3
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;		
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(3, false);
-		PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(3, false);
+		PixelShader = compile ps_3_0 Undergrowth_PS(true, false, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l4
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;		
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(4, false);
-		PixelShader			= compile ps_2_a PShader(true, false, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(4, false);
+		PixelShader = compile ps_3_0 Undergrowth_PS(true, false, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l0_ds
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-		
-		VertexShader		= compile vs_2_a VShader(0, true);
-		PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(0, true);
+		PixelShader = compile ps_3_0 Undergrowth_PS(false, true, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l1_ds
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(1, true);
-		PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(1, true);
+		PixelShader = compile ps_3_0 Undergrowth_PS(false, true, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l2_ds
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(2, true);
-		PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(2, true);
+		PixelShader = compile ps_3_0 Undergrowth_PS(false, true, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l3_ds
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(3, true);
-		PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(3, true);
+		PixelShader = compile ps_3_0 Undergrowth_PS(false, true, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
 technique t0_l4_ds
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader(4, true);
-		PixelShader			= compile ps_2_a PShader(false, true, sampler0, sampler1, sampler2);
+		RENDERSTATES_UNDERGROWTH
+		VertexShader = compile vs_3_0 Undergrowth_VS(4, true);
+		PixelShader = compile ps_3_0 Undergrowth_PS(false, true, Sampler_0, Sampler_1, Sampler_2);
 	}
 }
 
-////////////////////////
+
+
+
+/*
+	Undergrowth simple shaders
+*/
+
+struct VS2PS_Simple
+{
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
+	float4 TexShadow : TEXCOORD1;
+	float3 SunLight : TEXCOORD2;
+	float4 LightAndScale : COLOR0;
+	float3 TerrainColor : COLOR1;
+	float Fog : FOG;
+};
+
+float4 CalcPos_Simple(APP2VS_Simple Input)
+{
+	float4 Pos = float4((Input.Pos.xyz / 32767.0 * _PosOffsetAndScale.w) + _PosOffsetAndScale.xyz, 1.0);
+	Pos.xz += _SwayOffsets[Input.Packed.z * 255].xy * Input.Packed.y * 3.0f;
+
+	float Dist = length(Pos.xyz - _CameraPos);
+	float ViewDistance = _FadeAndHeightScaleOffset.x;
+	float FadeFactor = _FadeAndHeightScaleOffset.y;
+
+	float HeightScale = saturate((ViewDistance - Dist) * FadeFactor);
+	Pos.y = (Input.Pos.y / 32767.0 * _PosOffsetAndScale.w) * HeightScale + _PosOffsetAndScale.y + (Input.Pos.w / 32767.0 * _PosOffsetAndScale.w);
+	return Pos;
+}
+
+VS2PS_Simple Undergrowth_Simple_VS(APP2VS_Simple Input, uniform int LightCount, uniform bool ShadowMapEnable)
+{
+	VS2PS_Simple Output = (VS2PS_Simple)0;
+
+	float4 Pos = CalcPos_Simple(Input);
+
+	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.Tex0 = Input.TexCoord / 32767.0;
+
+	if (ShadowMapEnable)
+	{
+		Output.TexShadow = calcShadowProjection(Pos);
+	}
+
+	float3 Light = 0.0;
+	Light += Input.TerrainLightmap.z * _GIColor;
+
+	for (int i = 0; i<LightCount; i++)
+	{
+		float3 LightVec = Pos.xyz - _PointLightPosAtten[i].xyz;
+		Light += saturate(1.0 - pow(length(LightVec), 2.0) * _PointLightPosAtten[i].w) * _PointLightColor[i];
+	}
+
+	if (ShadowMapEnable)
+	{
+		Output.LightAndScale.rgb = Light;
+		Output.LightAndScale.w = Input.Packed.w;
+		Output.SunLight = Input.TerrainLightmap.y * _SunColor * 2.0;
+		Output.TerrainColor = lerp(Input.TerrainColormap, 1.0, Input.Packed.w);
+	}
+	else
+	{
+		Light += Input.TerrainLightmap.y * _SunColor * 2.0;
+		Output.TerrainColor = lerp(Input.TerrainColormap, 1.0, Input.Packed.w);
+		Output.TerrainColor *= Light;
+	}
+
+	Output.LightAndScale = saturate(Output.LightAndScale);
+	Output.TerrainColor = saturate(Output.TerrainColor);
+	Output.Fog = saturate(calcFog(Output.Pos.w));
+
+	return Output;
+}
+
+float4 Undergrowth_Simple_PS
+(
+	VS2PS_Simple Input,
+	uniform bool PointLightEnable,
+	uniform bool ShadowMapEnable,
+	uniform sampler2D ColorMap
+) : COLOR
+{
+	float4 Base = tex2D(ColorMap, Input.Tex0);
+	float3 LightColor;
+
+	if (ShadowMapEnable)
+	{
+		float4 TerrainShadow = getShadowFactor(ShadowMapSampler, Input.TexShadow, 1);
+		float3 Light = Input.SunLight * TerrainShadow.xyz;
+		Light += Input.LightAndScale.rgb;
+		LightColor = Base.rgb * Input.TerrainColor * Light * 2.0;
+	}
+	else
+	{
+		LightColor = Base.rgb * Input.TerrainColor * 2.0;
+	}
+
+	float4 OutColor = 0.0;
+	OutColor.rgb = (FogColor.r < 0.01) ? float3(lerp(0.43, 0.17, LightColor.b), 1.0, 0.0) : LightColor;
+	OutColor.a = Base.a * _Transparency_x8.a * 4.0;
+	OutColor.a = OutColor.a + OutColor.a;
+
+	// Fog
+	OutColor.rgb = lerp(FogColor.rgb, OutColor.rgb, Input.Fog);
+
+	return OutColor;
+}
+
+// { StreamNo, DataType, Usage, UsageIdx }
+// DECLARATION_END => End macro
+#define VERTEX_DECLARATION_UNDERGROWTH_SIMPLE \
+	int Declaration[] = \
+	{ \
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 }, \
+		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 }, \
+		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 }, \
+		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 }, \
+		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 }, \
+		DECLARATION_END \
+	}; \
+
+#define RENDERSTATES_UNDERGROWTH_SIMPLE \
+	CullMode = CW; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = FH2_ALPHAREF; \
+	AlphaFunc = GREATER; \
+	ZFunc = LESS; \
 
 technique t0_l0_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;	
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(0, false);
-		PixelShader			= compile ps_2_a PShader_Simple(false, false, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(0, false);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(false, false, Sampler_0);
 	}
 }
 
 technique t0_l1_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;		
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(1, false);
-		PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(1, false);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false, Sampler_0);
 	}
 }
 
 technique t0_l2_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(2, false);
-		PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(2, false);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false, Sampler_0);
 	}
 }
 
 technique t0_l3_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;				
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(3, false);
-		PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(3, false);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false, Sampler_0);
 	}
 }
 
 technique t0_l4_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(4, false);
-		PixelShader			= compile ps_2_a PShader_Simple(true, false, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(4, false);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, false, Sampler_0);
 	}
 }
 
 technique t0_l0_ds_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(0, true);
-		PixelShader			= compile ps_2_a PShader_Simple(false, true, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(0, true);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(false, true, Sampler_0);
 	}
 }
 
 technique t0_l1_ds_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;		
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(1, true);
-		PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(1, true);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true, Sampler_0);
 	}
 }
 
 technique t0_l2_ds_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;		
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(2, true);
-		PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(2, true);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true, Sampler_0);
 	}
 }
 
 technique t0_l3_ds_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(3, true);
-		PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(3, true);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true, Sampler_0);
 	}
 }
 
 technique t0_l4_ds_simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 1 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 2 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_SIMPLE
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= true;
-		ZFunc				= Less;
-
-		VertexShader		= compile vs_2_a VShader_Simple(4, true);
-		PixelShader			= compile ps_2_a PShader_Simple(true, true, sampler0);
+		RENDERSTATES_UNDERGROWTH_SIMPLE
+		VertexShader = compile vs_3_0 Undergrowth_Simple_VS(4, true);
+		PixelShader = compile ps_3_0 Undergrowth_Simple_PS(true, true, Sampler_0);
 	}
 }
 
+
+
+
+/*
+	Undergrowth ZOnly shaders
+*/
+
+struct VS2PS_ZOnly
+{
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
+};
+
+VS2PS_ZOnly Undergrowth_ZOnly_Simple_VS(APP2VS_Simple Input)
+{
+	VS2PS_ZOnly Output = (VS2PS_ZOnly)0;
+	float4 Pos = CalcPos_Simple(Input);
+	Output.Pos = mul(Pos, _WorldViewProj);
+ 	Output.Tex0 = Input.TexCoord / 32767.0;
+	return Output;
+}
+
+VS2PS_ZOnly Undergrowth_ZOnly_VS(APP2VS Input)
+{
+	VS2PS_ZOnly Output = (VS2PS_ZOnly)0;
+	float4 Pos = CalcPos(Input);
+	Output.Pos = mul(Pos, _WorldViewProj);
+	Output.Tex0 = Input.TexCoord / 32767.0;
+	return Output;
+}
+
+float4 Undergrowth_ZOnly_PS(VS2PS Input, uniform sampler2D ColorMap) : COLOR
+{
+	float4 Base = tex2D(ColorMap, Input.Tex0);
+	Base.a *= _Transparency_x8.a * 4.0;
+	Base.a += Base.a;
+	return Base;
+}
+
+// { StreamNo, DataType, Usage, UsageIdx }
+// DECLARATION_END => End macro
+#define VERTEX_DECLARATION_UNDERGROWTH_ZONLY \
+	int Declaration[] = \
+	{ \
+		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 }, \
+		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 }, \
+		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 }, \
+		DECLARATION_END \
+	}; \
+
+#define RENDERSTATES_UNDERGROWTH_ZONLY \
+	CullMode = CW; \
+	AlphaTestEnable = TRUE; \
+	AlphaRef = FH2_ALPHAREF; \
+	AlphaFunc = GREATER; \
+	ColorWriteEnable = 0; \
+	ZFunc = LESS; \
+
 technique ZOnly
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_ZONLY
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= false;
-		ColorWriteEnable	= 0;
-		ZFunc				= Less;
-		
-		VertexShader		= compile vs_2_a VShader_ZOnly();
-		PixelShader			= compile ps_2_a PShader_ZOnly(sampler0);
+		RENDERSTATES_UNDERGROWTH_ZONLY
+		VertexShader = compile vs_3_0 Undergrowth_ZOnly_VS();
+		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS(Sampler_0);
 	}
 }
 
 technique ZOnly_Simple
 <
-	int Declaration[] = 
-	{
-		// StreamNo, DataType, Usage, UsageIdx
-		{ 0, D3DDECLTYPE_SHORT4, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, D3DDECLTYPE_SHORT2, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, D3DDECLTYPE_D3DCOLOR, D3DDECLUSAGE_COLOR, 0 },
-		DECLARATION_END	// End macro		
-	};
+	VERTEX_DECLARATION_UNDERGROWTH_ZONLY
 >
 {
 	pass Normal
 	{
-		CullMode			= CW;
-		AlphaTestEnable		= true;
-		AlphaRef			= FH2_ALPHAREF;
-		AlphaFunc			= GREATER;		
-		FogEnable			= false;
-		ColorWriteEnable	= 0;
-		ZFunc				= Less;
-		
-		VertexShader		= compile vs_2_a VShader_ZOnly_Simple();
-		PixelShader			= compile ps_2_a PShader_ZOnly(sampler0);
+		RENDERSTATES_UNDERGROWTH_ZONLY
+		VertexShader = compile vs_3_0 Undergrowth_ZOnly_Simple_VS();
+		PixelShader = compile ps_3_0 Undergrowth_ZOnly_PS(Sampler_0);
 	}
 }

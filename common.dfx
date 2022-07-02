@@ -1,10 +1,9 @@
-
 // Fog------
-float4 _FogDistances : _FogDistances : register(vs_1_1, c93);
+float4 fogDistances : fogDistances : register(vs_1_1, c93);
 
-float Calc_Fog(float W)
+float calcFog(float w)
 {
 	// ((-1/Range)*d)+End/Range = (End-d)/Range
-	return ((_FogDistances.y - W) / (_FogDistances.y - _FogDistances.x));
+	return ((fogDistances.y - w) / (fogDistances.y - fogDistances.x));
 }
 //----------

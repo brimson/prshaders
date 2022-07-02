@@ -1,373 +1,289 @@
 #line 2 "TreeMeshBillboardGenerator.fx"
 
-float4x4 mvpMatrix : WorldViewProjection;// : register(vs_1_1, c0);  
-float4x4 worldIMatrix : WorldI;// : register(vs_1_1, c4);
-float4x4 viewInverseMatrix : ViewI; //: register(vs_1_1, c8);
-//float4x3 mOneBoneSkinning[26]: matONEBONESKINNING; //: register(vs_1_1, c15);
+/*
+	[Uniform data from app]
+*/
+
+uniform float4x4 _WorldViewProj : WorldViewProjection; // : register(vs_3_0, c0);
+uniform float4x4 _WorldInverseMat : WorldI; // : register(vs_3_0, c4);
+uniform float4x4 _ViewInverseMat : ViewI; // : register(vs_3_0, c8);
+// uniform float4x3 _OneBoneSkinning[26] : matONEBONESKINNING; // : register(vs_3_0, c15);
 
 // Sprite parameters
-float4x4 worldViewMatrix : WorldView;
-float4x4 projMatrix : Projection;
-float4 spriteScale :  SpriteScale;
-float4 shadowSpherePoint : ShadowSpherePoint;
-float4 boundingboxScaledInvGradientMag : BoundingboxScaledInvGradientMag;
-float4 invBoundingBoxScale : InvBoundingBoxScale;
-float4 shadowColor : ShadowColor;
-float4 lightColor : LightColor;
+uniform float4x4 _WorldViewMat : WorldView;
+uniform float4x4 _ProjMat : Projection;
+uniform float4 _SpriteScale :  SpriteScale;
+uniform float4 _ShadowSpherePoint : ShadowSpherePoint;
+uniform float4 _BoundingboxScaledInvGradientMag : BoundingboxScaledInvGradientMag;
+uniform float4 _InvBoundingBoxScale : InvBoundingBoxScale;
+uniform float4 _ShadowColor : ShadowColor;
+uniform float4 _LightColor : LightColor;
 
-float4 ambColor : Ambient = {0.0f, 0.0f, 0.0f, 1.0f};
-float4 diffColor : Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
-float4 specColor : Specular = {0.0f, 0.0f, 0.0f, 1.0f};
+uniform float4 _AmbColor : Ambient = { 0.0f, 0.0f, 0.0f, 1.0f };
+uniform float4 _DiffColor : Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
+uniform float4 _SpecColor : Specular = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-dword colorWriteEnable : ColorWriteEnable; 
+uniform dword _ColorWriteEnable : ColorWriteEnable;
 
-texture diffuseTexture: TEXLAYER0
+uniform float4 _EyePos : EyePosition = { 0.0f, 0.0f, 1.0f, 0.0f };
+
+uniform float4 _LightPos : LightPosition
 <
-    string File = "default_color.dds";
-    string TextureType = "2D";
->;
-
-texture normalTexture: TEXLAYER1
-<
-    string File = "bumpy_flipped.dds";
-    string TextureType = "2D";
->;
-
-texture colorLUT: TEXLAYER2
-<
-    string File = "default_sdgbmfbf_color_lut.dds";
-    string TextureType = "2D";
->;
-
-//texture normalTexture: NormalMap;
-
-//texture colorLUT: LUTMap;
-float4 eyePos : EyePosition = {0.0f, 0.0f, 1.0f, 0.0f};
-
-float4 lightPos : LightPosition 
-<
-    string Object = "PointLight";
-    string Space = "World";
+	string Object = "PointLight";
+	string Space = "World";
 > = {0.0f, 0.0f, 1.0f, 1.f};
 
+/*
+	[Textures and samplers]
+*/
 
+uniform texture Diffuse_Texture: TEXLAYER0
+<
+	string File = "default_color.dds";
+	string TextureType = "2D";
+>;
 
-struct appdata {
-    float4	Pos : POSITION;    
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float2	TexCoord1 : TEXCOORD1;
-    float4 Tan		: TANGENT;
-};
+uniform texture Normal_Texture: TEXLAYER1
+<
+	string File = "bumpy_flipped.dds";
+	string TextureType = "2D";
+>;
 
-struct appdata2 {
-    float4	Pos : POSITION;    
-    float3	Normal : NORMAL;
-    float2	TexCoord : TEXCOORD0;
-    float2	Width_height : TEXCOORD1;
-    float4  Tan		: TANGENT;
-};
+uniform texture Color_LUT: TEXLAYER2
+<
+	string File = "default_sdgbmfbf_color_lut.dds";
+	string TextureType = "2D";
+>;
 
+// uniform texture Normal_Texture: NormalMap;
+// uniform texture Color_LUT: LUTMap;
 
-struct VS_OUTPUT {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float2 TexCoord2: TEXCOORD1;
-    float4 LightVec	: TEXCOORD2;
-    float4 HalfVec	: TEXCOORD3;  
-    float4 Diffuse 	: COLOR;
-};
-
-struct VS_OUTPUT2 {
-    float4 HPos		: POSITION;
-    float2 TexCoord	: TEXCOORD0;
-    float4 Diffuse 	: COLOR;
-};
-
-sampler diffuseSampler = sampler_state
+sampler Diffuse_Sampler = sampler_state
 {
-	Texture = <diffuseTexture>;
-	//Target = Texture2D;
-	MinFilter = Linear;
-	MagFilter = Linear;
-    AddressU = Wrap;
-    AddressV = Wrap;
+	Texture = <Diffuse_Texture>;
+	// Target = Texture2D;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
-sampler normalSampler = sampler_state
+struct APP2VS
 {
-	Texture = <normalTexture>;
-	//Target = Texture2D;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-    AddressU = Wrap;
-    AddressV = Wrap;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float2 TexCoord : TEXCOORD0;
+	float2 TexCoord1 : TEXCOORD1;
+	float4 Tan : TANGENT;
 };
 
-sampler dummySampler = sampler_state
+
+
+
+struct VS2PS_BumpSpecular_Blinn_1
 {
-	//Target = Texture2D;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
+	float4 HPos : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float2 TexCoord2 : TEXCOORD1;
+	float4 LightVec : TEXCOORD2;
+	float4 HalfVec : TEXCOORD3;
+	float4 Diffuse : COLOR0;
 };
 
-sampler colorLUTSampler = sampler_state
+VS2PS_BumpSpecular_Blinn_1 BumpSpecular_Blinn_1_VS(APP2VS Input)
 {
-    Texture = <colorLUT>;
-	//Target = Texture2D;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
-};
+	VS2PS_BumpSpecular_Blinn_1 Output = (VS2PS_BumpSpecular_Blinn_1)0;
 
-float4 bumpSpecularPixelShaderBlinn1(VS_OUTPUT indata) : COLOR
-{
-    float4 diffuseMap = tex2D(diffuseSampler, indata.TexCoord);
-    return diffuseMap * indata.Diffuse;
-}
-        
-float4 bumpSpecularPixelShaderBlinn1Alpha(VS_OUTPUT indata) : COLOR
-{
-    float4 diffuseMap = tex2D(diffuseSampler, indata.TexCoord);
-    return 1 - diffuseMap.a;
-}
+ 	Output.HPos = mul(Input.Pos, _WorldViewProj);
 
-VS_OUTPUT bumpSpecularVertexShaderBlinn1
-(
-	appdata input,
-	uniform float4x4 WorldViewProj,
-	uniform float4x4 WorldIT,
-	uniform float4x4 ViewInv,
-	uniform float4 LightPos,
-	uniform float4 EyePos
-)
-{
-	VS_OUTPUT Out = (VS_OUTPUT)0;
-   	
- 	Out.HPos = mul(input.Pos, WorldViewProj);
-	
 	// Cross product to create BiNormal
-    float3 binormal = cross(input.Tan.xyz, input.Normal);    
-	binormal = normalize(binormal);
-	
+	float3 BiNormal = cross(Input.Tan.xyz, Input.Normal);
+	BiNormal = normalize(BiNormal);
+
 	// Pass-through texcoords
-	Out.TexCoord = input.TexCoord;
-	Out.TexCoord2 = input.TexCoord;	
-	
-	// Transform Light pos to Object space
-	float3 matsLightDir = float3(0.2f, 0.8f, -0.2f);
-	float3 lightDirObjSpace = mul(-matsLightDir, WorldIT);
-	float3 normalizedLightVec = normalize(lightDirObjSpace);
-	
+	Output.TexCoord = Input.TexCoord;
+	Output.TexCoord2 = Input.TexCoord;
+
+	// Transform Light Pos to Object space
+	float3 MatsLightDir = float3(0.2f, 0.8f, -0.2f);
+	float3 LightDirObjSpace = mul(-MatsLightDir, _WorldInverseMat);
+	float3 NormalizedLightVec = normalize(LightDirObjSpace);
+
 	// TANGENT SPACE LIGHT
 	// This way of geting the tangent space data changes the coordinate system
-	float3 tanLightVec = float3(dot(-normalizedLightVec, input.Tan.xyz),	
-								dot(-normalizedLightVec, binormal), 
-								dot(-normalizedLightVec, input.Normal));
+	float3 TanLightVec = float3(dot(-NormalizedLightVec, Input.Tan.xyz),
+								dot(-NormalizedLightVec, BiNormal),
+								dot(-NormalizedLightVec, Input.Normal));
 
 	// Compress L' in tex2... don't compress, autoclamp >0
-	float3 normalizedTanLightVec = normalize(tanLightVec);
-	Out.LightVec = float4((0.5f + normalizedTanLightVec * 0.5f).xyz, 0.0f);
-	
-	// Transform eye pos to tangent space	
-	float4 matsEyePos = float4(0.0f, 0.0f, 1.0f, 0.0f);
-	float4 worldPos = mul(matsEyePos, ViewInv);
-	//float4 worldPos = mul(EyePos, ViewInv);
-	
-	float3 objPos = mul(float4(worldPos.xyz, 1.0f), WorldIT);
-	float3 tanPos = float3(	dot(objPos,input.Tan.xyz),
-							dot(objPos,binormal),
-							dot(objPos,input.Normal));	
-	
-	float3 halfVector = normalize(normalizedTanLightVec + tanPos);	
+	float3 NormalizedTanLightVec = normalize(TanLightVec);
+	Output.LightVec = float4((0.5f + NormalizedTanLightVec * 0.5f).xyz, 0.0f);
+
+	// Transform eye Pos to tangent space
+	float4 MatsEyePos = float4(0.0f, 0.0f, 1.0f, 0.0f);
+	float4 WorldPos = mul(MatsEyePos, _ViewInverseMat);
+	// float4 WorldPos = mul(_EyePos, _ViewInverseMat);
+
+	float3 ObjPos = mul(float4(WorldPos.xyz, 1.0f), _WorldInverseMat);
+	float3 TanPos = float3(dot(ObjPos, Input.Tan.xyz),
+						   dot(ObjPos, BiNormal),
+						   dot(ObjPos, Input.Normal));
+
+	float3 HalfVec = normalize(NormalizedTanLightVec + TanPos);
 	// Compress H' in tex3... don't compress, autoclamp >0
-	Out.HalfVec = float4((0.5f + -halfVector * 0.5f).xyz, 1.0f);
-	float color = 0.8f + max(0.0f, dot(input.Normal, normalizedLightVec));
-	Out.Diffuse = float4(color, color, color, 1.0f);    
-	
+	Output.HalfVec = float4((0.5f + -HalfVec * 0.5f).xyz, 1.0f);
+	float Color = 0.8f + max(0.0f, dot(Input.Normal, NormalizedLightVec));
+	Output.Diffuse = saturate(float4(float3(Color), 1.0f));
 
-	return Out;
+	return Output;
 }
 
-float4 spritePixelShader(VS_OUTPUT2 indata) : COLOR
+float4 BumpSpecular_Blinn_1_PS(VS2PS_BumpSpecular_Blinn_1 Input) : COLOR
 {
-    float4 diffuseMap = tex2D(diffuseSampler, indata.TexCoord);
-    return diffuseMap * indata.Diffuse;
+	float4 DiffuseMap = tex2D(Diffuse_Sampler, Input.TexCoord);
+	return DiffuseMap * Input.Diffuse;
 }
 
-float4 spritePixelShaderAlpha(VS_OUTPUT2 indata) : COLOR
+float4 BumpSpecular_Blinn_1_Alpha_PS(VS2PS_BumpSpecular_Blinn_1 Input) : COLOR
 {
-    float4 diffuseMap = tex2D(diffuseSampler, indata.TexCoord);
-    return 1 - diffuseMap.a;
+	float4 DiffuseMap = tex2D(Diffuse_Sampler, Input.TexCoord);
+	return 1.0 - DiffuseMap.a;
 }
-
-VS_OUTPUT2 spriteVertexShader
-(
-	appdata2 input,
-	uniform float4x4 WorldView,
-	uniform float4x4 Proj,
-	uniform float4 SpriteScale, 
-	uniform float4 ShadowSpherePoint,
-	uniform float4 InvBoundingBoxScale,
-	uniform float4 BoundingboxScaledInvGradientMag,
-	uniform float4 ShadowColor,
-	uniform float4 LightColor
-)
-{
-	VS_OUTPUT2 Out = (VS_OUTPUT2)0;
-	float4 pos =  mul(input.Pos, WorldView);
-	float4 scaledPos = float4(float2(input.Width_height.xy * SpriteScale.xy), 0, 0) + (pos);
- 	Out.HPos = mul(scaledPos, Proj);
-	Out.TexCoord = input.TexCoord;
-	
-	// lighting calc
-	float4 eyeSpaceSherePoint = mul(ShadowSpherePoint, WorldView);
-	float4 shadowSpherePos = scaledPos * InvBoundingBoxScale;
-	float4 eyeShadowSperePos = eyeSpaceSherePoint * InvBoundingBoxScale;
-	float4 vectorMagnitude = normalize(shadowSpherePos - eyeShadowSperePos); 
-	float shadowFactor = vectorMagnitude * BoundingboxScaledInvGradientMag;
-	shadowFactor = min(shadowFactor,1);
-	float3 shadowColorInt = ShadowColor*(1-shadowFactor);
-	float3 color = LightColor.rgb*shadowFactor+shadowColorInt;
-	Out.Diffuse =  float4(color,1.f);
-	
-	return Out;
-}
-
 
 technique trunk
 {
-	pass p0 
-	{		
-		ZEnable = true;
-		//ZWriteEnable = true;
-		ZWriteEnable = false;
-		ColorWriteEnable = (colorWriteEnable);
-		AlphaBlendEnable = false;
-		AlphaTestEnable = true;
+	pass p0
+	{
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE; // TRUE
+		ColorWriteEnable = (_ColorWriteEnable);
+		AlphaBlendEnable = FALSE;
+		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
-		
- 		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
-																		worldIMatrix,
-																		viewInverseMatrix,
-																		lightPos,
-																		eyePos);
-		
-		PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1();
+
+ 		VertexShader = compile vs_3_0 BumpSpecular_Blinn_1_VS();
+		PixelShader = compile ps_3_0 BumpSpecular_Blinn_1_PS();
 	}
 }
-	
+
 technique branch
 {
-	pass p0 
-	{		
-	
-		ZEnable = true;
-		//ZWriteEnable = true;
-		ZWriteEnable = false;
-		//FillMode = WIREFRAME;
-		ColorWriteEnable = (colorWriteEnable);
+	pass p0
+	{
+
+		ZEnable = TRUE;
+		ZWriteEnable = FALSE; // TRUE
+		ColorWriteEnable = (_ColorWriteEnable);
 		CullMode = NONE;
-		AlphaBlendEnable = true;
+		AlphaBlendEnable = TRUE;
 		SrcBlend = D3DBLEND_SRCALPHA;
 		DestBlend = D3DBLEND_INVSRCALPHA;
 
-
-		AlphaTestEnable = false;
+		AlphaTestEnable = FALSE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
-		
- 		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
-																		worldIMatrix,
-																		viewInverseMatrix,
-																		lightPos,
-																		eyePos);
-		PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1();
-	}
-}	
 
-technique sprite
-{
-	pass p0 
-	{		
-	
-		ZEnable = true;
-		//ZEnable = false;
-		ZWriteEnable = false;
-		//ZWriteEnable = false;
-		//FillMode = WIREFRAME;
-		CullMode = NONE;
-		AlphaBlendEnable = true;
-		SrcBlend = D3DBLEND_SRCALPHA;
-		DestBlend = D3DBLEND_INVSRCALPHA;
-		AlphaTestEnable = false;
-		AlphaRef = 0;
-		AlphaFunc = GREATER;
-		
- 		VertexShader = compile vs_2_a spriteVertexShader(	worldViewMatrix,
- 															projMatrix,
-															spriteScale, 
-															shadowSpherePoint,
-															invBoundingBoxScale,
-															boundingboxScaledInvGradientMag,
-															shadowColor,
-															lightColor	);
-																		
-		
-		PixelShader = compile ps_2_a spritePixelShader();
+ 		VertexShader = compile vs_3_0 BumpSpecular_Blinn_1_VS();
+		PixelShader = compile ps_3_0 BumpSpecular_Blinn_1_PS();
 	}
 }
 
 technique alpha
 {
-	pass p0 
-	{		
-		ColorWriteEnable = (colorWriteEnable);
-		AlphaBlendEnable = true;
+	pass p0
+	{
+		ColorWriteEnable = (_ColorWriteEnable);
+		AlphaBlendEnable = TRUE;
 		CullMode = NONE;
-		ZWriteEnable = false;
+		ZWriteEnable = FALSE;
 		SrcBlend = D3DBLEND_DESTCOLOR;
 		DestBlend = D3DBLEND_ZERO;
-		AlphaTestEnable = false;
-		
- 		VertexShader = compile vs_2_a bumpSpecularVertexShaderBlinn1(	mvpMatrix,
-																		worldIMatrix,
-																		viewInverseMatrix,
-																		lightPos,
-																		eyePos);
-		PixelShader = compile ps_2_a bumpSpecularPixelShaderBlinn1Alpha();
+		AlphaTestEnable = FALSE;
+
+ 		VertexShader = compile vs_3_0 BumpSpecular_Blinn_1_VS();
+		PixelShader = compile ps_3_0 BumpSpecular_Blinn_1_Alpha_PS();
 	}
 }
 
+
+
+
+struct VS2PS_Sprite
+{
+	float4 HPos : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float4 Diffuse : COLOR0;
+};
+
+VS2PS_Sprite Sprite_VS(APP2VS Input)
+{
+	VS2PS_Sprite Output = (VS2PS_Sprite)0;
+	float2 Width_Height = Input.TexCoord1;
+	float4 Pos =  mul(Input.Pos, _WorldViewMat);
+	float4 scaledPos = float4(float2(Width_Height * _SpriteScale.xy), 0.0, 0.0) + Pos;
+ 	Output.HPos = mul(scaledPos, _ProjMat);
+	Output.TexCoord = Input.TexCoord;
+
+	// Lighting calc
+	float4 EyeSpaceSherePoint = mul(_ShadowSpherePoint, _WorldViewMat);
+	float4 ShadowSpherePos = scaledPos * _InvBoundingBoxScale;
+	float4 EyeShadowSpherePos = EyeSpaceSherePoint * _InvBoundingBoxScale;
+	float4 VectorMagnitude = normalize(ShadowSpherePos - EyeShadowSpherePos);
+	float ShadowFactor = VectorMagnitude * _BoundingboxScaledInvGradientMag;
+	ShadowFactor = min(ShadowFactor, 1.0);
+	float3 ShadowColorInt = _ShadowColor * (1.0 - ShadowFactor);
+	float3 Color = _LightColor.rgb * ShadowFactor + ShadowColorInt;
+	Output.Diffuse = saturate(float4(Color, 1.0f));
+
+	return Output;
+}
+
+float4 Sprite_PS(VS2PS_Sprite Input) : COLOR
+{
+	float4 DiffuseMap = tex2D(Diffuse_Sampler, Input.TexCoord);
+	return DiffuseMap * Input.Diffuse;
+}
+
+float4 Sprite_Alpha_PS(VS2PS_Sprite Input) : COLOR
+{
+	float4 DiffuseMap = tex2D(Diffuse_Sampler, Input.TexCoord);
+	return 1.0 - DiffuseMap.a;
+}
+
+technique sprite
+{
+	pass p0
+	{
+
+		ZEnable = TRUE; // FALSE
+		ZWriteEnable = FALSE;
+		CullMode = NONE;
+		AlphaBlendEnable = TRUE;
+		SrcBlend = D3DBLEND_SRCALPHA;
+		DestBlend = D3DBLEND_INVSRCALPHA;
+		AlphaTestEnable = FALSE;
+		AlphaRef = 0;
+		AlphaFunc = GREATER;
+
+ 		VertexShader = compile vs_3_0 Sprite_VS();
+		PixelShader = compile ps_3_0 Sprite_PS();
+	}
+}
 
 technique alphaSprite
 {
-	pass p0 
-	{		
-	
-		ColorWriteEnable = (colorWriteEnable);
-		AlphaBlendEnable = true;
+	pass p0
+	{
+		ColorWriteEnable = (_ColorWriteEnable);
+		AlphaBlendEnable = TRUE;
 		CullMode = NONE;
-		ZWriteEnable = false;
+		ZWriteEnable = FALSE;
 		SrcBlend = D3DBLEND_DESTCOLOR;
 		DestBlend = D3DBLEND_ZERO;
-		AlphaTestEnable = false;
-		
- 		VertexShader = compile vs_2_a spriteVertexShader(	worldViewMatrix,
- 															projMatrix,
-															spriteScale, 
-															shadowSpherePoint,
-															invBoundingBoxScale,
-															boundingboxScaledInvGradientMag,
-															shadowColor,
-															lightColor	);
-																		
-		PixelShader = compile ps_2_a spritePixelShaderAlpha();
+		AlphaTestEnable = FALSE;
+
+ 		VertexShader = compile vs_3_0 Sprite_VS();
+		PixelShader = compile ps_3_0 Sprite_Alpha_PS();
 	}
 }
-

@@ -1,94 +1,85 @@
-float4x4 mWorldViewProj : WorldViewProjection;
 
-texture basetex: TEXLAYER0
+uniform float4x4 _WorldViewProj : WorldViewProjection;
+
+uniform texture Base_Texture: TEXLAYER0
 <
-	 string File = "aniso2.dds";
-	 string TextureType = "2D";
+	string File = "aniso2.dds";
+	string TextureType = "2D";
 >;
 
 struct APP2VS
 {
-    float4	Pos : POSITION;    
-    float2	Tex0 : TEXCOORD0;
+    float4 Pos : POSITION;    
+    float2 Tex0 : TEXCOORD0;
 };
 
 struct VS2PS
 {
-    float4	HPos : POSITION;
-    float2  Tex0 : TEXCOORD0;
+    float4 HPos : POSITION;
+    float2 Tex0 : TEXCOORD0;
 };
 
-sampler diffuseSampler = sampler_state
+sampler Diffuse_Sampler = sampler_state
 {
-	Texture = <basetex>;
-	//Target = Texture2D;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
-    AddressU = Wrap;
-    AddressV = Wrap;
+	Texture = <Base_Texture>;
+	// Target = Texture2D;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
-VS2PS VShader(APP2VS indata, uniform float4x4 wvp)
+VS2PS Shader_VS(APP2VS Input)
 {
-	VS2PS outdata;
-	outdata.HPos = mul(float4(indata.Pos.xyz, 1.0f), wvp);
-	outdata.Tex0 = indata.Tex0;
-	return outdata;
+	VS2PS Output;
+	Output.HPos = mul(float4(Input.Pos.xyz, 1.0f), _WorldViewProj);
+	Output.Tex0 = Input.Tex0;
+	return Output;
 }
 
-float4 PShader(VS2PS Input) : COLOR
+float4 Shader_PS(VS2PS Input) : COLOR
 {
-	return tex2D(diffuseSampler, Input.Tex0);
+	return tex2D(Diffuse_Sampler, Input.Tex0);
 }
 
-technique t0_States <bool Restore = true;> {
-	pass BeginStates{
-		ZEnable = true;
+technique t0_States <bool Restore = true;>
+{
+	pass BeginStates
+	{
+		ZEnable = TRUE;
 		// MatsD 030903: Due to transparent isn't sorted yet. Write Z values
-		ZWriteEnable = true;
-		
-		CullMode = None;
-		AlphaBlendEnable = true;
+		ZWriteEnable = TRUE;
+		CullMode = NONE;
+		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
 		// SrcBlend = SRCALPHA;
 		// DestBlend = INVSRCALPHA;
 	}
 	
-	pass EndStates {
-	}
+	pass EndStates { }
 }
 
 technique t0
 {
 	pass p0 
 	{
-		VertexShader = compile vs_2_a VShader(mWorldViewProj);
-		PixelShader = compile ps_2_a PShader();
-
-		/*
-			Sampler[0] = <diffuseSampler>;	
-			ColorOp[0] = SelectArg1;
-			ColorArg1[0] = Texture;
-			ColorArg2[0] = Current;
-			AlphaOp[0] = SelectArg1;
-			AlphaArg1[0] = Texture;
-			ColorOp[1] = Disable;
-			AlphaOp[1] = Disable;
-		*/
+		VertexShader = compile vs_3_0 Shader_VS();
+		PixelShader = compile ps_3_0 Shader_PS();
 	}
 }
 
 /*technique marked
-{
-	pass p0
 	{
-		CullMode = NONE;
-		AlphaBlendEnable = FALSE;
-	    Lighting = TRUE;
-	
-		VertexShader = compile vs_2_a VShader(mWorldViewProj,MaterialAmbient,MaterialDiffuse,LhtDir);
-		PixelShader = compile ps_2_a PShaderMarked(samplebase);
+		pass p0
+		{
+			CullMode = NONE;
+			AlphaBlendEnable = FALSE;
+			Lighting = TRUE;
+		
+			VertexShader = compile vs_3_0 Shader_VS(_WorldViewProj, MaterialAmbient, MaterialDiffuse, LhtDir);
+			PixelShader = compile ps_3_0 PShaderMarked(samplebase);
+		}
 	}
-}*/
+*/

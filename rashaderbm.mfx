@@ -36,7 +36,7 @@ string GlobalParametersBase[] =
 	"ViewProjection",
 	"SpecularPower",
 	"SpecLUT64SpecularColor",
-	// "NormalizationCube", // Disabled in racommon.fx
+	"NormalizationCube",
 	"FogRange",
 	"FogColor",
 	"WorldSpaceCamPos" // should be as an "inverted specialized" instead
@@ -142,7 +142,7 @@ const dword _hasshadowocclusion_	: LITERAL
 	};
 >;
 
-const dword _hashemiocclusion_	: LITERAL;
+// const dword _hashemiocclusion_ : LITERAL; // [FH2]Remdul - BF2:SF only permutation
 
 const dword _hascolormapgloss_	: LITERAL;
 
@@ -243,27 +243,17 @@ string GenerateShaderModifiers[] =
 	"_hasshadow_|_hascolormapgloss_",
 	"_hasshadow_|_hasstaticgloss_",
 	
-	"_hasshadow_|_hashemiocclusion_",
 	"_hasshadow_|_hasshadowocclusion_",
 	"_hasshadow_|_hascolormapgloss_|_hasshadowocclusion_",
 	"_hasshadow_|_hasstaticgloss_|_hasshadowocclusion_",
-	"_hasshadow_|_hascolormapgloss_|_hashemiocclusion_",
-	"_hasshadow_|_hasstaticgloss_|_hashemiocclusion_",
-
-	"_hashemiocclusion_",
-	"_hascolormapgloss_|_hashemiocclusion_",
-	"_hasstaticgloss_|_hashemiocclusion_",
 
 	"_hascolormapgloss_|_hasdot3alphatest_",
 	"_hasstaticgloss_|_hasdot3alphatest_",
 	"_hasshadow_|_hascolormapgloss_|_hasdot3alphatest_",
 	"_hasshadow_|_hascolormapgloss_|_hasdot3alphatest_|_hasshadowocclusion_",
-	"_hasshadow_|_hascolormapgloss_|_hasdot3alphatest_|_hashemiocclusion_",
-	"_hascolormapgloss_|_hasdot3alphatest_|_hashemiocclusion_",
 
 	"_hasshadow_|_hasstaticgloss_|_hasdot3alphatest_",
 	"_hasshadow_|_hasstaticgloss_|_hasdot3alphatest_|_hasshadowocclusion_",
-	"_hasshadow_|_hasstaticgloss_|_hasdot3alphatest_|_hashemiocclusion_",
 
 	"_hascockpit_",
 	"_hascolormapgloss_|_hascockpit_",

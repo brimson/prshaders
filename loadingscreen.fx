@@ -1,37 +1,45 @@
 
-float4x4 _WorldViewProj : TRANSFORM;
+/*
+	[Attributes from app]
+*/
 
-texture TexMap : TEXTURE;
+uniform float4x4 _WorldViewProj : TRANSFORM;
 
-sampler Sampler_TexMap = sampler_state
+/*
+	[Textures and samplers]
+*/
+
+uniform texture TexMap : TEXTURE;
+
+sampler LoadingScreen_Sampler_TexMap = sampler_state
 {
-    Texture   = <TexMap>;
-    AddressU  = WRAP;
-    AddressV  = WRAP;
+    Texture = <TexMap>;
+    AddressU = WRAP;
+    AddressV = WRAP;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
     MipFilter = LINEAR;
 };
 
-struct VS_OUT
+struct VS2PS
 {
 	float4 Position : POSITION;
 	float4 Diffuse : COLOR0;
 	float2 TexCoord : TEXCOORD0;
 };
 
-VS_OUT Screen_VS(float3 Position : POSITION,float4 Diffuse : COLOR0,float2 TexCoord : TEXCOORD0)
+VS2PS Screen_VS(float3 Position : POSITION, float4 Diffuse : COLOR0, float2 TexCoord : TEXCOORD0)
 {
-	VS_OUT Out = (VS_OUT)0;
+	VS2PS Out = (VS2PS)0;
 	Out.Position = float4(Position.xy, 0.0, 1.0);
-	Out.Diffuse = Diffuse;
+	Out.Diffuse = saturate(Diffuse);
 	Out.TexCoord = TexCoord;
 	return Out;
 }
 
-float4 Screen_PS(VS_OUT Input) : COLOR
+float4 Screen_PS(VS2PS Input) : COLOR
 {
-	float4 InputTexture0 = tex2D(Sampler_TexMap, Input.TexCoord);
+	float4 InputTexture0 = tex2D(LoadingScreen_Sampler_TexMap, Input.TexCoord);
 	float4 OutputColor;
 	OutputColor.rgb = InputTexture0.rgb * Input.Diffuse.rgb;
 	OutputColor.a = Input.Diffuse.a;

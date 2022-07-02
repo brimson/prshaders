@@ -1,6 +1,40 @@
 #line 2 "NonScreenAlignedParticles.fx"
 #include "shaders/FXCommon.fx"
 
+/*
+	[Textures and samplers]
+*/
+
+sampler NonScreenAlignedParticles_Diffuse_Sampler = sampler_state
+{
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = FILTER_PARTICLE_MIP;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+sampler NonScreenAlignedParticles_Diffuse_Sampler_2 = sampler_state 
+{
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = FILTER_PARTICLE_MIP;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+sampler NonScreenAlignedParticles_LUT_Sampler = sampler_state 
+{ 
+	Texture = <Texture_1>; 
+	AddressU = CLAMP; 
+	AddressV = CLAMP; 
+	MinFilter = LINEAR; 
+	MagFilter = LINEAR; 
+	MipFilter = FILTER_PARTICLE_MIP; 
+};
+
 // constant array
 struct TemplateParameters
 {
@@ -14,7 +48,7 @@ struct TemplateParameters
 };
 
 // TODO: change the value 10 to the approprite max value for the current hardware, need to make this a variable
-TemplateParameters _TParameters[10] : TemplateParameters;
+TemplateParameters _Temps[10] : TemplateParameters;
 
 struct APP2VS
 {
@@ -28,41 +62,43 @@ struct APP2VS
 	float2 TexCoords : TEXCOORD6;
 };
 
-struct VS2PS_Particle
+struct VS2PS
 {
 	float4 HPos : POSITION;
 	float4 Color : TEXCOORD0;
-	float2 TexCoords0 : TEXCOORD1;
-	float2 TexCoords1 : TEXCOORD2;
-	float2 TexCoords2 : TEXCOORD3;
+	float4 DiffuseCoords : TEXCOORD1; // .xy = Diffuse1; .zw = Diffuse2
+	float2 HemiLUTCoord : TEXCOORD2; // Hemi look-up table coordinates
 	float4 AnimBFactor : COLOR0;
 	float4 LMapIntOffsetAndLFactor : COLOR1;
 	float Fog : FOG;
 };
 
-VS2PS_Particle Particle_VS(APP2VS Input, uniform float4x4 WorldView, uniform float4x4 Proj, uniform TemplateParameters Temp[10])
+VS2PS Particle_VS(APP2VS Input)
 {
-	VS2PS_Particle Output = (VS2PS_Particle)0;
+	VS2PS Output = (VS2PS)0;
 
 	// Compute Cubic polynomial factors.
 	float4 PC = float4(pow(Input.AgeFactorAndGraphIndex[0], float3(3.0, 2.0, 1.0)), 1.0);
 
-	float ColorBlendFactor = min(dot(Temp[Input.AgeFactorAndGraphIndex.y].m_colorBlendGraph, PC), 1.0);
-	float3 Color = ColorBlendFactor * Temp[Input.AgeFactorAndGraphIndex.y].m_color2.rgb;
-	Color += (1.0 - ColorBlendFactor) * Temp[Input.AgeFactorAndGraphIndex.y].m_color1AndLightFactor.rgb;
+	float ColorBlendFactor = min(dot(_Temps[Input.AgeFactorAndGraphIndex.y].m_colorBlendGraph, PC), 1.0);
+	float3 Color = ColorBlendFactor * _Temps[Input.AgeFactorAndGraphIndex.y].m_color2.rgb;
+	Color += (1.0 - ColorBlendFactor) * _Temps[Input.AgeFactorAndGraphIndex.y].m_color1AndLightFactor.rgb;
 
 	Output.Color.rgb = ((Color * Input.IntensityAndRandomIntensity[0]) + Input.IntensityAndRandomIntensity[1]) / 2.0;
 
-	float AlphaBlendFactor = min(dot(Temp[Input.AgeFactorAndGraphIndex.y].m_transparencyGraph, PC), 1.0);
+	float AlphaBlendFactor = min(dot(_Temps[Input.AgeFactorAndGraphIndex.y].m_transparencyGraph, PC), 1.0);
 	// Output.Color.a = AlphaBlendFactor * Input.RandomSizeAlphaAndIntensityBlendFactor[1];
 
 	Output.AnimBFactor.a = AlphaBlendFactor * Input.RandomSizeAlphaAndIntensityBlendFactor[1];
 	Output.AnimBFactor.b = Input.RandomSizeAlphaAndIntensityBlendFactor[2];
-	Output.LMapIntOffsetAndLFactor.a = saturate(saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0f) + Temp[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.z);
-	Output.LMapIntOffsetAndLFactor.b = Temp[Input.AgeFactorAndGraphIndex.y].m_color1AndLightFactor.a;
+	Output.AnimBFactor = saturate(Output.AnimBFactor);
 
-	// Compute size of particle using the constants of the Temp[Input.AgeFactorAndGraphIndex.y]ate (mSizeGraph)
-	float Size = min(dot(Temp[Input.AgeFactorAndGraphIndex.y].m_sizeGraph, PC), 1.0) * Temp[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
+	Output.LMapIntOffsetAndLFactor.a = saturate(saturate((Input.Pos.y - _HemiShadowAltitude) / 10.0f) + _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.z);
+	Output.LMapIntOffsetAndLFactor.b = _Temps[Input.AgeFactorAndGraphIndex.y].m_color1AndLightFactor.a;
+	Output.LMapIntOffsetAndLFactor = saturate(Output.LMapIntOffsetAndLFactor);
+
+	// Compute size of particle using the constants of the _Temps[Input.AgeFactorAndGraphIndex.y]ate (mSizeGraph)
+	float Size = min(dot(_Temps[Input.AgeFactorAndGraphIndex.y].m_sizeGraph, PC), 1.0) * _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.w;
 	Size += Input.RandomSizeAlphaAndIntensityBlendFactor.x;
 
 	// Unpack verts
@@ -73,29 +109,28 @@ VS2PS_Particle Particle_VS(APP2VS Input, uniform float4x4 WorldView, uniform flo
 	float3 ScaledPos = Input.DisplaceCoords * Size + Input.Pos.xyz;
 	ScaledPos.y += Rotation.w;
 
-	float4 Pos = mul(float4(ScaledPos, 1.0), WorldView);
-	Output.HPos = mul(Pos, Proj);
+	float4 Pos = mul(float4(ScaledPos, 1.0), _ViewMat);
+	Output.HPos = mul(Pos, _ProjMat);
 
 	// Compute texcoords
 	// Rotate and scale to correct uv space and zoom in.
 	float2 RotatedTexCoords = float2(TexCoords.x * Rotation.y - TexCoords.y * Rotation.x, TexCoords.x * Rotation.x + TexCoords.y * Rotation.y);
-	RotatedTexCoords *= Temp[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.xy * _UVScale;
+	RotatedTexCoords *= _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.xy * _UVScale;
 
 	// Bias texcoords
-	RotatedTexCoords.x += Temp[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.x;
-	RotatedTexCoords.y = Temp[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.y - RotatedTexCoords.y;
+	RotatedTexCoords.x += _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.x;
+	RotatedTexCoords.y = _Temps[Input.AgeFactorAndGraphIndex.y].m_uvRangeLMapIntensiyAndParticleMaxSize.y - RotatedTexCoords.y;
 	RotatedTexCoords *= 0.5f;
 
-	// Offset texcoords
+	// Offset texcoords for particle diffuse
 	float4 UVOffsets = Input.UVOffsets * _OneOverShort;
-	Output.TexCoords0.xy = RotatedTexCoords + UVOffsets.xy;
-	Output.TexCoords1.xy = RotatedTexCoords + UVOffsets.zw;
+	Output.DiffuseCoords = RotatedTexCoords.xyxy + UVOffsets.xyzw;
 
-	// Hemi lookup coords
- 	Output.TexCoords2.xy = ((Input.Pos + (_HemiMapInfo.z/2)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
- 	Output.TexCoords2.y = 1.0 - Output.TexCoords2.y;
+	// Hemi lookup table coords
+ 	Output.HemiLUTCoord.xy = ((Input.Pos + (_HemiMapInfo.z/2)).xz - _HemiMapInfo.xy) / _HemiMapInfo.z;
+ 	Output.HemiLUTCoord.y = 1.0 - Output.HemiLUTCoord.y;
 
-	Output.Fog = Calc_Fog(Output.HPos.w);
+	Output.Fog = saturate(calcFog(Output.HPos.w));
 
 	return Output;
 }
@@ -117,9 +152,12 @@ VS2PS_Particle Particle_VS(APP2VS Input, uniform float4x4 WorldView, uniform flo
 	};
 */
 
-float4 Particle_Show_Fill_PS(VS2PS_Particle Input) : COLOR
+float4 Particle_Show_Fill_PS(VS2PS Input) : COLOR
 {
-	return _EffectSunColor.rrrr;
+	float4 OutColor = _EffectSunColor.rrrr;
+	// Fog
+	OutColor.rgb = lerp(FogColor.rgb, OutColor.rgb, Input.Fog);
+	return OutColor;
 }
 
 technique NSAParticleShowFill
@@ -140,18 +178,19 @@ technique NSAParticleShowFill
 		AlphaBlendEnable = TRUE;
 		SrcBlend = ONE;
 		DestBlend = ONE;
-		FogEnable = TRUE;
 
- 		VertexShader = compile vs_3_0 Particle_VS(_ViewMat, _ProjMat, _TParameters);
+ 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Show_Fill_PS();
 	}
 }
 
-float4 Particle_Low_PS(VS2PS_Particle Input) : COLOR
+float4 Particle_Low_PS(VS2PS Input) : COLOR
 {
-	float4 Color = tex2D(Diffuse_Sampler, Input.TexCoords0);
+	float4 Color = tex2D(NonScreenAlignedParticles_Diffuse_Sampler, Input.DiffuseCoords.xy);
 	Color.rgb *= 2.0 * Input.Color.rgb;
 	Color.a *= Input.AnimBFactor.a;
+	// Fog
+	Color.rgb = lerp(FogColor.rgb, Color.rgb, Input.Fog);
 	return Color;
 }
 
@@ -173,21 +212,22 @@ technique NSAParticleLow
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = TRUE;
 
- 		VertexShader = compile vs_3_0 Particle_VS(_ViewMat, _ProjMat, _TParameters);
+ 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Low_PS();
 	}
 }
 
-float4 Particle_Medium_PS(VS2PS_Particle Input) : COLOR
+float4 Particle_Medium_PS(VS2PS Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.TexCoords0);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.TexCoords1);
+	float4 TDiffuse = tex2D(NonScreenAlignedParticles_Diffuse_Sampler, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(NonScreenAlignedParticles_Diffuse_Sampler_2, Input.DiffuseCoords.zw);
 	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactor.b);
 	Color.rgb *= 2.0 * Input.Color.rgb;
 	Color.rgb *= Calc_Particle_Lighting(1.0, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
 	Color.a *= Input.AnimBFactor.a;
+	// Fog
+	Color.rgb = lerp(FogColor.rgb, Color.rgb, Input.Fog);
 	return Color;
 }
 
@@ -209,23 +249,24 @@ technique NSAParticleMedium
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = TRUE;
 
- 		VertexShader = compile vs_3_0 Particle_VS(_ViewMat, _ProjMat, _TParameters);
+ 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_Medium_PS();
 	}
 }
 
-float4 Particle_High_PS(VS2PS_Particle Input) : COLOR
+float4 Particle_High_PS(VS2PS Input) : COLOR
 {
-	float4 TDiffuse = tex2D(Diffuse_Sampler, Input.TexCoords0);
-	float4 TDiffuse2 = tex2D(Diffuse_Sampler_2, Input.TexCoords1);
-	float4 TLut = tex2D(LUT_Sampler, Input.TexCoords2.xy);
+	float4 TDiffuse = tex2D(NonScreenAlignedParticles_Diffuse_Sampler, Input.DiffuseCoords.xy);
+	float4 TDiffuse2 = tex2D(NonScreenAlignedParticles_Diffuse_Sampler_2, Input.DiffuseCoords.zw);
+	float4 TLut = tex2D(NonScreenAlignedParticles_LUT_Sampler, Input.HemiLUTCoord.xy);
 
 	float4 Color = lerp(TDiffuse, TDiffuse2, Input.AnimBFactor.b);
 	Color.rgb *= 2.0 * Input.Color.rgb;
 	Color.rgb *= Calc_Particle_Lighting(TLut.a, Input.LMapIntOffsetAndLFactor.a, Input.LMapIntOffsetAndLFactor.b);
 	Color.a *= Input.AnimBFactor.a;
+	// Fog
+	Color.rgb = lerp(FogColor.rgb, Color.rgb, Input.Fog);
 	return Color;
 }
 
@@ -247,9 +288,8 @@ technique NSAParticleHigh
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
-		FogEnable = TRUE;
 
- 		VertexShader = compile vs_3_0 Particle_VS(_ViewMat, _ProjMat, _TParameters);
+ 		VertexShader = compile vs_3_0 Particle_VS();
 		PixelShader = compile ps_3_0 Particle_High_PS();
 	}
 }

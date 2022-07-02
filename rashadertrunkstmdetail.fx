@@ -74,7 +74,7 @@ VS_OUTPUT basicVertexShader
 	inPos *= PosUnpack;
 	Out.Pos		= mul(float4(inPos.xyz, 1), WorldViewProjection);
 
-	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Fog		= calcFog(Out.Pos.w);
 	Out.Tex0	= tex0 * TexUnpack;
 #ifndef BASEDIFFUSEONLY
 	Out.Tex1	= tex1 * TexUnpack;
@@ -88,7 +88,7 @@ VS_OUTPUT basicVertexShader
 	Out.Color.a = Transparency;
 
 #if _HASSHADOW_
-	Out.TexShadow = Calc_Shadow_Projection(float4(inPos.xyz, 1));
+	Out.TexShadow = calcShadowProjection(float4(inPos.xyz, 1));
 #else
 	Out.Color.rgb += OverGrowthAmbient;
 #endif
@@ -108,7 +108,7 @@ float4 basicPixelShader(VS_OUTPUT VsOut) : COLOR
 #endif
 
 #if _HASSHADOW_
-	vertexColor.rgb *= Get_Shadow_Factor(ShadowMapSampler, VsOut.TexShadow, 1);
+	vertexColor.rgb *= getShadowFactor(ShadowMapSampler, VsOut.TexShadow, 1);
 	vertexColor.rgb += OverGrowthAmbient/2;
 #endif
 

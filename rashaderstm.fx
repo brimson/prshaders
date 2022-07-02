@@ -216,13 +216,13 @@ vsStaticMesh(VS_IN indata)
 	#endif 
 	
 	#if _SHADOW_ && _LIGHTMAP_
-		Out.Interpolated[__TEXSHADOW_INTER] = Calc_Shadow_Projection_Exact(unpackedPos);
+		Out.Interpolated[__TEXSHADOW_INTER] = calcShadowProjectionExact(unpackedPos);
 	#endif
 	 
 	 #if _POINTLIGHT_
-		Out.ColorOrPointLightFog.a = Calc_Fog(Out.Pos.w);
+		Out.ColorOrPointLightFog.a = calcFog(Out.Pos.w);
 	#else
-		Out.Fog = Calc_Fog(Out.Pos.w);
+		Out.Fog = calcFog(Out.Pos.w);
 	#endif
 
 	return Out;
@@ -471,7 +471,7 @@ psStaticMesh(VS_OUT indata) : COLOR
 		float3 lightmap = getLightmap(indata);
 		
 		#if  _SHADOW_ && _LIGHTMAP_
-			lightmap.g *= Get_Shadow_Factor(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);
+			lightmap.g *= getShadowFactorExact(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);
 		#endif
 	
 		float3 diffuse = getDiffusePixelLighting(lightmap, compNormals.rgb, normLightVec, indata);
@@ -498,7 +498,7 @@ psStaticMesh(VS_OUT indata) : COLOR
 		float3 lightmap = getLightmap(indata);
 	
 		#if _SHADOW_ && _LIGHTMAP_
-			lightmap.g *= Get_Shadow_Factor(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);		
+			lightmap.g *= getShadowFactor(ShadowMapSampler, indata.Interpolated[__TEXSHADOW_INTER], 3);		
 		#endif
 
 		float3 diffuse = getDiffuseVertexLighting(lightmap, indata);

@@ -83,7 +83,7 @@ float2 tex0	: TEXCOORD0
 	float cameraDist = length(WorldSpaceCamPos - wPos);
 	Out.ZFade = 1 - saturate((cameraDist * RoadFadeOut.x) - RoadFadeOut.y);
 
-	Out.Fog = Calc_Fog(Out.Pos.w);
+	Out.Fog = calcFog(Out.Pos.w);
 
 	return Out;
 }

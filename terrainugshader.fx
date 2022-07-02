@@ -1,71 +1,74 @@
 #line 2 "TerrainUGShader.fx"
 
+uniform float4x4 _ViewProj: matVIEWPROJ;
+uniform float4x4 _LightViewProj : LIGHTVIEWPROJ;
+uniform float4 _ScaleTransXZ : SCALETRANSXZ;
+uniform float4 _ScaleTransY : SCALETRANSY;
+uniform float4 _ShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
+uniform float4 _ViewportMap : VIEWPORTMAP;
 
-float4x4	mViewProj: matVIEWPROJ;
-float4x4	mLightVP : LIGHTVIEWPROJ;
-float4	vScaleTransXZ : SCALETRANSXZ;
-float4	vScaleTransY : SCALETRANSY;
-float4	vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
-float4	vViewportMap : VIEWPORTMAP;
+uniform texture	Texture_2 : TEXLAYER2;
 
-texture	texture2 : TEXLAYER2;
-
-sampler sampler2Point = sampler_state { Texture = (texture2); MinFilter = POINT; MagFilter = POINT; };
+sampler Sampler_2 = sampler_state
+{
+	Texture = (Texture_2);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+};
 
 struct APP2VS_BM_Dx9
 {
-    float4	Pos0 : POSITION0;
-    float4	Pos1 : POSITION1;
-    float4	MorphDelta : POSITION2;
-    float2	TexCoord0 : TEXCOORD0;
-    float3	Normal : NORMAL;
+    float4 Pos0 : POSITION0;
+    float4 Pos1 : POSITION1;
+    float4 MorphDelta : POSITION2;
+    float2 TexCoord0 : TEXCOORD0;
+    float3 Normal : NORMAL;
 };
 
 struct VS2PS_DynamicShadowmap
 {
-    float4	Pos : POSITION;
-    float4	ShadowTex : TEXCOORD1;
+    float4 Pos : POSITION;
+    float4 ShadowTex : TEXCOORD0;
 };
 
-
-float4 psDynamicShadowmap(VS2PS_DynamicShadowmap indata) : COLOR
+VS2PS_DynamicShadowmap DynamicShadowmap_VS(APP2VS_BM_Dx9 Input)
 {
-	float2 texel = float2(1.0/1024.0, 1.0/1024.0);
-	float4 samples;
-	indata.ShadowTex.xy = clamp(indata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
-	samples.x = tex2D(sampler2Point, indata.ShadowTex.xy);
-	samples.y = tex2D(sampler2Point, indata.ShadowTex.xy + float2(texel.x, 0));
-	samples.z = tex2D(sampler2Point, indata.ShadowTex.xy + float2(0, texel.y));
-	samples.w = tex2D(sampler2Point, indata.ShadowTex.xy + texel);
+	VS2PS_DynamicShadowmap Output;
+	
+	float4 WPos;
+	WPos.xz = (Input.Pos0.xy * _ScaleTransXZ.xy) + _ScaleTransXZ.zw;
+	WPos.yw = (Input.Pos1.xw * _ScaleTransY.xy) + _ScaleTransY.zw;
 
-	float4 cmpbits = samples >= saturate(indata.ShadowTex.z);
-	float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
+ 	Output.Pos = mul(WPos, _ViewProj);
 
-	return  1-saturate(4-indata.ShadowTex.z)+avgShadowValue.x;
+	Output.ShadowTex = mul(WPos, _LightViewProj);
+	Output.ShadowTex.z -= 0.007;
+
+	return Output;
 }
 
-VS2PS_DynamicShadowmap vsDynamicShadowmap(APP2VS_BM_Dx9 indata)
+float4 DynamicShadowmap_PS(VS2PS_DynamicShadowmap Input) : COLOR
 {
-	VS2PS_DynamicShadowmap outdata;
-	
-	float4 wPos;
-	wPos.xz = (indata.Pos0.xy * vScaleTransXZ.xy) + vScaleTransXZ.zw;
-	wPos.yw = (indata.Pos1.xw * vScaleTransY.xy) + vScaleTransY.zw;
+	float2 Texel = 1.0 / 1024.0;
+	float4 Samples;
+	Input.ShadowTex.xy = clamp(Input.ShadowTex.xy, _ViewportMap.xy, _ViewportMap.zw);
+	Samples.x = tex2D(Sampler_2, Input.ShadowTex.xy);
+	Samples.y = tex2D(Sampler_2, Input.ShadowTex.xy + float2(Texel.x, 0.0));
+	Samples.z = tex2D(Sampler_2, Input.ShadowTex.xy + float2(0.0, Texel.y));
+	Samples.w = tex2D(Sampler_2, Input.ShadowTex.xy + Texel);
 
- 	outdata.Pos = mul(wPos, mViewProj);
-
-	outdata.ShadowTex = mul(wPos, mLightVP);
-	outdata.ShadowTex.z -= 0.007;
-
-	return outdata;
+	float4 CMPBits = Samples >= saturate(Input.ShadowTex.z);
+	float AvgShadowValue = dot(CMPBits, 0.25);
+	return 1.0 - saturate(4.0 - Input.ShadowTex.z) + AvgShadowValue.x;
 }
 
 technique Dx9Style_BM
 {
-	pass DynamicShadowmap	//p0
+	pass DynamicShadowmap // p0
 	{
 		CullMode = CW;
-		//ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
+		// ColorWriteEnable = RED|BLUE|GREEN|ALPHA;
 		
 		ZEnable = FALSE;
 		ZWriteEnable = FALSE;
@@ -75,8 +78,7 @@ technique Dx9Style_BM
  		SrcBlend = DESTCOLOR;
  		DestBlend = ZERO;
  		
-		VertexShader = compile vs_2_a vsDynamicShadowmap();
-		PixelShader = compile ps_2_a psDynamicShadowmap();
+		VertexShader = compile vs_3_0 DynamicShadowmap_VS();
+		PixelShader = compile ps_3_0 DynamicShadowmap_PS();
 	}
 }
-

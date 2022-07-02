@@ -238,10 +238,10 @@ float2 lmtex	: TEXCOORD1
 #ifndef NO_LIGHTMAP
 	Out.lmtex.xy = lmtex.xy * LightMapOffset.xy + LightMapOffset.zw;
 #endif
-	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Fog		= calcFog(Out.Pos.w);
 
 #ifdef USE_SHADOWS
-	Out.TexShadow = Calc_Shadow_Projection(wPos);
+	Out.TexShadow = calcShadowProjection(wPos);
 #endif
 
 	return Out;
@@ -302,7 +302,7 @@ in VS_OUTPUT_WATER VsData
 
 	float shadFac = lightmap.g;
 #ifdef USE_SHADOWS
-	shadFac *= Get_Shadow_Factor(ShadowMapSampler, VsData.TexShadow);
+	shadFac *= getShadowFactor(ShadowMapSampler, VsData.TexShadow);
 #endif
 	float lerpMod = -(1 - saturate(shadFac+SHADOW_FACTOR));
 

@@ -1,111 +1,114 @@
 #line 2 "TerrainShader.fx"
 #include "shaders/raCommon.fx"
 
-	
-//
-// -- Shared stuff
-//
+/*
+	[Uniform data from app]
+*/
 
-float4x4		mViewProj: matVIEWPROJ;
-float4x4		mView: matVIEW;
-float4		vScaleTransXZ : SCALETRANSXZ;
-float4		vScaleTransY : SCALETRANSY;
-float		ScaleBaseUV : SCALEBASEUV;
-float4		vShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
+uniform float4x4 _ViewProj: matVIEWPROJ;
+uniform float4x4 _View: matVIEW;
+uniform float4 _ScaleTransXZ : SCALETRANSXZ;
+uniform float4 _ScaleTransY : SCALETRANSY;
+uniform float _ScaleBaseUV : SCALEBASEUV;
+uniform float4 _ShadowTexCoordScaleAndOffset : SHADOWTEXCOORDSCALEANDOFFSET;
 
-float4		vMorphDeltaSelector : MORPHDELTASELECTOR;
-float2		vNearFarMorphLimits : NEARFARMORPHLIMITS;
+uniform float4 _MorphDeltaSelector : MORPHDELTASELECTOR;
+uniform float2 _NearFarMorphLimits : NEARFARMORPHLIMITS;
+// uniform float2 _NearFarLowDetailMapLimits : NEARFARLOWDETAILMAPLIMITS;
 
-//float2		vNearFarLowDetailMapLimits : NEARFARLOWDETAILMAPLIMITS;
+uniform float4 _CameraPos : CAMERAPOS;
+uniform float3 _ComponentSelector : COMPONENTSELECTOR;
 
-float4		vDebugColor : DEBUGCELLCOLOR;
+uniform float4 _DebugColor : DEBUGCELLCOLOR;
+uniform float4 _SunColor : SUNCOLOR;
+uniform float4 _GIColor : GICOLOR;
 
+uniform float4 _SunDirection : SUNDIRECTION;
+uniform float4 _LightPos1 : LIGHTPOS1;
+uniform float4 _LightPos2 : LIGHTPOS2;
+// uniform float4 _LightPos3 : LIGHTPOS3;
+uniform float4 _LightCol1 : LIGHTCOL1;
+uniform float4 _LightCol2 : LIGHTCOL2;
+// uniform float4 _LightCol3 : LIGHTCOL3;
+uniform float _LightAttSqrInv1 : LIGHTATTSQRINV1;
+uniform float _LightAttSqrInv2 : LIGHTATTSQRINV2;
 
-float4 		vCamerapos : CAMERAPOS;
+uniform float4 _TexProjOffset : TEXPROJOFFSET;
+uniform float4 _TexProjScale : TEXPROJSCALE;
+uniform float4 _TexCordXSel : TEXCORDXSEL;
+uniform float4 _TexCordYSel : TEXCORDYSEL;
+uniform float4 _TexScale : TEXSCALE;
+uniform float4 _NearTexTiling : NEARTEXTILING;
+uniform float4 _FarTexTiling : FARTEXTILING;
+uniform float4 _YPlaneTexScaleAndFarTile : YPLANETEXSCALEANDFARTILE;
 
-float3		vComponentsel : COMPONENTSELECTOR;
+/*
+	uniform float4 _ListPlaneMapSel[4] =
+	{
+		float4(1.0, 0.0, 0.0, 0.0),
+		float4(0.0, 1.0, 0.0, 0.0),
+		float4(0.0, 0.0, 1.0, 0.0),
+		float4(0.0, 0.0, 1.0, 0.0)
+	}; // should only use 3, but have 4 for debug.
 
-float4		vSunColor : SUNCOLOR;
-float4 		vGIColor : GICOLOR;
+	// uniform float4 _PlaneMapSel : PLANEMAPSEL;
+*/
 
-float4		vSunDirection : SUNDIRECTION;
-float4		vLightPos1 : LIGHTPOS1;
-float4		vLightCol1 : LIGHTCOL1;
-float		LightAttSqrInv1 : LIGHTATTSQRINV1;
-float4		vLightPos2 : LIGHTPOS2;
-float4		vLightCol2 : LIGHTCOL2;
-float		LightAttSqrInv2 : LIGHTATTSQRINV2;
-//float4		vLightPos3 : LIGHTPOS3;
-//float4		vLightCol3 : LIGHTCOL3;
+uniform float3 _BlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
 
-float4		vTexProjOffset : TEXPROJOFFSET;
-float4		vTexProjScale : TEXPROJSCALE;
+uniform float _WaterHeight : WaterHeight;
+uniform float4 _TerrainWaterColor : TerrainWaterColor;
 
-float4		vTexCordXSel : TEXCORDXSEL;
-float4		vTexCordYSel : TEXCORDYSEL;
-float4		vTexScale : TEXSCALE;
-float4		vNearTexTiling : NEARTEXTILING;
-float4		vFarTexTiling : FARTEXTILING;
+uniform float4x4 _LightViewProj : LIGHTVIEWPROJ;
+uniform float4x4 _LightViewProjOrtho : LIGHTVIEWPROJORTHO;
+uniform float4 _ViewportMap : VIEWPORTMAP;
 
-float4		vYPlaneTexScaleAndFarTile : YPLANETEXSCALEANDFARTILE;
+// Attributes for surrounding terrain (ST)
+uniform float4x4 _STTransXZ : STTRANSXZ;
+uniform float4 _STFarTexTiling : STFARTEXTILING;
+uniform float4 _STTexScale : STTEXSCALE;
+uniform float4 _STScaleTransY : STSCALETRANSY;
+uniform float2 _STColorLightTex : STCOLORLIGHTTEX;
+uniform float2 _STLowDetailTex : STLOWDETAILTEX;
 
-//float4		vlPlaneMapSel[4] = { float4(1,0,0,0), float4(0,1,0,0), float4(0,0,1,0), float4(0,0,1,0)}; // should only use 3, but have 4 for debug.
-//float4		vPlaneMapSel : PLANEMAPSEL;
+uniform float2 _ColorLightTex : COLORLIGHTTEX;
+uniform float2 _DetailTex : DETAILTEX;
 
-float3		vBlendMod : BLENDMOD = float3(0.2, 0.5, 0.2);
+uniform float3 _MorphDeltaAdder[3] : MORPHDELTAADDER;
 
-float		waterHeight : WaterHeight;
-float4 terrainWaterColor : TerrainWaterColor;
+/*
+	[Textures and samplers]
+*/
 
-float4x4 mLightVP : LIGHTVIEWPROJ;
-float4x4 mLightVPOrtho : LIGHTVIEWPROJORTHO;
-float4 vViewportMap : VIEWPORTMAP;
+uniform texture Texture_0 : TEXLAYER0;
+uniform texture Texture_1 : TEXLAYER1;
+uniform texture Texture_2 : TEXLAYER2;
+uniform texture Texture_3 : TEXLAYER3;
+uniform texture Texture_4 : TEXLAYER4;
+uniform texture Texture_5 : TEXLAYER5;
+uniform texture Texture_6 : TEXLAYER6;
 
-float4x4	vSTTransXZ : STTRANSXZ;
-float4		vSTFarTexTiling : STFARTEXTILING;
-float4		vSTTexScale : STTEXSCALE;
-float4		vSTScaleTransY : STSCALETRANSY;
+#define CREATE_SAMPLER(SAMPLER_TYPE, NAME, TEXTURE, ADDRESS) \
+	SAMPLER_TYPE NAME = sampler_state \
+	{ \
+		Texture = TEXTURE; \
+		MinFilter = LINEAR; \
+		MagFilter = LINEAR; \
+		MipFilter = LINEAR; \
+		AddressU = ADDRESS; \
+		AddressV = ADDRESS; \
+	}; \
 
-float2		vColorLightTex : COLORLIGHTTEX;
-float2		vDetailTex : DETAILTEX;
-float2		vSTColorLightTex : STCOLORLIGHTTEX;
-float2		vSTLowDetailTex : STLOWDETAILTEX;
+CREATE_SAMPLER(sampler, Sampler_0_Clamp, Texture_0, CLAMP)
+CREATE_SAMPLER(sampler, Sampler_1_Clamp, Texture_1, CLAMP)
+CREATE_SAMPLER(sampler, Sampler_2_Clamp, Texture_2, CLAMP)
+CREATE_SAMPLER(sampler, Sampler_5_Clamp, Texture_5, CLAMP)
 
-float3	vMorphDeltaAdder[3] : MORPHDELTAADDER;
+CREATE_SAMPLER(sampler, Sampler_3_Wrap, Texture_3, WRAP)
+CREATE_SAMPLER(sampler, Sampler_4_Wrap, Texture_4, WRAP)
+CREATE_SAMPLER(sampler, Sampler_6_Wrap, Texture_6, WRAP)
 
-texture texture0 : TEXLAYER0;
-texture texture1 : TEXLAYER1;
-texture texture2 : TEXLAYER2;
-texture texture3 : TEXLAYER3;
-texture texture4 : TEXLAYER4;
-texture texture5 : TEXLAYER5;
-texture texture6 : TEXLAYER6;
-
-sampler sampler0Clamp = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1Clamp = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler2Clamp = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler3Clamp = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler2PointClamp = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; MipFilter = POINT; };
-sampler sampler2Point = sampler_state { Texture = (texture2); MinFilter = POINT; MagFilter = POINT; };
-sampler sampler4Clamp = sampler_state { Texture = (texture4); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler5Clamp = sampler_state { Texture = (texture5); AddressU = CLAMP; AddressV = CLAMP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler0Wrap = sampler_state { Texture = (texture0); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler1Wrap = sampler_state { Texture = (texture1); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler2Wrap = sampler_state { Texture = (texture2); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler3Wrap = sampler_state { Texture = (texture3); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler4Wrap = sampler_state { Texture = (texture4); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler4Wrap2 = sampler_state { Texture = (texture4); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler4Wrap3 = sampler_state { Texture = (texture4); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler5Wrap = sampler_state { Texture = (texture5); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler6Wrap = sampler_state { Texture = (texture6); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-sampler sampler3 = sampler_state { Texture = (texture3); };
-sampler sampler4 = sampler_state { Texture = (texture4); };
-sampler sampler0ClampPoint = sampler_state { Texture = (texture0); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
-sampler sampler1ClampPoint = sampler_state { Texture = (texture1); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
-sampler sampler2ClampPoint = sampler_state { Texture = (texture2); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
-sampler sampler3ClampPoint = sampler_state { Texture = (texture3); AddressU = CLAMP; AddressV = CLAMP; MinFilter = POINT; MagFilter = POINT; };
-samplerCUBE sampler6Cube = sampler_state { Texture = (texture6); AddressU = WRAP; AddressV = WRAP; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR; };
-
+CREATE_SAMPLER(samplerCUBE, Sampler_6_Cube, Texture_6, WRAP)
 
 #include "shaders/commonVertexLight.fx"
 #include "shaders/TerrainShader_Shared.fx"
@@ -114,4 +117,3 @@ samplerCUBE sampler6Cube = sampler_state { Texture = (texture6); AddressU = WRAP
 #else
 	#include "shaders/TerrainShader_Low.fx"
 #endif
-

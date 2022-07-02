@@ -1,199 +1,189 @@
-float4x4 wvp : WORLDVIEWPROJ;
 
-float4 cellPositions[32] : CELLPOSITIONS;
-float4 deviations[16] : DEVIATIONGROUPS;
+float4x4 _WorldViewProj : WORLDVIEWPROJ;
 
-float4 particleColor: PARTICLECOLOR;
+float4 _CellPositions[32] : CELLPOSITIONS;
+float4 _Deviations[16] : DEVIATIONGROUPS;
 
-float4 cameraPos : CAMERAPOS;
+float4 _ParticleColor: PARTICLECOLOR;
 
-float3 fadeOutRange : FADEOUTRANGE;
-float3 fadeOutDelta : FADEOUTDELTA;
+float4 _CameraPos : CAMERAPOS;
 
-float3 pointScale : POINTSCALE;
-float particleSize : PARTICLESIZE;
-float maxParticleSize : PARTICLEMAXSIZE;
+float3 _FadeOutRange : FADEOUTRANGE;
+float3 _FadeOutDelta : FADEOUTDELTA;
 
-texture texture0 : TEXTURE;
+float3 _PointScale : POINTSCALE;
+float _ParticleSize : PARTICLESIZE;
+float _MaxParticleSize : PARTICLEMAXSIZE;
 
-sampler sampler0 = sampler_state
+texture Texture_0 : TEXTURE;
+
+sampler Sampler_0 = sampler_state
 {
-	Texture = <texture0>;
-	MinFilter = Linear;
-	MagFilter = Linear;
-	MipFilter = Linear;
+	Texture = <Texture_0>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };
 
-struct VSINPUT
+struct APP2PS
 {
 	float3 Pos: POSITION;
 	float4 Data : COLOR0;
 	float2 TexCoord: TEXCOORD0;
 };
 
-/////////////////////////////////////////////
-// Point Technique
-/////////////////////////////////////////////
-
-struct POINT_VSOUT
+struct VS2PS_Point
 {
 	float4 Pos: POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float4 Color : COLOR0;
-	float pointSize : PSIZE;
+	float PointSize : PSIZE;
 };
 
-POINT_VSOUT vsPoint(VSINPUT input)
+VS2PS_Point Point_VS(APP2PS Input)
 {
-	POINT_VSOUT output;
+	VS2PS_Point Output;
 
-	float3 cellPos = cellPositions[input.Data.x];
-	float3 deviation = deviations[input.Data.y];
-	
-	float3 particlePos = input.Pos + cellPos + deviation;
+	float3 CellPos = _CellPositions[Input.Data.x];
+	float3 Deviation = _Deviations[Input.Data.y];
+	float3 ParticlePos = Input.Pos + CellPos + Deviation;
 
-	float3 camDelta = abs(cameraPos.xyz-particlePos);
-	float camDist = length(camDelta);
-	
-	camDelta -= fadeOutRange;
-	camDelta /= fadeOutDelta;
-	float alpha = 1.f-length(saturate(camDelta));
+	float3 CamDelta = abs(_CameraPos.xyz - ParticlePos.xyz);
+	float CamDist = length(CamDelta);
+	CamDelta = (CamDelta - _FadeOutRange) / _FadeOutDelta;
 
-	output.Color = float4(particleColor.rgb,particleColor.a*alpha);
-	
-	output.Pos = mul(float4(particlePos,1), wvp);
-	output.TexCoord = input.TexCoord;
-	
-	output.pointSize = min(particleSize * sqrt(1/(pointScale[0]+pointScale[1]*camDist)), maxParticleSize);
-	
-	return output;
+	float Alpha = 1.0f - length(saturate(CamDelta));
+
+	Output.Color = saturate(float4(_ParticleColor.rgb, _ParticleColor.a * Alpha));
+	Output.Pos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
+	Output.TexCoord = Input.TexCoord;
+	Output.PointSize = min(_ParticleSize * rsqrt(_PointScale[0] + _PointScale[1] * CamDist), _MaxParticleSize);
+	return Output;
 }
 
-float4 psPoint(POINT_VSOUT input) : COLOR
+float4 Point_PS(VS2PS_Point Input) : COLOR
 {
-	float4 texCol = tex2D(sampler0, input.TexCoord);
-	return texCol * input.Color;
+	float4 TexCol = tex2D(Sampler_0, Input.TexCoord);
+	return TexCol * Input.Color;
 }
 
 technique Point
 {
 	pass p0
 	{
-		FogEnable = FALSE;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
-		ZWriteEnable = false;//TRUE;
+		ZWriteEnable = FALSE; // TRUE;
 		AlphaBlendEnable = TRUE;
-		SrcBlend = SrcAlpha;
-		DestBlend = One;//InvSrcAlpha;
+		SrcBlend = SRCALPHA;
+		DestBlend = ONE; // INVSRCALPHA;
 		CullMode = NONE;
-		
-		VertexShader = compile vs_2_a vsPoint();
-		PixelShader = compile ps_2_a psPoint();
+
+		VertexShader = compile vs_3_0 Point_VS();
+		PixelShader = compile ps_3_0 Point_PS();
 	}
 }
 
-/////////////////////////////////////////////
-// Line Technique
-/////////////////////////////////////////////
 
-struct LINE_VSOUT
+
+
+/*
+	Line Technique
+*/
+
+struct VS2PS_Line
 {
-	float4 Pos: POSITION;
+	float4 Pos : POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float4 Color : COLOR0;
 };
 
-LINE_VSOUT vsLine(VSINPUT input)
+VS2PS_Line Line_VS(APP2PS Input)
 {
-	LINE_VSOUT output;
+	VS2PS_Line Output;
 
-	float3 cellPos = cellPositions[input.Data.x];
-	float3 particlePos = input.Pos + cellPos;
+	float3 CellPos = _CellPositions[Input.Data.x];
+	float3 ParticlePos = Input.Pos + CellPos;
 
-	float3 camDelta = abs(cameraPos.xyz-particlePos);
-	camDelta -= fadeOutRange;
-	camDelta /= fadeOutDelta;
-	float alpha = 1.f-length(saturate(camDelta));
+	float3 CamDelta = abs(_CameraPos.xyz - ParticlePos.xyz);
+	CamDelta = (CamDelta - _FadeOutRange) / _FadeOutDelta;
+	float Alpha = 1.0f - length(saturate(CamDelta));
 
-	output.Color = float4(particleColor.rgb,particleColor.a*alpha);
-	
-	output.Pos = mul(float4(particlePos,1), wvp);
-	output.TexCoord = input.TexCoord;
-
-	return output;
+	Output.Color = saturate(float4(_ParticleColor.rgb,_ParticleColor.a * Alpha));
+	Output.Pos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
+	Output.TexCoord = Input.TexCoord;
+	return Output;
 }
 
-float4 psLine(LINE_VSOUT input) : COLOR
+float4 Line_PS(VS2PS_Line Input) : COLOR
 {
-	return input.Color;
+	return Input.Color;
 }
 
 technique Line
 {
 	pass p0
 	{
-		FogEnable = FALSE;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
-		ZWriteEnable = false;//TRUE;
+		ZWriteEnable = FALSE; // TRUE;
 		AlphaBlendEnable = TRUE;
-		SrcBlend = SrcAlpha;
-		DestBlend = One;//InvSrcAlpha;
+		SrcBlend = SRCALPHA;
+		DestBlend = ONE; // INVSRCALPHA;
 		CullMode = NONE;
-		
-		VertexShader = compile vs_2_a vsLine();
-		PixelShader = compile ps_2_a psLine();
+
+		VertexShader = compile vs_3_0 Line_VS();
+		PixelShader = compile ps_3_0 Line_PS();
 	}
 }
 
-/////////////////////////////////////////////
-// Debug Cell Technique
-/////////////////////////////////////////////
 
-struct CELL_VSOUT
+
+
+/*
+	Debug Cell Technique
+*/
+
+struct VS2PS_Cell
 {
 	float4 Pos: POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float4 Color : COLOR0;
 };
 
-CELL_VSOUT vsCells(VSINPUT input)
+VS2PS_Cell Cells_VS(APP2PS Input)
 {
-	CELL_VSOUT output;
+	VS2PS_Cell Output;
 
-	float3 cellPos = cellPositions[input.Data.x];
-	float3 particlePos = input.Pos + cellPos;
+	float3 CellPos = _CellPositions[Input.Data.x];
+	float3 ParticlePos = Input.Pos + CellPos;
 
-	output.Color = particleColor;
-	
-	output.Pos = mul(float4(particlePos,1), wvp);
-	output.TexCoord = input.TexCoord;
-
-	return output;
+	Output.Color = saturate(_ParticleColor);
+	Output.Pos = mul(float4(ParticlePos, 1.0), _WorldViewProj);
+	Output.TexCoord = Input.TexCoord;
+	return Output;
 }
 
-float4 psCells(CELL_VSOUT input) : COLOR
+float4 Cells_PS(VS2PS_Cell Input) : COLOR
 {
-	return input.Color;
+	return Input.Color;
 }
 
 technique Cells
 {
 	pass p0
 	{
-		FogEnable = FALSE;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
-		ZWriteEnable = false;//TRUE;
+		ZWriteEnable = FALSE; // TRUE;
 		AlphaBlendEnable = TRUE;
 		SrcBlend = SrcAlpha;
-		DestBlend = One;//InvSrcAlpha;
+		DestBlend = ONE; // INVSRCALPHA;
 		CullMode = NONE;
-		
-		VertexShader = compile vs_2_a vsCells();
-		PixelShader = compile ps_2_a psCells();
+
+		VertexShader = compile vs_3_0 Cells_VS();
+		PixelShader = compile ps_3_0 Cells_PS();
 	}
 }

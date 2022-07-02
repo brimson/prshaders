@@ -1,14 +1,17 @@
+#line 2 "QuadGeom.fx"
 
 /*
 	Assumption: Shader that generates the fullscreen quad for FSQuaddrawer and postproduction
 	Reason: Vertex position normalized from [-1.0, 1.0] to [0.0, 1.0], flipping the Y axis
 */
 
-#line 2 "QuadGeom.fx"
+/*
+	[Textures and samplers]
+*/
 
-texture Texture_0: TEXLAYER0;
+uniform texture Texture_0 : TEXLAYER0;
 
-sampler Sample_0 = sampler_state
+sampler QuadGeom_Sampler = sampler_state
 {
 	Texture = (Texture_0);
 	AddressU = CLAMP;
@@ -26,21 +29,20 @@ struct APP2VS
 struct VS2PS
 {
     float4 Pos : POSITION;
-    float2 Tex : TEXCOORD0;
+    float2 TexCoord : TEXCOORD0;
 };
 
 VS2PS Quad_VS(APP2VS Input)
 {
 	VS2PS Output;
 	Output.Pos = float4(Input.Pos.xy, 0.0f, 1.0f);
-	Output.Tex = Input.Pos.xy * 0.5 + 0.5;
-	Output.Tex.y = 1.0 - Output.Tex.y;
+	Output.TexCoord = Input.Pos.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
 	return Output;
 }
 
 float4 Quad_PS(VS2PS Input) : COLOR
 {
-	return tex2D(Sample_0, Input.Tex);
+	return tex2D(QuadGeom_Sampler, Input.TexCoord);
 }
 
 technique TexturedQuad

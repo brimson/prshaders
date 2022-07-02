@@ -2,7 +2,7 @@
 float4x4 World;
 float4x4 ViewProjection;
 int textureFactor = 0xffAFFFaF;
-bool _AlphaBlendEnable = false;
+bool alphaBlendEnable = false;
 //-----------VS/PS----
 
 string reqVertexElement[] = 
@@ -43,7 +43,7 @@ technique defaultShader
 		DestBlend		= invsrcalpha;
 		fogenable		= false;
 		CullMode		= NONE;
-		AlphaBlendEnable= <_AlphaBlendEnable>;
+		AlphaBlendEnable= <alphaBlendEnable>;
 		AlphaTestEnable = false;
 
 //		TextureFactor	= < textureFactor >;

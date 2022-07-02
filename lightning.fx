@@ -1,11 +1,18 @@
 
-float4x4 _WorldViewProj : WORLDVIEWPROJ;
 
-float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
+/*
+	[Attributes from app]
+*/
 
-texture Texture_0 : TEXTURE;
+uniform float4x4 _WorldViewProj : WORLDVIEWPROJ;
+uniform float4 _LightningColor: LIGHTNINGCOLOR = { 1.0, 1.0, 1.0, 1.0 };
 
-sampler Sampler_0 = sampler_state
+/*
+	[Textures and samplers]
+*/
+
+uniform texture Texture_0 : TEXTURE;
+sampler Lightning_Sampler_0 = sampler_state
 {
 	Texture = <Texture_0>;
 	MinFilter = LINEAR;
@@ -26,7 +33,7 @@ struct VS2PS
 {
 	float4 Pos: POSITION;
 	float2 TexCoords: TEXCOORD0;
-	float4 Color : COLOR;
+	float4 Color : COLOR0;
 };
 
 VS2PS Lightning_VS(APP2VS Input)
@@ -34,13 +41,13 @@ VS2PS Lightning_VS(APP2VS Input)
 	VS2PS Output;
 	Output.Pos = mul(float4(Input.Pos, 1.0), _WorldViewProj);
 	Output.TexCoords = Input.TexCoords;
-	Output.Color = Input.Color;
+	Output.Color = saturate(Input.Color);
 	return Output;
 }
 
 float4 Lightning_PS(VS2PS Input) : COLOR
 {
-	float4 Color = tex2D(Sampler_0, Input.TexCoords);
+	float4 Color = tex2D(Lightning_Sampler_0, Input.TexCoords);
 	return float4(Color.rgb * _LightningColor.rgb, Color.a * _LightningColor.a * Input.Color.a);
 }
 
@@ -48,7 +55,6 @@ technique Lightning
 {
 	pass p0
 	{
-		FogEnable = FALSE;
 		ZEnable = TRUE;
 		ZFunc = LESSEQUAL;
 		ZWriteEnable = TRUE;

@@ -52,7 +52,7 @@ float4 blendIndices : BLENDINDICES
 	int indexArray[4] = (int[4])indexVector;
 
 	Out.Pos		= mul(float4(inPos, 1), mul(Bones[indexArray[0]], ViewProjection));
-	Out.Fog		= Calc_Fog(Out.Pos.w);
+	Out.Fog		= calcFog(Out.Pos.w);
 	Out.Tex		= tex0;
 
 	return Out;
@@ -88,8 +88,8 @@ technique defaultTechnique
 
 		AlphaTestEnable = < AlphaTest >;
 		AlphaBlendEnable= < AlphaBlendEnable >;
-		AlphaRef		= < _AlphaRef >;
-		SrcBlend		= < _SrcBlend >;
-		DestBlend		= < _DestBlend >;
+		AlphaRef		= < alphaRef >;
+		SrcBlend		= < srcBlend >;
+		DestBlend		= < destBlend >;
 	}
 }

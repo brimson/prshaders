@@ -1,86 +1,79 @@
 #line 2 "TreeBillboard.fx"
 
-float4x4 mViewProj : matVIEWPROJ;
+uniform float4x4 _ViewProj : matVIEWPROJ;
 
+// Uniform render state settings from app
+uniform bool _AlphaBlend : ALPHABLEND = true;
+uniform dword _SrcBlend : SRCBLEND = D3DBLEND_SRCALPHA;
+uniform dword _DestBlend : DESTBLEND = D3DBLEND_INVSRCALPHA;
+uniform bool _AlphaTest : ALPHATEST = true;
+uniform dword _AlphaFunc : ALPHAFUNC = D3DCMP_GREATER;
+uniform dword _AlphaRef : ALPHAREF = 0;
+uniform dword _ZEnable : ZMODE = D3DZB_TRUE;
+uniform bool _ZWriteEnable : ZWRITEENABLE = false;
+uniform dword _TexFactor : TEXFACTOR = 0;
 
-bool bAlphaBlend : ALPHABLEND		= true;
-dword dwSrcBlend : SRCBLEND		= D3DBLEND_SRCALPHA;
-dword dwDestBlend : DESTBLEND		= D3DBLEND_INVSRCALPHA;
-
-bool bAlphaTest : ALPHATEST		= true;
-dword dwAlphaFunc : ALPHAFUNC		= D3DCMP_GREATER;
-dword dwAlphaRef : ALPHAREF		= 0;
-
-dword dwZEnable : ZMODE			= D3DZB_TRUE;
-bool bZWriteEnable : ZWRITEENABLE	= false;
-
-dword dwTexFactor : TEXFACTOR		= 0;
-
-texture texture0: TEXLAYER0;
-sampler sampler0 = sampler_state {
-	Texture			= (texture0);
-	AddressU		= WRAP;
-	AddressV		= CLAMP;
-	MipFilter		= LINEAR;
-	MinFilter 		= LINEAR;
-	MagFilter 		= LINEAR;
+uniform texture Texture_0: TEXLAYER0;
+sampler Sampler_0 = sampler_state
+{
+	Texture = (Texture_0);
+	AddressU = WRAP;
+	AddressV = CLAMP;
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 };
 
-texture texture1: TEXLAYER1;
-sampler sampler1 = sampler_state {
-	Texture			= (texture1);
-	AddressU		= WRAP;
-	AddressV		= CLAMP;
-	MipFilter		= LINEAR;
-	MinFilter 		= LINEAR;
-	MagFilter 		= LINEAR;
+texture Texture_1: TEXLAYER1;
+sampler Sampler_1 = sampler_state
+{
+	Texture = (Texture_1);
+	AddressU = WRAP;
+	AddressV = CLAMP;
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 };
-
 
 struct APP2VS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR;
-    float4	Col2 : COLOR;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+	float4 Pos : POSITION;
+	float4 Color1 : COLOR;
+	float4 Color2 : COLOR;
+	float2 TexCoord1 : TEXCOORD0;
+	float2 TexCoord2 : TEXCOORD1;
 };
 
 struct VS2PS
 {
-    float4	Pos : POSITION;
-    float4	Col : COLOR0;
-    float4	Col2 : COLOR1;
-    float2	Tex : TEXCOORD0;
-    float2	Tex2 : TEXCOORD1;
+	float4 Pos : POSITION;
+	float4 Color1 : COLOR0;
+	float4 Color2 : COLOR1;
+	float2 TexCoord1 : TEXCOORD0;
+	float2 TexCoord2 : TEXCOORD1;
 };
 
-
-float4 psFFP(VS2PS indata) : COLOR
+float4 TreeBillboard_PS(VS2PS Input) : COLOR
 {
-    float4 col0 = tex2D(sampler0, indata.Tex);
-    float4 col1 = tex2D(sampler1, indata.Tex2);
-    
-    return lerp(col1, col0, indata.Col2.a);
+	float4 col0 = tex2D(Sampler_0, Input.TexCoord1);
+	float4 col1 = tex2D(Sampler_1, Input.TexCoord2);
+	return lerp(col1, col0, Input.Color2.a);
 }
 
-VS2PS vsFFP(APP2VS indata)
+VS2PS TreeBillboard_VS(APP2VS Input)
 {
-	VS2PS outdata;
-	
-	outdata.Pos = mul(indata.Pos, mViewProj);
-	outdata.Col = indata.Col;
-	outdata.Col2 = indata.Col2;	
- 	outdata.Tex = indata.Tex;
- 	outdata.Tex2 = indata.Tex2;
- 	
-	return outdata;
+	VS2PS Output;
+	Output.Pos = mul(Input.Pos, _ViewProj);
+	Output.Color1 = saturate(Input.Color1);
+	Output.Color2 = saturate(Input.Color2);
+	Output.TexCoord1 = Input.TexCoord1;
+	Output.TexCoord2 = Input.TexCoord2;
+	return Output;
 }
-
 
 technique QuadWithTexture
 <
-	int Declaration[] = 
+	int Declaration[] =
 	{
 		// StreamNo, DataType, Usage, UsageIdx
 		0, D3DDECLTYPE_FLOAT3, D3DDECLUSAGE_POSITION, 0,
@@ -95,18 +88,17 @@ technique QuadWithTexture
 	pass p0
 	{
 		// App alpha/depth settings
-		AlphaBlendEnable = (bAlphaBlend);
-		SrcBlend = (dwSrcBlend);
-		DestBlend = (dwDestBlend);
-		AlphaTestEnable = true;//(bAlphaTest);
-		AlphaFunc = (dwAlphaFunc);
-		AlphaRef = (dwAlphaRef);
-		ZWriteEnable = (bZWriteEnable);
-		//TextureFactor = (dwTexFactor);
+		AlphaBlendEnable = (_AlphaBlend);
+		SrcBlend = (_SrcBlend);
+		DestBlend = (_DestBlend);
+		AlphaTestEnable = TRUE; // (_AlphaTest);
+		AlphaFunc = (_AlphaFunc);
+		AlphaRef = (_AlphaRef);
+		ZWriteEnable = (_ZWriteEnable);
+		// TextureFactor = (_TexFactor);
 		CullMode = NONE;
 
-		VertexShader = compile vs_2_a vsFFP();
-		PixelShader = compile ps_2_a psFFP(); 
+		VertexShader = compile vs_3_0 TreeBillboard_VS();
+		PixelShader = compile ps_3_0 TreeBillboard_PS();
 	}
 }
-

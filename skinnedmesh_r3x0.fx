@@ -1,174 +1,183 @@
 
+#include "shaders/SkinnedMesh_Shared.fx"
+
+#if !defined(SKINNEDMESH_SHARED_FX)
+	#include "SkinnedMesh_Shared.fx"
+#endif
 
 struct APP2VS_fullMRT
 {
-	float4	Pos 		: POSITION;    
-	float3	Normal 		: NORMAL;
-	float	BlendWeights	: BLENDWEIGHT;
-	float4	BlendIndices 	: BLENDINDICES;    
-	float2	TexCoord0 	: TEXCOORD0;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float BlendWeights : BLENDWEIGHT;
+	float4 BlendIndices : BLENDINDICES;
+	float2 TexCoord0 : TEXCOORD0;
 };
 
-struct VS2PS_ZAndDiffuse
+struct VS2PS_Z_Diffuse
 {
-	float4	Pos				: POSITION;
-	float2	Tex0			: TEXCOORD0;
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
 };
 
-struct VS2PS_fullMRT
+struct VS2PS_Full_MRT
 {
-	float4	Pos				: POSITION;
-	float2	Tex0			: TEXCOORD0;
-	float3	GroundUVAndLerp	: COLOR0;
-    	float4	wPos			: TEXCOORD1;
-	float4 Mat1				: TEXCOORD2;
-	float3 Mat2				: TEXCOORD3;
-	float3 Mat3				: TEXCOORD4;
-	float4 Mat1_			: TEXCOORD5;
-	float3 Mat2_			: TEXCOORD6;
-	float3 Mat3_			: TEXCOORD7;
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
+	float4 wPos : TEXCOORD1;
+	float4 Mat1 : TEXCOORD2;
+	float3 Mat2 : TEXCOORD3;
+	float3 Mat3 : TEXCOORD4;
+	float4 Mat1_ : TEXCOORD5;
+	float3 Mat2_ : TEXCOORD6;
+	float3 Mat3_ : TEXCOORD7;
+	float3 GroundUVAndLerp : COLOR0;
 };
 
-struct PS2FB_fullMRT
+struct PS2FB_Full_MRT
 {
-    float4	Col0 		: COLOR0;
-    float4	Col1 		: COLOR1;
-    float4	Col2 		: COLOR2;
+    float4 Col0 : COLOR0;
+    float4 Col1 : COLOR1;
+    float4 Col2 : COLOR2;
 };
 
-VS2PS_ZAndDiffuse vsZAndDiffuse(APP2VS_fullMRT indata, uniform int NumBones)
+
+
+
+VS2PS_Z_Diffuse Z_Diffuse_VS(APP2VS_fullMRT Input, uniform int NumBones)
 {
-	VS2PS_ZAndDiffuse outdata;
-	
+	VS2PS_Z_Diffuse Output;
+
 	float LastWeight = 0.0;
 	float3 Pos = 0.0;
-	
+
 	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
-	
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+
 	// Cast the vectors to arrays for use in the for loop below
-	float BlendWeightsArray[1] = (float[1])indata.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;    
-	
-	// Calculate the pos/normal using the "normal" weights 
+	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
+	int IndexArray[4] = (int[4])IndexVector;
+
+	// Calculate the pos/Normal using the "Normal" weights
 	// and accumulate the weights to calculate the last weight
 	for (int iBone = 0; iBone < NumBones-1; iBone++)
 	{
 		LastWeight += BlendWeightsArray[iBone];
-		Pos += mul(indata.Pos, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
+		Pos += mul(Input.Pos, _BoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
 	}
-	LastWeight = 1.0 - LastWeight; 
-	
+	LastWeight = 1.0 - LastWeight;
+
 	// Now that we have the calculated weight, add in the final influence
-	Pos += mul(indata.Pos, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	
+	Pos += mul(Input.Pos, _BoneArray[IndexArray[NumBones-1]]) * LastWeight;
+
 	float4 pos4 = float4(Pos.xyz, 1.0);
-	
+
 	// Transform position into view and then projection space
-	outdata.Pos = mul(pos4, mWorldViewProj); 
+	Output.Pos = mul(pos4, _WorldViewProj);
 
-	outdata.Tex0 = indata.TexCoord0;
-	
-	return outdata;
+	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
-float4 psZAndDiffuse(VS2PS_ZAndDiffuse  indata) : COLOR
+float4 Z_Diffuse_PS(VS2PS_Z_Diffuse  Input) : COLOR
 {
-	return tex2D(sampler0, indata.Tex0);
+	return tex2D(Sampler_0, Input.Tex0);
 }
 
-VS2PS_fullMRT vsFullMRT(APP2VS_fullMRT indata, uniform int NumBones)
+VS2PS_Full_MRT Full_MRT_VS(APP2VS_fullMRT Input, uniform int NumBones)
 {
-	VS2PS_fullMRT outdata;
-	
+	VS2PS_Full_MRT Output;
+
 	float LastWeight = 0.0;
 	float3 Pos = 0.0;
-	float3 Normal = 0.0;    
-	float3 SkinnedLVec = 0.0;
-	
+	float3 Normal = 0.0;
+	float3 SkinnedLightVec = 0.0;
+
 	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
-	
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+
 	// Cast the vectors to arrays for use in the for loop below
-	float BlendWeightsArray[1] = (float[1])indata.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;    
-	
-	// Calculate the pos/normal using the "normal" weights 
+	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
+	int IndexArray[4] = (int[4])IndexVector;
+
+	// Calculate the pos/Normal using the "Normal" weights
 	// and accumulate the weights to calculate the last weight
 	for (int iBone = 0; iBone < NumBones-1; iBone++)
 	{
 		LastWeight += BlendWeightsArray[iBone];
-		Pos += mul(indata.Pos, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
-		Normal += mul(indata.Normal, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
+		Pos += mul(Input.Pos, _BoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
+		Normal += mul(Input.Normal, _BoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
 	}
-	LastWeight = 1.0 - LastWeight; 
-	
+	LastWeight = 1.0 - LastWeight;
+
 	// Now that we have the calculated weight, add in the final influence
-	Pos += mul(indata.Pos, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	Normal += mul(indata.Normal, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	
+	Pos += mul(Input.Pos, _BoneArray[IndexArray[NumBones-1]]) * LastWeight;
+	Normal += mul(Input.Normal, _BoneArray[IndexArray[NumBones-1]]) * LastWeight;
+
 	// Normalize normals
 	Normal = normalize(Normal);
-	
+
 	float4 pos4 = float4(Pos.xyz, 1.0);
-	
-	float3x3 mBone1 = transpose((float3x3)mBoneArray[IndexArray[0]]);
-	float3x3 mBone2 = transpose((float3x3)mBoneArray[IndexArray[1]]);
-	outdata.Mat1.xyz = mBone1[0];
-	outdata.Mat1.w = BlendWeightsArray[0];
-	outdata.Mat2 = mBone1[1];
-	outdata.Mat3 = mBone1[2];
-	outdata.Mat1_.xyz = mBone2[0];
-	outdata.Mat1_.w = 1 - BlendWeightsArray[0];
-	outdata.Mat2_ = mBone2[1];
-	outdata.Mat3_ = mBone2[2];
+
+	float3x3 Bone1 = transpose((float3x3)_BoneArray[IndexArray[0]]);
+	float3x3 Bone2 = transpose((float3x3)_BoneArray[IndexArray[1]]);
+	Output.Mat1.xyz = Bone1[0];
+	Output.Mat1.w = BlendWeightsArray[0];
+	Output.Mat2 = Bone1[1];
+	Output.Mat3 = Bone1[2];
+	Output.Mat1_.xyz = Bone2[0];
+	Output.Mat1_.w = 1.0 - BlendWeightsArray[0];
+	Output.Mat2_ = Bone2[1];
+	Output.Mat3_ = Bone2[2];
 
 	// Transform position into view and then projection space
-	outdata.Pos = mul(pos4, mWorldViewProj); 
+	Output.Pos = mul(pos4, _WorldViewProj);
 
  	// Hemi lookup values
-	float4 wPos = mul(pos4, mWorld); 
- 	outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-	outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-	outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
-	outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
+	float4 wPos = mul(pos4, _World);
+	Output.GroundUVAndLerp = saturate(SkinnedMesh_Calc_HemiLookup(wPos, _HemiMapInfo, Normal));
 
-	outdata.wPos = mul(pos4, mWorldView);
+	Output.wPos = mul(pos4, _WorldView);
 
-	outdata.Tex0 = indata.TexCoord0;
-	
-	return outdata;
+	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
-PS2FB_fullMRT psFullMRT(VS2PS_fullMRT indata)
+PS2FB_Full_MRT Full_MRT_PS(VS2PS_Full_MRT Input)
 {
-	PS2FB_fullMRT outdata;
-	
-	float4 groundcolor = tex2D(sampler0, indata.GroundUVAndLerp.xy);
-	float4 hemicolor = lerp(groundcolor, skyColor, indata.GroundUVAndLerp.z);
-	float4 expnormal = tex2D(sampler1, indata.Tex0);
-	expnormal.rgb = (expnormal * 2) - 1;
+	PS2FB_Full_MRT Output;
 
-	outdata.Col0 = ambientColor*hemicolor;
-	outdata.Col1 = indata.wPos;
+	float4 GroundColor = tex2D(Sampler_0, Input.GroundUVAndLerp.xy);
+	float4 HemiColor = lerp(GroundColor, _SkyColor, Input.GroundUVAndLerp.z);
+	float4 ExpNormal = tex2D(Sampler_1, Input.Tex0);
+	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
 
-	float3 normal;
-	normal.x = dot(expnormal.xyz, indata.Mat1.xyz) * indata.Mat1.w;
-	normal.y = dot(expnormal.xyz, indata.Mat2.xyz) * indata.Mat1.w;
-	normal.z = dot(expnormal.xyz, indata.Mat3.xyz) * indata.Mat1.w;
-	normal.x += dot(expnormal.xyz, indata.Mat1_.xyz) * indata.Mat1_.w;
-	normal.y += dot(expnormal.xyz, indata.Mat2_.xyz) * indata.Mat1_.w;
-	normal.z += dot(expnormal.xyz, indata.Mat3_.xyz) * indata.Mat1_.w;
-	outdata.Col2.x = dot(normal, mWorldViewI[0].xyz);
-	outdata.Col2.y = dot(normal, mWorldViewI[1].xyz);
-	outdata.Col2.z = dot(normal, mWorldViewI[2].xyz);
-	outdata.Col2.w = expnormal.a;
+	Output.Col0 = _AmbientColor * HemiColor;
+	Output.Col1 = Input.wPos;
 
-	return outdata;
+	float3 Normal;
+	Normal.x = dot(ExpNormal.xyz, Input.Mat1.xyz) * Input.Mat1.w;
+	Normal.y = dot(ExpNormal.xyz, Input.Mat2.xyz) * Input.Mat1.w;
+	Normal.z = dot(ExpNormal.xyz, Input.Mat3.xyz) * Input.Mat1.w;
+	Normal.x += dot(ExpNormal.xyz, Input.Mat1_.xyz) * Input.Mat1_.w;
+	Normal.y += dot(ExpNormal.xyz, Input.Mat2_.xyz) * Input.Mat1_.w;
+	Normal.z += dot(ExpNormal.xyz, Input.Mat3_.xyz) * Input.Mat1_.w;
+	Output.Col2.x = dot(Normal, _WorldViewI[0].xyz);
+	Output.Col2.y = dot(Normal, _WorldViewI[1].xyz);
+	Output.Col2.z = dot(Normal, _WorldViewI[2].xyz);
+	Output.Col2.w = ExpNormal.a;
+
+	return Output;
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArrayFullMRT[2] = { compile vs_2_a vsFullMRT(1), compile vs_2_a vsFullMRT(2) };
+VertexShader Array_Full_MRT_VS[2] =
+{
+	compile vs_3_0 Full_MRT_VS(1),
+	compile vs_3_0 Full_MRT_VS(2)
+};
 
 technique fullMRT
 {
@@ -181,13 +190,13 @@ technique fullMRT
 		ZFunc = LESSEQUAL;
 
 		StencilEnable = TRUE;
-		StencilRef = (dwStencilRef);
+		StencilRef = (_StencilRef);
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
 
-		VertexShader = compile vs_2_a vsZAndDiffuse(2);
-		PixelShader = compile ps_2_a psZAndDiffuse();
+		VertexShader = compile vs_3_0 Z_Diffuse_VS(2);
+		PixelShader = compile ps_3_0 Z_Diffuse_PS();
 	}
 
 	pass mrt
@@ -200,97 +209,98 @@ technique fullMRT
 
 		StencilEnable = FALSE;
 
-		VertexShader = (vsArrayFullMRT[1]);
-		PixelShader = compile ps_2_a psFullMRT();
+		VertexShader = (Array_Full_MRT_VS[1]);
+		PixelShader = compile ps_3_0 Full_MRT_PS();
 	}
 }
 
-//----------- pp tangent based lighting
 
-struct APP2VS_fullMRTtangent
+
+
+// PP tangent based lighting
+
+struct APP2VS_Full_MRT_Tangent
 {
-	float4	Pos 		: POSITION;    
-	float3	Normal 		: NORMAL;
-	float	BlendWeights	: BLENDWEIGHT;
-	float4	BlendIndices 	: BLENDINDICES;    
-	float2	TexCoord0 	: TEXCOORD0;
-    float3  Tan : TANGENT;
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float BlendWeights : BLENDWEIGHT;
+	float4 BlendIndices : BLENDINDICES;
+	float2 TexCoord0 : TEXCOORD0;
+    float3 Tan : TANGENT;
 };
 
-
-VS2PS_fullMRT vsFullMRTtangent(APP2VS_fullMRTtangent indata, uniform int NumBones)
+VS2PS_Full_MRT Full_MRT_Tangent_VS(APP2VS_Full_MRT_Tangent Input, uniform int NumBones)
 {
-	VS2PS_fullMRT outdata;
-	
+	VS2PS_Full_MRT Output;
+
 	float LastWeight = 0.0;
 	float3 Pos = 0.0;
-	float3 Normal = 0.0;    
-	float3 SkinnedLVec = 0.0;
-	
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
-	
-	// Cast the vectors to arrays for use in the for loop below
-	float BlendWeightsArray[1] = (float[1])indata.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;    
+	float3 Normal = 0.0;
+	float3 SkinnedLightVec = 0.0;
 
-	float3 binormal = normalize(cross(indata.Tan, indata.Normal));
-	float3x3 TanBasis = float3x3( indata.Tan, 
-					binormal, 
-					indata.Normal);
-	float3x3 worldI;	
-	float3x3 mat;	
-	
-	// Calculate the pos/normal using the "normal" weights 
+	// Compensate for lack of UBYTE4 on Geforce3
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+
+	// Cast the vectors to arrays for use in the for loop below
+	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
+	int IndexArray[4] = (int[4])IndexVector;
+
+	float3 binormal = normalize(cross(Input.Tan, Input.Normal));
+	float3x3 TanBasis = float3x3(Input.Tan, binormal, Input.Normal);
+	float3x3 worldI;
+	float3x3 mat;
+
+	// Calculate the pos/Normal using the "Normal" weights
 	// and accumulate the weights to calculate the last weight
 	for (int iBone = 0; iBone < NumBones-1; iBone++)
 	{
 		LastWeight += BlendWeightsArray[iBone];
-		Pos += mul(indata.Pos, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
-		Normal += mul(indata.Normal, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
+		Pos += mul(Input.Pos, _BoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
+		Normal += mul(Input.Normal, _BoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
 	}
-	LastWeight = 1.0 - LastWeight; 
-	
+	LastWeight = 1.0 - LastWeight;
+
 	// Now that we have the calculated weight, add in the final influence
-	Pos += mul(indata.Pos, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	Normal += mul(indata.Normal, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	
+	Pos += mul(Input.Pos, _BoneArray[IndexArray[NumBones-1]]) * LastWeight;
+	Normal += mul(Input.Normal, _BoneArray[IndexArray[NumBones-1]]) * LastWeight;
+
 	// Normalize normals
 	Normal = normalize(Normal);
-	
+
 	float4 pos4 = float4(Pos.xyz, 1.0);
-	
+
 	// Calculate WorldTangent directly... inverse is the transpose for affine rotations
-	float3x3 mBone1 = transpose(mul(TanBasis, mBoneArray[IndexArray[0]]));
-	float3x3 mBone2 = transpose(mul(TanBasis, mBoneArray[IndexArray[1]]));
-	outdata.Mat1.xyz = mBone1[0];
-	outdata.Mat1.w = BlendWeightsArray[0];
-	outdata.Mat2 = mBone1[1];
-	outdata.Mat3 = mBone1[2];
-	outdata.Mat1_.xyz = mBone2[0];
-	outdata.Mat1_.w = 1 - BlendWeightsArray[0];
-	outdata.Mat2_ = mBone2[1];
-	outdata.Mat3_ = mBone2[2];
+	float3x3 Bone1 = transpose(mul(TanBasis, _BoneArray[IndexArray[0]]));
+	float3x3 Bone2 = transpose(mul(TanBasis, _BoneArray[IndexArray[1]]));
+	Output.Mat1.xyz = Bone1[0];
+	Output.Mat1.w = BlendWeightsArray[0];
+	Output.Mat2 = Bone1[1];
+	Output.Mat3 = Bone1[2];
+	Output.Mat1_.xyz = Bone2[0];
+	Output.Mat1_.w = 1.0 - BlendWeightsArray[0];
+	Output.Mat2_ = Bone2[1];
+	Output.Mat3_ = Bone2[2];
 
 	// Transform position into view and then projection space
-	outdata.Pos = mul(pos4, mWorldViewProj); 
+	Output.Pos = mul(pos4, _WorldViewProj);
 
  	// Hemi lookup values
-	float4 wPos = mul(pos4, mWorld); 
- 	outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-	outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-	outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
-	outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
+	float4 wPos = mul(pos4, _World);
+	Output.GroundUVAndLerp = saturate(SkinnedMesh_Calc_HemiLookup(wPos, _HemiMapInfo, Normal));
 
-	outdata.wPos = mul(pos4, mWorldView);
-	 	
-	outdata.Tex0 = indata.TexCoord0;
-	
-	return outdata;
+	Output.wPos = mul(pos4, _WorldView);
+
+	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
 // Max 2 bones skinning supported!
-VertexShader vsArrayFullMRTtangent[2] = { compile vs_2_a vsFullMRTtangent(1), compile vs_2_a vsFullMRTtangent(2) };
+VertexShader Array_Full_MRT_Tangent_VS[2] =
+{
+	compile vs_3_0 Full_MRT_Tangent_VS(1),
+	compile vs_3_0 Full_MRT_Tangent_VS(2)
+};
 
 technique fullMRTtangent
 {
@@ -303,13 +313,13 @@ technique fullMRTtangent
 		ZFunc = LESSEQUAL;
 
 		StencilEnable = TRUE;
-		StencilRef = (dwStencilRef);
+		StencilRef = (_StencilRef);
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
 
-		VertexShader = compile vs_2_a vsZAndDiffuse(2);
-		PixelShader = compile ps_2_a psZAndDiffuse();
+		VertexShader = compile vs_3_0 Z_Diffuse_VS(2);
+		PixelShader = compile ps_3_0 Z_Diffuse_PS();
 	}
 	pass mrt
 	{
@@ -321,315 +331,214 @@ technique fullMRTtangent
 
 		StencilEnable = FALSE;
 
-		VertexShader = (vsArrayFullMRTtangent[1]);
-		PixelShader = compile ps_2_a psFullMRT();
+		VertexShader = (Array_Full_MRT_Tangent_VS[1]);
+		PixelShader = compile ps_3_0 Full_MRT_PS();
 	}
 }
 
+
+
+
 struct VS2PS_fullMRTskinpre
 {
-	float4	Pos				: POSITION;
-	float2	Tex0			: TEXCOORD0;
-	float4 Mat1				: TEXCOORD1;
-	float3 Mat2				: TEXCOORD2;
-	float3 Mat3				: TEXCOORD3;
-	float4 Mat1_			: TEXCOORD4;
-	float3 Mat2_			: TEXCOORD5;
-	float3 Mat3_			: TEXCOORD6;
-	float3 ObjEyeVec		: TEXCOORD7;
+	float4 Pos : POSITION;
+	float2 Tex0 : TEXCOORD0;
+	float4 Mat1 : TEXCOORD1;
+	float3 Mat2 : TEXCOORD2;
+	float3 Mat3 : TEXCOORD3;
+	float4 Mat1_ : TEXCOORD4;
+	float3 Mat2_ : TEXCOORD5;
+	float3 Mat3_ : TEXCOORD6;
+	float3 ObjEyeVec : TEXCOORD7;
 };
 
-VS2PS_fullMRTskinpre vsFullMRTskinpre(APP2VS_fullMRT indata, uniform int NumBones)
+VS2PS_fullMRTskinpre Full_MRT_Skin_Pre_VS(APP2VS_fullMRT Input, uniform int NumBones)
 {
-	VS2PS_fullMRTskinpre outdata;
+	VS2PS_fullMRTskinpre Output;
 
-	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
-	float BlendWeightsArray[1] = (float[1])indata.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;    
-	
-	float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-	Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
-	outdata.ObjEyeVec = normalize(objectEyePos-Pos);
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
+	int IndexArray[4] = (int[4])IndexVector;
 
-	float3x3 mBone1 = transpose((float3x3)mBoneArray[IndexArray[0]]);
-	float3x3 mBone2 = transpose((float3x3)mBoneArray[IndexArray[1]]);
-	outdata.Mat1.xyz = mBone1[0];
-	outdata.Mat1.w = BlendWeightsArray[0];
-	outdata.Mat2 = mBone1[1];
-	outdata.Mat3 = mBone1[2];
-	outdata.Mat1_.xyz = mBone2[0];
-	outdata.Mat1_.w = 1 - BlendWeightsArray[0];
-	outdata.Mat2_ = mBone2[1];
-	outdata.Mat3_ = mBone2[2];
+	float3 Pos = mul(Input.Pos, _BoneArray[IndexArray[0]]) * BlendWeightsArray[0];
+	Pos += mul(Input.Pos, _BoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+	Output.ObjEyeVec = normalize(_ObjectEyePos - Pos);
 
-	outdata.Pos.xy = indata.TexCoord0 * float2(2,-2) - float2(1, -1);
-	outdata.Pos.zw = float2(0, 1);
-	outdata.Tex0 = indata.TexCoord0;
-	
-	return outdata;
+	float3x3 Bone1 = transpose((float3x3)_BoneArray[IndexArray[0]]);
+	float3x3 Bone2 = transpose((float3x3)_BoneArray[IndexArray[1]]);
+	Output.Mat1.xyz = Bone1[0];
+	Output.Mat1.w = BlendWeightsArray[0];
+	Output.Mat2 = Bone1[1];
+	Output.Mat3 = Bone1[2];
+	Output.Mat1_.xyz = Bone2[0];
+	Output.Mat1_.w = 1.0 - BlendWeightsArray[0];
+	Output.Mat2_ = Bone2[1];
+	Output.Mat3_ = Bone2[2];
+
+	Output.Pos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
+	Output.Pos.zw = float2(0.0, 1.0);
+	Output.Tex0 = Input.TexCoord0;
+
+	return Output;
 }
 
-float4 psFullMRTskinpre(VS2PS_fullMRTskinpre indata) : COLOR
+float4 Full_MRT_Skin_Pre_PS(VS2PS_fullMRTskinpre Input) : COLOR
 {
-	float4 expnormal = tex2D(sampler0, indata.Tex0);
-	expnormal.rgb = (expnormal * 2) - 1;
+	float4 ExpNormal = tex2D(Sampler_0, Input.Tex0);
+	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
 
-	float3 normal;
-	normal.x = dot(expnormal.xyz, indata.Mat1.xyz) * indata.Mat1.w;
-	normal.y = dot(expnormal.xyz, indata.Mat2.xyz) * indata.Mat1.w;
-	normal.z = dot(expnormal.xyz, indata.Mat3.xyz) * indata.Mat1.w;
-	normal.x += dot(expnormal.xyz, indata.Mat1_.xyz) * indata.Mat1_.w;
-	normal.y += dot(expnormal.xyz, indata.Mat2_.xyz) * indata.Mat1_.w;
-	normal.z += dot(expnormal.xyz, indata.Mat3_.xyz) * indata.Mat1_.w;
+	float3 Normal;
+	Normal.x = dot(ExpNormal.xyz, Input.Mat1.xyz) * Input.Mat1.w;
+	Normal.y = dot(ExpNormal.xyz, Input.Mat2.xyz) * Input.Mat1.w;
+	Normal.z = dot(ExpNormal.xyz, Input.Mat3.xyz) * Input.Mat1.w;
+	Normal.x += dot(ExpNormal.xyz, Input.Mat1_.xyz) * Input.Mat1_.w;
+	Normal.y += dot(ExpNormal.xyz, Input.Mat2_.xyz) * Input.Mat1_.w;
+	Normal.z += dot(ExpNormal.xyz, Input.Mat3_.xyz) * Input.Mat1_.w;
 
-	float wrapDiff = dot(normal, -sunLightDir) + 0.5;
-	wrapDiff = saturate(wrapDiff / 1.5);
+	float WrapDiff = dot(Normal, -_SunLightDir) + 0.5;
+	WrapDiff = saturate(WrapDiff / 1.5);
 
-	float rimDiff = 1-dot(normal, indata.ObjEyeVec);
-	rimDiff = pow(rimDiff,3);
+	float RimDiff = 1.0 - dot(Normal, Input.ObjEyeVec);
+	RimDiff = pow(RimDiff, 3.0);
+	RimDiff *= saturate(0.75 - saturate(dot(Input.ObjEyeVec, -_SunLightDir)));
 
-	rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, -sunLightDir)));
-	
-	return float4(wrapDiff.rrr + rimDiff, expnormal.a);
+	return float4(WrapDiff.rrr + RimDiff, ExpNormal.a);
 }
 
 struct VS2PS_fullMRTskinpreshadowed
 {
-	float4	Pos				: POSITION;
-	float4 Tex0AndHZW		: TEXCOORD0;
-	float4 Mat1				: TEXCOORD1;
-	float3 Mat2				: TEXCOORD2;
-	float3 Mat3				: TEXCOORD3;
-	float4 Mat1_			: TEXCOORD4;
-	float3 Mat2_			: TEXCOORD5;
-	float3 Mat3_			: TEXCOORD6;
-	float4 ShadowTex		: TEXCOORD7;
-	float3 ObjEyeVec		: COLOR;
+	float4 Pos : POSITION;
+	float4 Tex0AndHZW : TEXCOORD0;
+	float4 Mat1 : TEXCOORD1;
+	float3 Mat2 : TEXCOORD2;
+	float3 Mat3 : TEXCOORD3;
+	float4 Mat1_ : TEXCOORD4;
+	float3 Mat2_ : TEXCOORD5;
+	float3 Mat3_ : TEXCOORD6;
+	float4 ShadowTex : TEXCOORD7;
+	float3 ObjEyeVec : COLOR0;
 };
 
-VS2PS_fullMRTskinpreshadowed vsFullMRTskinpreshadowed(APP2VS_fullMRT indata, uniform int NumBones)
+VS2PS_fullMRTskinpreshadowed Full_MRT_Skin_Pre_Shadowed_VS(APP2VS_fullMRT Input, uniform int NumBones)
 {
-	VS2PS_fullMRTskinpreshadowed outdata;
+	VS2PS_fullMRTskinpreshadowed Output;
 
-	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
-	float BlendWeightsArray[1] = (float[1])indata.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;    
-	
-	float3 Pos = mul(indata.Pos, mBoneArray[IndexArray[0]]) * BlendWeightsArray[0];
-	Pos += mul(indata.Pos, mBoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
-	outdata.ObjEyeVec = normalize(objectEyePos-Pos);
+	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
+	float BlendWeightsArray[1] = (float[1])Input.BlendWeights;
+	int IndexArray[4] = (int[4])IndexVector;
 
-//	float4 hPos = mul(float4(Pos, 1), mWorldViewProj); 
-//	outdata.Tex0AndHZW.zw = hPos.zw;
-	outdata.ShadowTex = mul(float4(Pos, 1), mLightVP);
-	outdata.ShadowTex.xy = clamp(outdata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
+	float3 Pos = mul(Input.Pos, _BoneArray[IndexArray[0]]) * BlendWeightsArray[0];
+	Pos += mul(Input.Pos, _BoneArray[IndexArray[1]]) * (1-BlendWeightsArray[0]);
+	Output.ObjEyeVec = saturate(normalize(_ObjectEyePos - Pos));
 
-//	float4 vPos = mul(float4(Pos, 1), mWorldView);
-//	outdata.ShadowTex = mul(vPos, mLightVP2);
-//	float4 wPos = mul(float4(Pos, 1), mWorld);
-//	outdata.ShadowTex = mul(wPos, mLightVP3);
-//	//outdata.ShadowTex.xyz /= outdata.ShadowTex.w;
-//	outdata.ShadowTex.xy = (outdata.ShadowTex.xy + 1) / 2;
-//	outdata.ShadowTex.y = 1-outdata.ShadowTex.y;
-	outdata.ShadowTex.z -= 0.007;
-outdata.ShadowTex.xy = clamp(outdata.ShadowTex.xy, vViewportMap.xy, vViewportMap.zw);
+	Output.ShadowTex = mul(float4(Pos, 1), _LightViewProj);
+	Output.ShadowTex.xy = clamp(Output.ShadowTex.xy, _ViewportMap.xy, _ViewportMap.zw);
+	Output.ShadowTex.z -= 0.007;
+	Output.ShadowTex.xy = clamp(Output.ShadowTex.xy, _ViewportMap.xy, _ViewportMap.zw);
 
-	float3x3 mBone1 = transpose((float3x3)mBoneArray[IndexArray[0]]);
-	float3x3 mBone2 = transpose((float3x3)mBoneArray[IndexArray[1]]);
-	outdata.Mat1.xyz = mBone1[0];
-	outdata.Mat1.w = BlendWeightsArray[0];
-	outdata.Mat2 = mBone1[1];
-	outdata.Mat3 = mBone1[2];
-	outdata.Mat1_.xyz = mBone2[0];
-	outdata.Mat1_.w = 1 - BlendWeightsArray[0];
-	outdata.Mat2_ = mBone2[1];
-	outdata.Mat3_ = mBone2[2];
+	float3x3 Bone1 = transpose((float3x3)_BoneArray[IndexArray[0]]);
+	float3x3 Bone2 = transpose((float3x3)_BoneArray[IndexArray[1]]);
+	Output.Mat1.xyz = Bone1[0];
+	Output.Mat1.w = BlendWeightsArray[0];
+	Output.Mat2 = Bone1[1];
+	Output.Mat3 = Bone1[2];
+	Output.Mat1_.xyz = Bone2[0];
+	Output.Mat1_.w = 1.0 - BlendWeightsArray[0];
+	Output.Mat2_ = Bone2[1];
+	Output.Mat3_ = Bone2[2];
 
-	outdata.Pos.xy = indata.TexCoord0 * float2(2,-2) - float2(1, -1);
-	outdata.Pos.zw = float2(0, 1);
-	outdata.Tex0AndHZW/*.xy*/ = indata.TexCoord0.xyyy;
-	
-	return outdata;
+	Output.Pos.xy = Input.TexCoord0 * float2(2.0, -2.0) - float2(1.0, -1.0);
+	Output.Pos.zw = float2(0.0, 1.0);
+	Output.Tex0AndHZW /* .xy */ = Input.TexCoord0.xyyy;
+
+	return Output;
 }
 
-float4 psFullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed indata) : COLOR
+float4 FullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed Input, bool IsNvidia)
 {
-	float4 expnormal = tex2D(sampler0, indata.Tex0AndHZW);
-	expnormal.rgb = (expnormal * 2) - 1;
+	float4 ExpNormal = tex2D(Sampler_0, Input.Tex0AndHZW);
+	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
 
-	float3 normal;
-	normal.x = dot(expnormal.xyz, indata.Mat1.xyz) * indata.Mat1.w;
-	normal.y = dot(expnormal.xyz, indata.Mat2.xyz) * indata.Mat1.w;
-	normal.z = dot(expnormal.xyz, indata.Mat3.xyz) * indata.Mat1.w;
-	normal.x += dot(expnormal.xyz, indata.Mat1_.xyz) * indata.Mat1_.w;
-	normal.y += dot(expnormal.xyz, indata.Mat2_.xyz) * indata.Mat1_.w;
-	normal.z += dot(expnormal.xyz, indata.Mat3_.xyz) * indata.Mat1_.w;
+	float3 Normal;
+	Normal.x = dot(ExpNormal.xyz, Input.Mat1.xyz) * Input.Mat1.w;
+	Normal.y = dot(ExpNormal.xyz, Input.Mat2.xyz) * Input.Mat1.w;
+	Normal.z = dot(ExpNormal.xyz, Input.Mat3.xyz) * Input.Mat1.w;
+	Normal.x += dot(ExpNormal.xyz, Input.Mat1_.xyz) * Input.Mat1_.w;
+	Normal.y += dot(ExpNormal.xyz, Input.Mat2_.xyz) * Input.Mat1_.w;
+	Normal.z += dot(ExpNormal.xyz, Input.Mat3_.xyz) * Input.Mat1_.w;
 
-	float wrapDiff = dot(normal, -sunLightDir) + 0.5;
-	wrapDiff = saturate(wrapDiff / 1.5);
+	float WrapDiff = dot(Normal, -_SunLightDir) + 0.5;
+	WrapDiff = saturate(WrapDiff / 1.5);
 
-	float rimDiff = 1-dot(normal, indata.ObjEyeVec);
-	rimDiff = pow(rimDiff,3);
-	rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, -sunLightDir)));
+	float RimDiff = 1-dot(Normal, Input.ObjEyeVec);
+	RimDiff = pow(RimDiff, 3);
+	RimDiff *= saturate(0.75 - saturate(dot(Input.ObjEyeVec, -_SunLightDir)));
 
-	float2 texel = float2(1.0/1024.0, 1.0/1024.0);
-	float4 samples;
-	samples.x = tex2D(sampler2point, indata.ShadowTex);
-	samples.y = tex2D(sampler2point, indata.ShadowTex.xy + float2(texel.x, 0));
-	samples.z = tex2D(sampler2point, indata.ShadowTex.xy + float2(0, texel.y));
-	samples.w = tex2D(sampler2point, indata.ShadowTex.xy + texel);
-	
-	float4 staticSamples;
-	staticSamples.x = tex2D(sampler1, indata.ShadowTex.xy + float2(-texel.x*1, -texel.y*2)).b;
-	staticSamples.y = tex2D(sampler1, indata.ShadowTex.xy + float2( texel.x*1, -texel.y*2)).b;
-	staticSamples.z = tex2D(sampler1, indata.ShadowTex.xy + float2(-texel.x*1,  texel.y*2)).b;
-	staticSamples.w = tex2D(sampler1, indata.ShadowTex.xy + float2( texel.x*1,  texel.y*2)).b;
-	staticSamples.x = dot(staticSamples.xyzw, 0.25);
-	
-	float4 cmpbits = samples > saturate(indata.ShadowTex.z);
-	float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
+	float2 Texel = float2(1.0 / 1024.0, 1.0 / 1024.0);
+	float AvgShadowValue = 0.0;
 
-	float totShadow = avgShadowValue.x*staticSamples.x;
-	float totDiff = wrapDiff + rimDiff;
-	return float4(totDiff, totShadow, saturate(totShadow+0.35), expnormal.a);
-}
-
-float4 psFullMRTskinpreshadowedNV(VS2PS_fullMRTskinpreshadowed indata) : COLOR
-{
-	float4 expnormal = tex2D(sampler0, indata.Tex0AndHZW);
-	expnormal.rgb = (expnormal * 2) - 1;
-
-	float3 normal;
-	normal.x = dot(expnormal.xyz, indata.Mat1.xyz) * indata.Mat1.w;
-	normal.y = dot(expnormal.xyz, indata.Mat2.xyz) * indata.Mat1.w;
-	normal.z = dot(expnormal.xyz, indata.Mat3.xyz) * indata.Mat1.w;
-	normal.x += dot(expnormal.xyz, indata.Mat1_.xyz) * indata.Mat1_.w;
-	normal.y += dot(expnormal.xyz, indata.Mat2_.xyz) * indata.Mat1_.w;
-	normal.z += dot(expnormal.xyz, indata.Mat3_.xyz) * indata.Mat1_.w;
-
-	float wrapDiff = dot(normal, -sunLightDir) + 0.5;
-	wrapDiff = saturate(wrapDiff / 1.5);
-
-	float rimDiff = 1-dot(normal, indata.ObjEyeVec);
-	rimDiff = pow(rimDiff,3);
-	rimDiff *= saturate(0.75-saturate(dot(indata.ObjEyeVec, -sunLightDir)));
-
-	float2 texel = float2(1.0/1024.0, 1.0/1024.0);
-	/*
-	float4 samples;
-	samples.x = tex2D(sampler2point, indata.ShadowTex);
-	samples.y = tex2D(sampler2point, indata.ShadowTex + float2(texel.x, 0));
-	samples.z = tex2D(sampler2point, indata.ShadowTex + float2(0, texel.y));
-	samples.w = tex2D(sampler2point, indata.ShadowTex + texel);*/
-	float avgShadowValue = tex2Dproj(sampler2, indata.ShadowTex); // HW percentage closer filtering.
-	
-	float4 staticSamples;
-	staticSamples.x = tex2D(sampler1, indata.ShadowTex.xy + float2(-texel.x*1, -texel.y*2)).b;
-	staticSamples.y = tex2D(sampler1, indata.ShadowTex.xy + float2( texel.x*1, -texel.y*2)).b;
-	staticSamples.z = tex2D(sampler1, indata.ShadowTex.xy + float2(-texel.x*1,  texel.y*2)).b;
-	staticSamples.w = tex2D(sampler1, indata.ShadowTex.xy + float2( texel.x*1,  texel.y*2)).b;
-	staticSamples.x = dot(staticSamples.xyzw, 0.25);
-	
-	//float4 cmpbits = samples > saturate(indata.ShadowTex.z);
-	//float avgShadowValue = dot(cmpbits, float4(0.25, 0.25, 0.25, 0.25));
-
-	float totShadow = avgShadowValue.x*staticSamples.x;
-	float totDiff = wrapDiff + rimDiff;
-	return float4(totDiff, totShadow, saturate(totShadow+0.35), expnormal.a);
-}
-
-VS2PS_fullMRT vsFullMRTskinapply(APP2VS_fullMRT indata, uniform int NumBones)
-{
-	VS2PS_fullMRT outdata;
-	
-	float LastWeight = 0.0;
-	float3 Pos = 0.0;
-	float3 Normal = 0.0;    
-	float3 SkinnedLVec = 0.0;
-	
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(indata.BlendIndices);
-	
-	// Cast the vectors to arrays for use in the for loop below
-	float BlendWeightsArray[1] = (float[1])indata.BlendWeights;
-	int IndexArray[4] = (int[4])IndexVector;    
-	
-	// Calculate the pos/normal using the "normal" weights 
-	// and accumulate the weights to calculate the last weight
-	for (int iBone = 0; iBone < NumBones-1; iBone++)
+	if(IsNvidia)
 	{
-		LastWeight += BlendWeightsArray[iBone];
-		Pos += mul(indata.Pos, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
-		Normal += mul(indata.Normal, mBoneArray[IndexArray[iBone]]) * BlendWeightsArray[iBone];
+		float4 Samples;
+		Samples.x = tex2D(Sampler_2, Input.ShadowTex);
+		Samples.y = tex2D(Sampler_2, Input.ShadowTex.xy + float2(Texel.x, 0));
+		Samples.z = tex2D(Sampler_2, Input.ShadowTex.xy + float2(0, Texel.y));
+		Samples.w = tex2D(Sampler_2, Input.ShadowTex.xy + Texel);
+		float4 CMPBits = Samples > saturate(Input.ShadowTex.z);
+		AvgShadowValue = dot(CMPBits, 0.25);
 	}
-	LastWeight = 1.0 - LastWeight; 
-	
-	// Now that we have the calculated weight, add in the final influence
-	Pos += mul(indata.Pos, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	Normal += mul(indata.Normal, mBoneArray[IndexArray[NumBones-1]]) * LastWeight;
-	
-	// Normalize normals
-	Normal = normalize(Normal);
-	
-	float4 pos4 = float4(Pos.xyz, 1.0);
-	
-	float3x3 mBone1 = transpose((float3x3)mBoneArray[IndexArray[0]]);
-	float3x3 mBone2 = transpose((float3x3)mBoneArray[IndexArray[1]]);
-	outdata.Mat1.xyz = mBone1[0];
-	outdata.Mat1.w = BlendWeightsArray[0];
-	outdata.Mat2 = mBone1[1];
-	outdata.Mat3 = mBone1[2];
-	outdata.Mat1_.xyz = mBone2[0];
-	outdata.Mat1_.w = 1 - BlendWeightsArray[0];
-	outdata.Mat2_ = mBone2[1];
-	outdata.Mat3_ = mBone2[2];
+	else
+	{
+		AvgShadowValue = tex2Dproj(Sampler_2, Input.ShadowTex); // HW percentage closer filtering.
+	}
 
-	// Transform position into view and then projection space
-	outdata.Pos = mul(pos4, mWorldViewProj); 
+	float4 StaticSamples = SkinnedMesh_StaticSamples(Sampler_1, Input.ShadowTex.xy, Texel);
+	StaticSamples.x = dot(StaticSamples.xyzw, 0.25);
 
- 	// Hemi lookup values
-	float4 wPos = mul(pos4, mWorld); 
- 	outdata.GroundUVAndLerp.xy = ((wPos +(hemiMapInfo.z/2) + Normal*1/*normalOffsetScale*/).xz - hemiMapInfo.xy)/ hemiMapInfo.z;
-	outdata.GroundUVAndLerp.y = 1-outdata.GroundUVAndLerp.y;
-	outdata.GroundUVAndLerp.z = (Normal.y+1/*normalOffsetScale*/)/2;
-	outdata.GroundUVAndLerp.z -= hemiMapInfo.w;
-
-	outdata.wPos = mul(pos4, mWorldView);
-
-	outdata.Tex0 = indata.TexCoord0;
-	
-	return outdata;
+	float TotalShadow = AvgShadowValue.x * StaticSamples.x;
+	float TotalDiff = WrapDiff + RimDiff;
+	return float4(TotalDiff, TotalShadow, saturate(TotalShadow + 0.35), ExpNormal.a);
 }
 
-PS2FB_fullMRT psFullMRTskinapply(VS2PS_fullMRT indata)
+float4 Full_MRT_Skin_Pre_Shadowed_PS(VS2PS_fullMRTskinpreshadowed Input) : COLOR
 {
-	PS2FB_fullMRT outdata;
-	
-	float4 groundcolor = tex2D(sampler0, indata.GroundUVAndLerp.xy);
-	float4 hemicolor = lerp(groundcolor, skyColor, indata.GroundUVAndLerp.z);
-	float4 expnormal = tex2D(sampler1, indata.Tex0);
-	expnormal.rgb = (expnormal * 2) - 1;
-	float4 diffuse = tex2D(sampler2, indata.Tex0);
-	float4 diffuseLight = tex2D(sampler3, indata.Tex0);
+	return FullMRTskinpreshadowed(Input, false);
+}
 
-	float3 normal;
-	normal.x = dot(expnormal.xyz, indata.Mat1.xyz) * indata.Mat1.w;
-	normal.y = dot(expnormal.xyz, indata.Mat2.xyz) * indata.Mat1.w;
-	normal.z = dot(expnormal.xyz, indata.Mat3.xyz) * indata.Mat1.w;
-	normal.x += dot(expnormal.xyz, indata.Mat1_.xyz) * indata.Mat1_.w;
-	normal.y += dot(expnormal.xyz, indata.Mat2_.xyz) * indata.Mat1_.w;
-	normal.z += dot(expnormal.xyz, indata.Mat3_.xyz) * indata.Mat1_.w;
+float4 Full_MRT_Skin_Pre_Shadowed_NV_PS(VS2PS_fullMRTskinpreshadowed Input) : COLOR
+{
+	return FullMRTskinpreshadowed(Input, true);
+}
 
-	outdata.Col0.rgb = ambientColor*hemicolor + diffuseLight.r*diffuseLight.b*sunColor;
-	outdata.Col0.a = diffuseLight.g;
-//outdata.Col0 = diffuseLight;
-	outdata.Col1 = indata.wPos;
-	outdata.Col2.x = dot(normal, mWorldViewI[0].xyz);
-	outdata.Col2.y = dot(normal, mWorldViewI[1].xyz);
-	outdata.Col2.z = dot(normal, mWorldViewI[2].xyz);
-	outdata.Col2.w = diffuse.w;
+PS2FB_Full_MRT Full_MRT_Skin_Apply_PS(VS2PS_Full_MRT Input)
+{
+	PS2FB_Full_MRT Output;
 
-	return outdata;
+	float4 GroundColor = tex2D(Sampler_0, Input.GroundUVAndLerp.xy);
+	float4 HemiColor = lerp(GroundColor, _SkyColor, Input.GroundUVAndLerp.z);
+	float4 ExpNormal = tex2D(Sampler_1, Input.Tex0);
+	ExpNormal.rgb = (ExpNormal * 2.0) - 1.0;
+	float4 Diffuse = tex2D(Sampler_2, Input.Tex0);
+	float4 DiffuseLight = tex2D(Sampler_3, Input.Tex0);
+
+	float3 Normal;
+	Normal.x = dot(ExpNormal.xyz, Input.Mat1.xyz) * Input.Mat1.w;
+	Normal.y = dot(ExpNormal.xyz, Input.Mat2.xyz) * Input.Mat1.w;
+	Normal.z = dot(ExpNormal.xyz, Input.Mat3.xyz) * Input.Mat1.w;
+	Normal.x += dot(ExpNormal.xyz, Input.Mat1_.xyz) * Input.Mat1_.w;
+	Normal.y += dot(ExpNormal.xyz, Input.Mat2_.xyz) * Input.Mat1_.w;
+	Normal.z += dot(ExpNormal.xyz, Input.Mat3_.xyz) * Input.Mat1_.w;
+
+	Output.Col0.rgb = _AmbientColor * HemiColor + DiffuseLight.r * DiffuseLight.b * _SunColor;
+	Output.Col0.a = DiffuseLight.g;
+
+	Output.Col1 = Input.wPos;
+	Output.Col2.x = dot(Normal, _WorldViewI[0].xyz);
+	Output.Col2.y = dot(Normal, _WorldViewI[1].xyz);
+	Output.Col2.z = dot(Normal, _WorldViewI[2].xyz);
+	Output.Col2.w = Diffuse.w;
+
+	return Output;
 }
 
 technique fullMRThumanskinNV
@@ -644,9 +553,10 @@ technique fullMRThumanskinNV
 
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_2_a vsFullMRTskinpre(2);
-		PixelShader = compile ps_2_a psFullMRTskinpre();
+		VertexShader = compile vs_3_0 Full_MRT_Skin_Pre_VS(2);
+		PixelShader = compile ps_3_0 Full_MRT_Skin_Pre_PS();
 	}
+
 	pass preshadowed
 	{
 		CullMode = NONE;
@@ -657,9 +567,10 @@ technique fullMRThumanskinNV
 
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_2_a vsFullMRTskinpreshadowed(2);
-		PixelShader = compile ps_2_a psFullMRTskinpreshadowedNV();
+		VertexShader = compile vs_3_0 Full_MRT_Skin_Pre_Shadowed_VS(2);
+		PixelShader = compile ps_3_0 Full_MRT_Skin_Pre_Shadowed_NV_PS();
 	}
+
 	pass apply
 	{
 		CullMode = CCW;
@@ -669,13 +580,13 @@ technique fullMRThumanskinNV
 		ZFunc = LESSEQUAL;
 
 		StencilEnable = TRUE;
-		StencilRef = (dwStencilRef);
+		StencilRef = (_StencilRef);
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
 
-		VertexShader = compile vs_2_a vsFullMRTskinapply(2);
-		PixelShader = compile ps_2_a psFullMRTskinapply();
+		VertexShader = compile vs_3_0 Full_MRT_VS(2);
+		PixelShader = compile ps_3_0 Full_MRT_Skin_Apply_PS();
 	}
 }
 
@@ -691,9 +602,10 @@ technique fullMRThumanskin
 
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_2_a vsFullMRTskinpre(2);
-		PixelShader = compile ps_2_a psFullMRTskinpre();
+		VertexShader = compile vs_3_0 Full_MRT_Skin_Pre_VS(2);
+		PixelShader = compile ps_3_0 Full_MRT_Skin_Pre_PS();
 	}
+
 	pass preshadowed
 	{
 		CullMode = NONE;
@@ -704,9 +616,10 @@ technique fullMRThumanskin
 
 		StencilEnable = FALSE;
 
-		VertexShader = compile vs_2_a vsFullMRTskinpreshadowed(2);
-		PixelShader = compile ps_2_a psFullMRTskinpreshadowed();
+		VertexShader = compile vs_3_0 Full_MRT_Skin_Pre_Shadowed_VS(2);
+		PixelShader = compile ps_3_0 Full_MRT_Skin_Pre_Shadowed_PS();
 	}
+
 	pass apply
 	{
 		CullMode = CCW;
@@ -716,13 +629,12 @@ technique fullMRThumanskin
 		ZFunc = LESSEQUAL;
 
 		StencilEnable = TRUE;
-		StencilRef = (dwStencilRef);
+		StencilRef = (_StencilRef);
 		StencilFunc = ALWAYS;
 		StencilZFail = KEEP;
 		StencilPass = REPLACE;
 
-		VertexShader = compile vs_2_a vsFullMRTskinapply(2);
-		PixelShader = compile ps_2_a psFullMRTskinapply();
+		VertexShader = compile vs_3_0 Full_MRT_VS(2);
+		PixelShader = compile ps_3_0 Full_MRT_Skin_Apply_PS();
 	}
 }
-
