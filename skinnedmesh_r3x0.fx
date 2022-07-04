@@ -479,6 +479,10 @@ float4 FullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed Input, bool IsNvidia)
 
 	if(IsNvidia)
 	{
+		AvgShadowValue = tex2Dproj(Sampler_2, Input.ShadowTex); // HW percentage closer filtering.
+	}
+	else
+	{
 		float4 Samples;
 		Samples.x = tex2D(Sampler_2, Input.ShadowTex);
 		Samples.y = tex2D(Sampler_2, Input.ShadowTex.xy + float2(Texel.x, 0));
@@ -486,10 +490,6 @@ float4 FullMRTskinpreshadowed(VS2PS_fullMRTskinpreshadowed Input, bool IsNvidia)
 		Samples.w = tex2D(Sampler_2, Input.ShadowTex.xy + Texel);
 		float4 CMPBits = Samples > saturate(Input.ShadowTex.z);
 		AvgShadowValue = dot(CMPBits, 0.25);
-	}
-	else
-	{
-		AvgShadowValue = tex2Dproj(Sampler_2, Input.ShadowTex); // HW percentage closer filtering.
 	}
 
 	float4 StaticSamples = SkinnedMesh_StaticSamples(Sampler_1, Input.ShadowTex.xy, Texel);

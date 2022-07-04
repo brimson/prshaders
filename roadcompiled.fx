@@ -106,7 +106,7 @@ VS2PS RoadCompiled_VS(APP2VS Input)
 	Output.ZFade = 1.0 - saturate((CameraDist * _FadeoutValues.x) - _FadeoutValues.y);
 	Output.ZFade = saturate(Output.ZFade * Input.Alpha);
 
-	Output.Fog = calcFog(Output.Pos.w);
+	Output.Fog = saturate(calcFog(Output.Pos.w));
 
 	return Output;
 }
@@ -162,7 +162,7 @@ VS2PS_Dx9 RoadCompiled_Dx9_VS(APP2VS Input)
 	Output.ZFade = (Output.ZFade - _FadeoutValues.x) * _FadeoutValues.y;
 	Output.ZFade = saturate(1.0 - saturate(Output.ZFade));
 
-	Output.Fog = calcFog(Output.Pos.w);
+	Output.Fog = saturate(calcFog(Output.Pos.w));
 
 	return Output;
 }
