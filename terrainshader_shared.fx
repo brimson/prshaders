@@ -530,49 +530,8 @@ float4 Shared_ST_Normal_PS(VS2PS_Shared_ST_Normal Input) : COLOR
 	return OutColor;
 }
 
-/*
-	struct APP2VS_Shared_ST_Fast
-	{
-		float2 Pos0 : POSITION0;
-		float2 TexCoord0 : TEXCOORD0;
-		float4 Pos1 : POSITION1;
-	};
 
-	struct VS2PS_Shared_ST_Fast
-	{
-		float4 Pos : POSITION;
-		float2 Tex0 : TEXCOORD0;
-		float Fog : Fog;
-	};
 
-	VS2PS_Shared_ST_Fast Shared_ST_Fast_VS(APP2VS_Shared_ST_Fast Input)
-	{
-		VS2PS_Shared_ST_Fast Output;
-
-		Output.Pos.xz = mul(float4(Input.Pos0.xy, 0.0, 1.0), _STTransXZ).xy;
-		Output.Pos.yw = (Input.Pos1.xw * _STScaleTransY.xy) + _STScaleTransY.zw;
-		Output.Tex0 = Input.TexCoord0;
-		Output.Pos = mul(Output.Pos, _ViewProj);
-		Output.Fog = saturate(calcFog(Output.Pos.w));
-
-		return Output;
-	}
-
-	float4 Shared_ST_Fast_PS(VS2PS_Shared_ST_Fast Input) : COLOR
-	{
-		float4 OutColor;
-		if (FogColor.r < 0.01)
-		{
-			// If thermals assume gray terrain
-			ColorMap = 0.333;
-		}
-		else
-		{
-			OutColor = tex2D(Sampler_0_Clamp, Input.Tex0);
-		}
-		return OutColor;
-	}
-*/
 
 /*
 	Surrounding Terrain
@@ -583,7 +542,6 @@ technique Shared_SurroundingTerrain
 	pass p0 // Normal
 	{
 		CullMode = CW;
-		// FillMode = WIREFRAME;
 		ZEnable = TRUE;
 		ZWriteEnable = TRUE;
 		ZFunc = LESSEQUAL;
@@ -592,19 +550,6 @@ technique Shared_SurroundingTerrain
 		VertexShader = compile vs_3_0 Shared_ST_Normal_VS();
 		PixelShader = compile ps_3_0 Shared_ST_Normal_PS();
 	}
-	/*
-		pass p1 // Fast
-		{
-			CullMode = CW;
-			ZEnable = TRUE;
-			ZWriteEnable = TRUE;
-			ZFunc = LESSEQUAL;
-			AlphaBlendEnable = FALSE;
-
-			VertexShader = compile vs_3_0 Shared_ST_Fast_VS();
-			PixelShader = compile ps_3_0 Shared_ST_Fast_PS();
-		}
-	*/
 }
 
 

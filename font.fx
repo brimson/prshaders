@@ -51,12 +51,12 @@ struct VS2PS_REGULAR
 
 VS2PS_REGULAR Regular_VS(APP2VS Input)
 {
-	VS2PS_REGULAR Out = (VS2PS_REGULAR)0;
-	// Out.Position = mul( float4(Position.xy, 0.5f, 1.0f), _WorldView);
-	Out.Position = float4(Input.Position.xy, 0.5f, 1.0f);
-	Out.Diffuse = saturate(Input.Color);
-	Out.TexCoord = Input.TexCoord;
-	return Out;
+	VS2PS_REGULAR Output = (VS2PS_REGULAR)0;
+	// Output.Position = mul( float4(Position.xy, 0.5f, 1.0f), _WorldView);
+	Output.Position = float4(Input.Position.xy, 0.5f, 1.0f);
+	Output.Diffuse = saturate(Input.Color);
+	Output.TexCoord = Input.TexCoord;
+	return Output;
 }
 
 float4 Regular_PS(VS2PS_REGULAR Input) : COLOR
@@ -77,10 +77,10 @@ struct VS_SELECTIONQUAD
 
 VS_SELECTIONQUAD Quad_Selection_VS(float3 Position : POSITION)
 {
-	VS_SELECTIONQUAD Out = (VS_SELECTIONQUAD)0;
-	Out.Position = mul(float4(Position.xy, 0.0f, 1.0), _WorldView);
-	Out.Diffuse = _DiffuseColor;
-	return Out;
+	VS_SELECTIONQUAD Output = (VS_SELECTIONQUAD)0;
+	Output.Position = mul(float4(Position.xy, 0.0f, 1.0), _WorldView);
+	Output.Diffuse = saturate(Output.Diffuse);
+	return Output;
 }
 
 float4 Quad_Selection_PS(VS_SELECTIONQUAD Input) : COLOR

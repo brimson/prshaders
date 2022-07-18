@@ -162,7 +162,7 @@ struct VS2PS_2
 {
 	float4 HPos : POSITION;
 	float2 TexCoord : TEXCOORD0;
-	float4 Diffuse : COLOR;
+	float4 Diffuse : COLOR0;
 	float Fog : FOG;
 };
 
@@ -260,64 +260,6 @@ technique Full
 	{
 		VertexShader = compile vs_3_0 BlinnSpecularBump_1_VS();
 		PixelShader = compile ps_3_0 BlinnSpecularBump_1_PS();
-	}
-}
-
-VS2PS_20 BlinnSpecularBump_20_VS(APP2VS Input)
-{
-	VS2PS_20 Output = (VS2PS_20)0;
-	Specular_VS(Input, Output.HPos, Output.LightVec, Output.HalfVec);
-
-	// Pass-through texcoords
-	Output.Tex0 = Input.TexCoord;
-	Output.Fog = 0.0; // Calc_Fog(Output.HPos.w);
-	return Output;
-}
-
-float4 BlinnSpecularBump_20_PS(VS2PS_20 Input) : COLOR
-{
-	float4 Cosang, TDiffuse, TNormal, Color, TShadow;
-	float3 TLight;
-
-	// Sample Diffuse texture and Normal map
-	TDiffuse = tex2D(Diffuse_Sampler, Input.Tex0);
-
-	TNormal = tex2D(Normal_Sampler, Input.Tex0) * 2.0 - 1.0;
-	TLight = Input.LightVec * 2.0 - 1.0;
-
-	// DP Lighting in tangent space (where normal map is based)
-	// Modulate with Diffuse texture
-	Color = dot(TNormal.xyz, TLight) * TDiffuse;
-
-	// N.H for Specular term
-	Cosang = dot(TNormal.xyz, Input.HalfVec);
-
-	// Raise to a power for falloff
-	Cosang = pow(Cosang, 32.0) * TNormal.w; // try changing the power to 255!
-
-	// Sample shadow texture
-	TShadow = tex2D(BundledMesh_Sampler_3, Input.Tex0);
-
-	// Add to Diffuse lit texture value
-	float4 Res = (Color + Cosang) * TShadow;
-
-	// float4 Res = Color * TShadow;
-	return float4(Res.xyz, TDiffuse.w);
-}
-
-technique Full20
-{
-	pass p0
-	{
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		AlphaBlendEnable = FALSE;
-		AlphaTestEnable = TRUE;
-		AlphaRef = 0;
-		AlphaFunc = GREATER;
-
-		VertexShader = compile vs_3_0 BlinnSpecularBump_20_VS();
-		PixelShader = compile ps_3_0 BlinnSpecularBump_20_PS();
 	}
 }
 
@@ -504,7 +446,7 @@ VS2PS_Alpha_Env_Map Alpha_Env_Map_VS(APP2VS Input, uniform float4x4 ViewProj)
 	TanToObjectBasis[1] = float3(Input.Tan[1], BiNormal[1], Input.Normal[1]);
 	TanToObjectBasis[2] = float3(Input.Tan[2], BiNormal[2], Input.Normal[2]);
 
-	[unroll] for(int i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		Output.TanToCubeSpace1[i] = dot(_MatOneBoneSkinning[IndexArray[0]][i].xyz, TanToObjectBasis[0]);
 		Output.TanToCubeSpace2[i] = dot(_MatOneBoneSkinning[IndexArray[0]][i].xyz, TanToObjectBasis[1]);
@@ -553,7 +495,6 @@ technique Alpha
 		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
-		// TextureTransformFlags[1] = PROJECTED; // This doesn't work very well....
 
 		VertexShader = compile vs_3_0 Alpha_VS(_ViewProjMatrix);
 		PixelShader = compile ps_3_0 Alpha_PS();
@@ -570,81 +511,9 @@ technique Alpha
 		AlphaTestEnable = TRUE;
 		AlphaRef = 0;
 		AlphaFunc = GREATER;
-		// TextureTransformFlags[1] = PROJECTED; // This doesn't work very well....
 
 		VertexShader = compile vs_3_0 Alpha_Env_Map_VS(_ViewProjMatrix);
 		PixelShader = compile ps_3_0 Alpha_Env_Map_PS();
-	}
-}
-
-
-
-
-/*
-	Alpha scope shaders
-*/
-
-struct VS2PS_Alpha_Scope
-{
-	float4 HPos : POSITION;
-	float3 Tex0AndTrans	: TEXCOORD0;
-	float2 Tex1 : TEXCOORD1;
-	float Fog : FOG;
-};
-
-float4 Alpha_Scope_PS(VS2PS_Alpha_Scope Input) : COLOR
-{
-	float4 AccumLight = tex2D(BundledMesh_Sampler_1, Input.Tex1);
-	float4 Diffuse = tex2D(BundledMesh_Sampler_0, Input.Tex0AndTrans.xy);
-
-	Diffuse.rgb = Diffuse * AccumLight;
-	Diffuse.a *= (1.0 - Input.Tex0AndTrans.b);
-	return Diffuse;
-}
-
-VS2PS_Alpha_Scope Alpha_Scope_VS(APP2VS Input, uniform float4x4 ViewProj)
-{
-	VS2PS_Alpha_Scope Output;
-
-	// Compensate for lack of UBYTE4 on Geforce3
-	int4 IndexVector = D3DCOLORtoUBYTE4(Input.BlendIndices);
-	int IndexArray[4] = (int[4])IndexVector;
-
-	float3 Pos = mul(Input.Pos, _MatOneBoneSkinning[IndexArray[0]]);
-	Output.HPos = mul(float4(Pos.xyz, 1.0), ViewProj);
-
-	float3 WorldNormal = mul(Input.Normal, _MatOneBoneSkinning[IndexArray[0]]);
-	float3 WorldEyeVec = normalize(_ViewInverseMatrix[3].xyz - Pos);
-
-	float F = dot(WorldNormal, WorldEyeVec);
-
-	Output.Tex0AndTrans.xy = Input.TexCoord;
-	Output.Tex0AndTrans.z = smoothstep(0.965, 1.0, F);	// step(0.99, F) * F;
-
-	Output.Tex1.xy = Output.HPos.xy / Output.HPos.w;
-	Output.Tex1.xy = (Output.Tex1.xy * 0.5) + 0.5;
-	Output.Tex1.y = 1.0 - Output.Tex1.y;
-	Output.Fog = 0.0; // Calc_Fog(Output.HPos.w);
-
-	return Output;
-}
-
-technique alphascope
-{
-	pass p0
-	{
-		ZEnable = FALSE;
-		ZWriteEnable = FALSE;
-		CullMode = NONE;
-		AlphaBlendEnable = TRUE;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
-		AlphaTestEnable = FALSE;
-		AlphaRef = 0;
-		AlphaFunc = GREATER;
-
-		VertexShader = compile vs_3_0 Alpha_Scope_VS(_ViewProjMatrix);
-		PixelShader = compile ps_3_0 Alpha_Scope_PS();
 	}
 }
 
@@ -715,10 +584,6 @@ VS2PS_Shadow_Map_Alpha Shadow_Map_Alpha_VS(APP2VS Input)
 	Output.HPos = Calc_Shadow_Proj_Coords(float4(Pos.xyz, 1.0), _ViewProjTrapezMatrix, _ViewProjLightMatrix);
 
 	float4 WorldPos = float4(Pos.xyz, 1.0);
-
-	// SHADOW
-	// matrix m = mul(_ViewProjLightMatrix, _ViewProjTrapezMatrix);
-	// Output.HPos = mul(WorldPos, _ViewProjLightMatrix);
 
 	Output.Tex0PosZW.xy = Input.TexCoord;
 	Output.Tex0PosZW.zw = Output.HPos.zw;

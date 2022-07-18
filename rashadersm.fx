@@ -336,6 +336,10 @@ float4 ps(SMVariableVSOutput input) : COLOR
 	float4 groundcolor = 1;
 #endif
 
+#if _HASHEMIOCCLUSION_
+	dirShadow *= groundcolor.a;
+#endif
+
 	float4 diffuseTex = tex2D(DiffuseMapSampler, input.Tex0);
 
 #ifdef	DIFFUSE_CHANNEL

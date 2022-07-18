@@ -147,12 +147,12 @@ const dword _usehemimap_	: LITERAL
 	};
 >;
 
-// const dword _hashemiocclusion_ : LITERAL; // [FH2]Remdul - BF2:SF only permutation
+const dword _hashemiocclusion_	: LITERAL;
 
 const dword _pointlight_	: LITERAL;
 
-// const dword _useperpixelnormalize_ : LITERAL;
-// const dword _userenormalizedtextures_ : LITERAL;
+//const dword _useperpixelnormalize_	: LITERAL;
+//const dword _userenormalizedtextures_	: LITERAL;
 
 
 //
@@ -182,10 +182,12 @@ string GenerateShaderPermutations[] =
 string GenerateShaderModifiers[] =
 {
 	"_hasshadow_",
+	"_hasshadow_|_hashemiocclusion_",
 	"_hasshadow_|_hasshadowocclusion_",
+	"_hashemiocclusion_",
 	
-	// "_hascolormapgloss_",
-	// "_hasstaticgloss_",
+	//"_hascolormapgloss_",
+	//"_hasstaticgloss_",
 	
 	"_pointlight_",
 	"_hasshadow_|_pointlight_",

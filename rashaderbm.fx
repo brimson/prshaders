@@ -395,7 +395,10 @@ float4 ps(BMVariableVSOutput input) : COLOR
 
 #if _USEHEMIMAP_
 	float4 groundcolor	= tex2D(HemiMapSampler, input.Interpolated[__HEMINTERPIDX].xy);
- 	float3 hemicolor = lerp(groundcolor, HemiMapSkyColor, input.Interpolated[__HEMINTERPIDX].z);
+ 	float3 hemicolor		= lerp(groundcolor, HemiMapSkyColor, input.Interpolated[__HEMINTERPIDX].z);
+	#if _HASHEMIOCCLUSION_
+		dirOccShadow = groundcolor.a;
+	#endif
 #elif _HASPERPIXELLIGHTING_
 	float hemicolor = Lights[0].color.w;
 #else

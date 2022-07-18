@@ -26,7 +26,7 @@ uniform float2 _DecalFadeDistanceAndInterval : DecalFadeDistanceAndInterval = fl
 #define CREATE_SAMPLER(NAME, TEXTURE, ADDRESS, FILTER) \
 	sampler NAME = sampler_state \
 	{ \
-		Texture = TEXTURE; \
+		Texture = (TEXTURE); \
 		AddressU = ADDRESS; \
 		AddressV = ADDRESS; \
 		MinFilter = FILTER; \

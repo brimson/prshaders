@@ -113,31 +113,3 @@ technique Low_Terrain
 		PixelShader = compile ps_3_0 Shared_UnderWater_PS();
 	}
 }
-
-technique Low_SurroundingTerrain
-{
-	pass p0 // Normal
-	{
-		CullMode = CW;
-		ZEnable = TRUE;
-		ZWriteEnable = TRUE;
-		ZFunc = LESSEQUAL;
-		AlphaBlendEnable = FALSE;
-
-		VertexShader = compile vs_3_0 Shared_ST_Normal_VS();		
-		PixelShader = compile ps_3_0 Shared_ST_Normal_PS();
-	}
-	/*
-		pass p1 // Fast
-		{
-			CullMode = CW;
-			ZEnable = TRUE;
-			ZWriteEnable = TRUE;
-			ZFunc = LESSEQUAL;
-			AlphaBlendEnable = FALSE;
-
-			VertexShader = compile vs_3_0 Shared_ST_Fast_VS();		
-			PixelShader = compile ps_3_0 Shared_ST_Fast_PS();
-		}
-	*/
-}

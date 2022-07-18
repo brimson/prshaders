@@ -77,11 +77,6 @@ VS2PS Basic_VS(APP2VS Input)
 	return Output;
 }
 
-technique Menu
-{
-	pass { }
-}
-
 technique Menu_States <bool Restore = true;>
 {
 	pass BeginStates { }

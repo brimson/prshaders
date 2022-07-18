@@ -91,7 +91,7 @@ uniform texture Texture_6 : TEXLAYER6;
 #define CREATE_SAMPLER(SAMPLER_TYPE, NAME, TEXTURE, ADDRESS) \
 	SAMPLER_TYPE NAME = sampler_state \
 	{ \
-		Texture = TEXTURE; \
+		Texture = (TEXTURE); \
 		MinFilter = LINEAR; \
 		MagFilter = LINEAR; \
 		MipFilter = LINEAR; \

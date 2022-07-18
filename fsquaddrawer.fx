@@ -181,13 +181,13 @@ float4 Linear_Gaussian_Blur(sampler2D Source, float2 TexCoord, bool IsHorizontal
 	float4 OutputOutColor = 0.0;
 	float4 TotalWeights = 0.0;
 	float2 PixelSize = 0.0;
-	PixelSize.x = 1.0 / trunc(1.0 / abs(ddx(TexCoord.x)));
-	PixelSize.y = 1.0 / trunc(1.0 / abs(ddy(TexCoord.y)));
+	PixelSize.x = abs(ddx(TexCoord.x));
+	PixelSize.y = abs(ddy(TexCoord.y));
 
 	OutputOutColor += tex2D(Source, TexCoord + (Offsets[0].xy * PixelSize)) * Weights[0];
 	TotalWeights += Weights[0];
 
-	[unroll] for(int i = 1; i < 5; i++)
+	for(int i = 1; i < 5; i++)
 	{
 		float2 Offset = (IsHorizontal) ? Offsets[i].yx : Offsets[i].xy;
 		OutputOutColor += tex2Dlod(Source, float4(TexCoord + (Offset * PixelSize), 0.0, 0.0)) * Weights[i];
@@ -211,8 +211,8 @@ float4 TR_Optics_Blur_V_PS(VS2PS_Blit Input) : COLOR
 float4 TR_Optics_Mask_PS(VS2PS_Blit Input) : COLOR
 {
 	float2 ScreenSize = 0.0;
-	ScreenSize.x = trunc(1.0 / abs(ddx(Input.TexCoord0.x)));
-	ScreenSize.y = trunc(1.0 / abs(ddy(Input.TexCoord0.y)));
+	ScreenSize.x = int(1.0 / abs(ddx(Input.TexCoord0.x)));
+	ScreenSize.y = int(1.0 / abs(ddy(Input.TexCoord0.y)));
 	float AspectRatio = ScreenSize.x / ScreenSize.y;
 
 	float BlurAmountMod = frac(_HighPassGate) / 0.9; // used for the fade-in effect
@@ -267,7 +267,7 @@ VS2PS_5Tap Sample_5_VS(APP2VS_Blit Input, uniform float Offsets[5], uniform bool
 	float2 VSOffset = (Horizontal) ? float2(Offsets[4], 0.0) : float2(0.0, Offsets[4]);
 	Output.TexCoord0 = Input.TexCoord0 + VSOffset;
 
-	[unroll] for(int i = 0; i < 2; i++)
+	for(int i = 0; i < 2; i++)
 	{
 		float2 VSOffsetA = (Horizontal) ? float2(Offsets[i * 2], 0.0) : float2(0.0, Offsets[i * 2]);
 		float2 VSOffsetB = (Horizontal) ? float2(Offsets[i * 2 + 1], 0.0) : float2(0.0, Offsets[i * 2 + 1]);
@@ -339,7 +339,7 @@ float4 FSBM_Scale_Down_2x2_Filter_PS(VS2PS_Blit Input) : COLOR
 void FSBM_Scale_Down_4x4_Filter_PS(in VS2PS_Blit Input, out float4 Accum : COLOR)
 {
 	Accum = 0;
-	[unroll] for(int i = 0; i < 16; i++)
+	for(int i = 0; i < 16; i++)
 	{
 		Accum += tex2D(FSQuadDrawer_Sampler_0_Bilinear, Input.TexCoord0 + _ScaleDown4x4SampleOffsets[i].xy) * 0.0625;
 	}
@@ -358,7 +358,7 @@ float4 FSBM_Scale_Down_4x4_Linear_Filter_PS(VS2PS_4Tap Input) : COLOR
 void FSBM_Gaussian_Blur_5x5_Cheap_Filter_PS(in VS2PS_Blit Input, out float4 Accum : COLOR)
 {
 	Accum = 0.0;
-	[unroll] for(int i = 0; i < 13; i++)
+	for(int i = 0; i < 13; i++)
 	{
 		Accum += tex2D(FSQuadDrawer_Sampler_0_Bilinear, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
 	}
@@ -367,7 +367,7 @@ void FSBM_Gaussian_Blur_5x5_Cheap_Filter_PS(in VS2PS_Blit Input, out float4 Accu
 void FSBM_Gaussian_Blur_5x5_Cheap_Filter_Blend_PS(VS2PS_Blit Input, out float4 Accum : COLOR)
 {
 	Accum = 0.0;
-	[unroll] for(int i = 0; i < 13; i++)
+	for(int i = 0; i < 13; i++)
 	{
 		Accum += tex2D(FSQuadDrawer_Sampler_0_Bilinear, Input.TexCoord0 + _GaussianBlur5x5CheapSampleOffsets[i].xy) * _GaussianBlur5x5CheapSampleWeights[i];
 	}
@@ -377,7 +377,7 @@ void FSBM_Gaussian_Blur_5x5_Cheap_Filter_Blend_PS(VS2PS_Blit Input, out float4 A
 void FSBM_Gaussian_Blur_15x15_Horizontal_Filter_PS(VS2PS_Blit Input, out float4 Accum : COLOR)
 {
 	Accum = 0.0;
-	[unroll] for(int i = 0; i < 15; i++)
+	for(int i = 0; i < 15; i++)
 	{
 		Accum += tex2D(FSQuadDrawer_Sampler_0_Bilinear, Input.TexCoord0 + _GaussianBlur15x15HorizontalSampleOffsets[i].xy) * _GaussianBlur15x15HorizontalSampleWeights[i];
 	}
@@ -386,7 +386,7 @@ void FSBM_Gaussian_Blur_15x15_Horizontal_Filter_PS(VS2PS_Blit Input, out float4 
 void FSBM_Gaussian_Blur_15x15_Vertical_Filter_PS(VS2PS_Blit Input, out float4 Accum : COLOR)
 {
 	Accum = 0.0;
-	[unroll] for(int i = 0; i < 15; i++)
+	for(int i = 0; i < 15; i++)
 	{
 		Accum += tex2D(FSQuadDrawer_Sampler_0_Bilinear, Input.TexCoord0 + _GaussianBlur15x15VerticalSampleOffsets[i].xy) * _GaussianBlur15x15VerticalSampleWeights[i];
 	}
